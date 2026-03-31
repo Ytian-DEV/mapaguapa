@@ -1,0 +1,39 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+
+@font-face {
+  font-family: "Agoma";
+  src: local("Agoma"), local("AGOMA"), local("Agoma Display");
+  font-display: swap;
+}
+
+:root {
+  font-family: "Inter", Arial, sans-serif;
+  --font-body: "Inter", Arial, sans-serif;
+  --font-display: "Agoma", "Inter", Arial, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  min-height: 100vh;
+  background: #07150f;
+  font-family: var(--font-body);
+}
+
+button,
+input {
+  font: inherit;
+}
