@@ -1,0 +1,14 @@
+.app-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #07150f 0%, #072117 46%, #04110c 100%);
+  color: #f5fffa;
+  font-family: var(--font-body);
+}
+
+.app-shell--loading {
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}

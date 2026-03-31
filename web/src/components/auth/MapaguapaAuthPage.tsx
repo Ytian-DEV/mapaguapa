@@ -1,26 +1,28 @@
-import {
-  useEffect,
-  useRef,
-  useState,
-  type PointerEvent as ReactPointerEvent,
-} from "react";
+import { useMemo, useState } from "react";
+import HouseMark from "../shared/HouseMark";
+import { usePointerGlow } from "../shared/usePointerGlow";
 import "./mapaguapa-auth.css";
 
 type Mode = "login" | "signup";
 
+type Credentials = {
+  email: string;
+  password: string;
+  fullName?: string;
+};
+
+type MapaguapaAuthPageProps = {
+  authConfigured: boolean;
+  authError: string | null;
+  authInfo: string | null;
+  isSubmitting: boolean;
+  onLogin: (credentials: Credentials) => Promise<void>;
+  onSignup: (credentials: Credentials) => Promise<void>;
+};
+
 type HeroHighlight = {
   title: string;
   text: string;
-};
-
-type PointerVars = {
-  active: boolean;
-  x: number;
-  y: number;
-  gridShiftX: number;
-  gridShiftY: number;
-  lensShiftX: number;
-  lensShiftY: number;
 };
 
 const heroHighlights: HeroHighlight[] = [
@@ -57,162 +59,86 @@ const modeCopy = {
   },
 } as const;
 
-function HouseMark() {
-  return (
-    <svg
-      aria-hidden="true"
-      className="mapa-auth-page__house-icon"
-      fill="none"
-      viewBox="0 0 28 28"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M4.75 12.25L14 4.5L23.25 12.25"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2.2"
-      />
-      <path
-        d="M7.25 10.85V22.1C7.25 22.6523 7.69772 23.1 8.25 23.1H19.75C20.3023 23.1 20.75 22.6523 20.75 22.1V10.85"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeWidth="2.2"
-      />
-      <path
-        d="M11.1 23.1V15.75H16.9V23.1"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2.2"
-      />
-    </svg>
-  );
-}
-
-export default function MapaguapaAuthPage() {
+export default function MapaguapaAuthPage({
+  authConfigured,
+  authError,
+  authInfo,
+  isSubmitting,
+  onLogin,
+  onSignup,
+}: MapaguapaAuthPageProps) {
   const [mode, setMode] = useState<Mode>("login");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const pageRef = useRef<HTMLElement | null>(null);
-  const frameRef = useRef<number | null>(null);
-  const pointerRef = useRef<PointerVars>({
-    active: false,
-    x: 0,
-    y: 0,
-    gridShiftX: 0,
-    gridShiftY: 0,
-    lensShiftX: 0,
-    lensShiftY: 0,
-  });
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [localError, setLocalError] = useState<string | null>(null);
+  const {
+    pageRef,
+    handlePointerEnter,
+    handlePointerLeave,
+    handlePointerMove,
+  } = usePointerGlow();
 
   const copy = modeCopy[mode];
   const isSignup = mode === "signup";
+  const activeError = localError || authError;
 
-  const applyPointerVars = () => {
-    const page = pageRef.current;
-    if (!page) {
+  const helperText = useMemo(() => {
+    if (!authConfigured) {
+      return "Supabase is not configured yet. Add your VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in web/.env.";
+    }
+
+    return authInfo;
+  }, [authConfigured, authInfo]);
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setLocalError(null);
+
+    if (!authConfigured) {
+      setLocalError("Supabase environment variables are missing.");
       return;
     }
 
-    const pointer = pointerRef.current;
-
-    page.style.setProperty("--pointer-x", `${pointer.x}px`);
-    page.style.setProperty("--pointer-y", `${pointer.y}px`);
-    page.style.setProperty("--pointer-grid-shift-x", `${pointer.gridShiftX}px`);
-    page.style.setProperty("--pointer-grid-shift-y", `${pointer.gridShiftY}px`);
-    page.style.setProperty("--pointer-lens-shift-x", `${pointer.lensShiftX}px`);
-    page.style.setProperty("--pointer-lens-shift-y", `${pointer.lensShiftY}px`);
-    page.style.setProperty("--pointer-opacity", pointer.active ? "1" : "0");
-  };
-
-  const schedulePointerPaint = () => {
-    if (frameRef.current !== null) {
+    if (!email.trim() || !password.trim()) {
+      setLocalError("Email and password are required.");
       return;
     }
 
-    frameRef.current = window.requestAnimationFrame(() => {
-      frameRef.current = null;
-      applyPointerVars();
-    });
-  };
-
-  useEffect(() => {
-    const page = pageRef.current;
-    if (!page) {
-      return;
-    }
-
-    const centerX = page.clientWidth * 0.32;
-    const centerY = page.clientHeight * 0.38;
-
-    pointerRef.current = {
-      active: false,
-      x: centerX,
-      y: centerY,
-      gridShiftX: 0,
-      gridShiftY: 0,
-      lensShiftX: 0,
-      lensShiftY: 0,
-    };
-
-    applyPointerVars();
-
-    return () => {
-      if (frameRef.current !== null) {
-        window.cancelAnimationFrame(frameRef.current);
+    if (isSignup) {
+      if (!fullName.trim()) {
+        setLocalError("Full name is required for sign up.");
+        return;
       }
-    };
-  }, []);
 
-  const updatePointer = (event: ReactPointerEvent<HTMLElement>) => {
-    if (event.pointerType !== "mouse") {
+      if (password !== confirmPassword) {
+        setLocalError("Passwords do not match.");
+        return;
+      }
+
+      await onSignup({
+        email: email.trim(),
+        password,
+        fullName: fullName.trim(),
+      });
       return;
     }
 
-    const page = pageRef.current;
-    if (!page) {
-      return;
-    }
-
-    const rect = page.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
-    const rx = rect.width === 0 ? 0.5 : x / rect.width;
-    const ry = rect.height === 0 ? 0.5 : y / rect.height;
-
-    pointerRef.current = {
-      active: true,
-      x,
-      y,
-      gridShiftX: (0.5 - rx) * 18,
-      gridShiftY: (0.5 - ry) * 18,
-      lensShiftX: (rx - 0.5) * 8,
-      lensShiftY: (ry - 0.5) * 8,
-    };
-
-    schedulePointerPaint();
-  };
-
-  const hidePointer = () => {
-    pointerRef.current = {
-      ...pointerRef.current,
-      active: false,
-      gridShiftX: 0,
-      gridShiftY: 0,
-      lensShiftX: 0,
-      lensShiftY: 0,
-    };
-
-    schedulePointerPaint();
+    await onLogin({
+      email: email.trim(),
+      password,
+    });
   };
 
   return (
     <main
       className="mapa-auth-page"
-      onPointerEnter={updatePointer}
-      onPointerLeave={hidePointer}
-      onPointerMove={updatePointer}
+      onPointerEnter={handlePointerEnter}
+      onPointerLeave={handlePointerLeave}
+      onPointerMove={handlePointerMove}
       ref={pageRef}
     >
       <div className="mapa-auth-page__orb mapa-auth-page__orb--left" />
@@ -227,7 +153,7 @@ export default function MapaguapaAuthPage() {
         <section className="mapa-auth-page__hero mapa-auth-page__fade-up">
           <div className="mapa-auth-page__wordmark-box">
             <div className="mapa-auth-page__wordmark-icon">
-              <HouseMark />
+              <HouseMark className="mapa-auth-page__house-icon" />
             </div>
             <div className="mapa-auth-page__wordmark-text">MAPAGUAPA</div>
           </div>
@@ -265,31 +191,47 @@ export default function MapaguapaAuthPage() {
           <div className="mapa-auth-page__tabs" role="tablist" aria-label="Authentication mode">
             <button
               className={`mapa-auth-page__tab${!isSignup ? " is-active" : ""}`}
-              onClick={() => setMode("login")}
+              onClick={() => {
+                setMode("login");
+                setLocalError(null);
+              }}
               type="button"
             >
               Log in
             </button>
             <button
               className={`mapa-auth-page__tab${isSignup ? " is-active" : ""}`}
-              onClick={() => setMode("signup")}
+              onClick={() => {
+                setMode("signup");
+                setLocalError(null);
+              }}
               type="button"
             >
               Sign up
             </button>
-          </div>
-
-          <form className="mapa-auth-page__form">
+          </div>          <form className="mapa-auth-page__form" onSubmit={handleSubmit}>
             {isSignup && (
               <label className="mapa-auth-page__field">
                 <span className="mapa-auth-page__field-label">Full name</span>
-                <input className="mapa-auth-page__input" placeholder="Juan Dela Cruz" type="text" />
+                <input
+                  className="mapa-auth-page__input"
+                  onChange={(event) => setFullName(event.target.value)}
+                  placeholder="Juan Dela Cruz"
+                  type="text"
+                  value={fullName}
+                />
               </label>
             )}
 
             <label className="mapa-auth-page__field">
               <span className="mapa-auth-page__field-label">Email</span>
-              <input className="mapa-auth-page__input" placeholder="you@example.com" type="email" />
+              <input
+                className="mapa-auth-page__input"
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="you@example.com"
+                type="email"
+                value={email}
+              />
             </label>
 
             <label className="mapa-auth-page__field">
@@ -297,8 +239,10 @@ export default function MapaguapaAuthPage() {
               <span className="mapa-auth-page__password-wrap">
                 <input
                   className="mapa-auth-page__input mapa-auth-page__input--password"
+                  onChange={(event) => setPassword(event.target.value)}
                   placeholder="Enter your password"
                   type={showPassword ? "text" : "password"}
+                  value={password}
                 />
                 <button
                   className="mapa-auth-page__toggle-password"
@@ -316,8 +260,10 @@ export default function MapaguapaAuthPage() {
                 <span className="mapa-auth-page__password-wrap">
                   <input
                     className="mapa-auth-page__input mapa-auth-page__input--password"
+                    onChange={(event) => setConfirmPassword(event.target.value)}
                     placeholder="Re-enter your password"
                     type={showConfirmPassword ? "text" : "password"}
+                    value={confirmPassword}
                   />
                   <button
                     className="mapa-auth-page__toggle-password"
@@ -342,8 +288,11 @@ export default function MapaguapaAuthPage() {
               </div>
             )}
 
-            <button className="mapa-auth-page__primary-button" type="button">
-              {copy.submitLabel}
+            {activeError && <p className="mapa-auth-page__feedback mapa-auth-page__feedback--error">{activeError}</p>}
+            {helperText && <p className="mapa-auth-page__feedback mapa-auth-page__feedback--info">{helperText}</p>}
+
+            <button className="mapa-auth-page__primary-button" disabled={isSubmitting} type="submit">
+              {isSubmitting ? "Please wait..." : copy.submitLabel}
             </button>
 
             <div className="mapa-auth-page__divider">
@@ -351,10 +300,10 @@ export default function MapaguapaAuthPage() {
             </div>
 
             <div className="mapa-auth-page__social-row">
-              <button className="mapa-auth-page__ghost-button" type="button">
+              <button className="mapa-auth-page__ghost-button" disabled type="button">
                 Google
               </button>
-              <button className="mapa-auth-page__ghost-button" type="button">
+              <button className="mapa-auth-page__ghost-button" disabled type="button">
                 Facebook
               </button>
             </div>
@@ -364,7 +313,10 @@ export default function MapaguapaAuthPage() {
             {copy.swapLead}{" "}
             <button
               className="mapa-auth-page__text-button"
-              onClick={() => setMode(isSignup ? "login" : "signup")}
+              onClick={() => {
+                setMode(isSignup ? "login" : "signup");
+                setLocalError(null);
+              }}
               type="button"
             >
               {copy.swapAction}

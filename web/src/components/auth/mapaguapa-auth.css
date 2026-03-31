@@ -598,4 +598,29 @@
   .mapa-auth-page__swap-text {
     margin-top: 0.7rem;
   }
+}.mapa-auth-page__feedback {
+  margin: 0;
+  padding: 0.72rem 0.82rem;
+  border-radius: 0.7rem;
+  font-size: 0.74rem;
+  line-height: 1.45;
+}
+
+.mapa-auth-page__feedback--error {
+  background: rgba(255, 92, 92, 0.12);
+  color: #ffd0d0;
+  border: 1px solid rgba(255, 120, 120, 0.14);
+}
+
+.mapa-auth-page__feedback--info {
+  background: rgba(37, 208, 148, 0.1);
+  color: #d8fff0;
+  border: 1px solid rgba(95, 244, 188, 0.14);
+}
+
+.mapa-auth-page__primary-button:disabled,
+.mapa-auth-page__ghost-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+  transform: none;
 }
