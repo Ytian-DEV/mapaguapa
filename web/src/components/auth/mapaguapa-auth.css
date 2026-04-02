@@ -115,19 +115,19 @@
 .mapa-auth-page__shell {
   position: relative;
   z-index: 1;
-  width: min(1040px, calc(100% - 3rem));
+  width: min(1040px, calc(100% - 2.4rem));
   height: 100dvh;
   margin: 0 auto;
-  padding: clamp(0.85rem, 2vh, 1.5rem) 0;
+  padding: clamp(0.55rem, 1.5vh, 1.05rem) 0;
   display: grid;
-  grid-template-columns: minmax(0, 33rem) minmax(0, 24.5rem);
-  justify-content: space-between;
-  gap: clamp(2rem, 4vw, 4.25rem);
+  grid-template-columns: minmax(0, 34rem) minmax(0, 25.5rem);
+  justify-content: center;
+  gap: clamp(1.2rem, 2.8vw, 2.5rem);
   align-items: center;
 }
 
 .mapa-auth-page__hero {
-  max-width: 33rem;
+  max-width: 37rem;
   display: grid;
   align-content: center;
 }
@@ -169,20 +169,21 @@
 
 .mapa-auth-page__hero-title {
   margin: 0.98rem 0 0;
-  max-width: 11.8ch;
+  max-width: 15.4ch;
   font-family: var(--font-display);
-  font-size: clamp(2.35rem, 4.3vw, 3.75rem);
+  font-size: clamp(1.7rem, 3.35vw, 2.8rem);
   font-weight: 400;
   line-height: 0.98;
   letter-spacing: -0.05em;
   color: #f6fff8;
   text-shadow: none;
   -webkit-text-stroke: 0 transparent;
+  text-wrap: balance;
 }
 
 .mapa-auth-page__hero-title span {
   display: block;
-  margin-top: 0.12rem;
+  margin-top: 0.08rem;
   color: #00d7a0;
   white-space: nowrap;
 }
@@ -209,9 +210,9 @@
 }
 
 .mapa-auth-page__info-panel {
-  max-width: 21.5rem;
-  margin-top: 1.05rem;
-  padding: 0.92rem 1rem;
+  max-width: 21rem;
+  margin-top: 0.92rem;
+  padding: 0.82rem 0.92rem;
   border-radius: 0.9rem;
 }
 
@@ -238,8 +239,8 @@
 
 .mapa-auth-page__panel {
   width: 100%;
-  max-width: 26rem;
-  padding: 1.3rem;
+  max-width: 25.5rem;
+  padding: 1.1rem;
   border-radius: 1.45rem;
   justify-self: end;
 }
@@ -252,15 +253,20 @@
 
 .mapa-auth-page__panel-title {
   margin: 0.28rem 0 0;
-  max-width: 11ch;
+  max-width: none;
   font-family: var(--font-display);
-  font-size: 1.84rem;
+  font-size: 1.46rem;
   font-weight: 400;
-  line-height: 0.92;
+  line-height: 0.88;
   letter-spacing: -0.05em;
   color: #f5fffa;
   text-shadow: none;
   -webkit-text-stroke: 0 transparent;
+}
+
+.mapa-auth-page__panel-title-line {
+  display: block;
+  white-space: nowrap;
 }
 
 .mapa-auth-page__panel-copy {
@@ -419,9 +425,12 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  color: rgba(241, 250, 246, 0.24);
-  font-size: 0.5rem;
-  letter-spacing: 0.2em;
+  min-height: 1.25rem;
+  color: rgba(127, 238, 198, 0.76);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
 }
 
 .mapa-auth-page__divider::before {
@@ -429,14 +438,18 @@
   position: absolute;
   inset-inline: 0;
   top: 50%;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(0, 215, 160, 0.2);
   transform: translateY(-50%);
 }
 
 .mapa-auth-page__divider span {
   position: relative;
-  padding: 0 0.7rem;
-  background: transparent;
+  padding: 0.08rem 0.72rem;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(10, 38, 28, 0.94), rgba(8, 29, 21, 0.92));
+  box-shadow:
+    0 0 0 1px rgba(0, 215, 160, 0.12),
+    inset 0 1px 0 rgba(127, 238, 198, 0.08);
 }
 
 .mapa-auth-page__social-row {
@@ -505,7 +518,7 @@
 
   .mapa-auth-page__panel {
     justify-self: start;
-    max-width: 26rem;
+    max-width: 25.5rem;
   }
 }
 
@@ -521,7 +534,8 @@
 
   .mapa-auth-page__hero-title {
     margin-top: 1rem;
-    font-size: clamp(2.3rem, 10vw, 3.7rem);
+    max-width: 14.2ch;
+    font-size: clamp(1.85rem, 8vw, 2.85rem);
   }
 
   .mapa-auth-page__hero-title span {
@@ -546,15 +560,17 @@
 
 @media (max-height: 820px) and (min-width: 1121px) {
   .mapa-auth-page__shell {
-    width: min(980px, calc(100% - 2.6rem));
-    padding: 0.6rem 0;
-    grid-template-columns: minmax(0, 31rem) minmax(0, 23.5rem);
-    gap: 1.75rem;
+    width: min(980px, calc(100% - 2.1rem));
+    padding: 0.45rem 0;
+    grid-template-columns: minmax(0, 33rem) minmax(0, 22.75rem);
+    justify-content: center;
+    gap: 1.1rem;
   }
 
   .mapa-auth-page__hero-title {
     margin-top: 0.8rem;
-    font-size: clamp(2.1rem, 4vw, 3.3rem);
+    max-width: 14.8ch;
+    font-size: clamp(1.6rem, 3.1vw, 2.55rem);
   }
 
   .mapa-auth-page__hero-copy {
@@ -573,7 +589,7 @@
   }
 
   .mapa-auth-page__panel-title {
-    font-size: 1.62rem;
+    font-size: 1.38rem;
   }
 
   .mapa-auth-page__panel-copy {

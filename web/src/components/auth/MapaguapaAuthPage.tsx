@@ -42,7 +42,7 @@ const heroHighlights: HeroHighlight[] = [
 
 const modeCopy = {
   login: {
-    title: "Welcome back to MAPAGUAPA",
+    titleLines: ["Welcome back to", "MAPAGUAPA"],
     description:
       "Sign in to explore available boarding houses and manage your saved places.",
     submitLabel: "Log in",
@@ -50,7 +50,7 @@ const modeCopy = {
     swapAction: "Create one",
   },
   signup: {
-    title: "Create your MAPAGUAPA account",
+    titleLines: ["Create your MAPAGUAPA", "account"],
     description:
       "Start your search for student-friendly spaces with a personalized account.",
     submitLabel: "Create account",
@@ -185,7 +185,13 @@ export default function MapaguapaAuthPage({
 
         <section className="mapa-auth-page__panel mapa-auth-page__fade-up mapa-auth-page__fade-up--delay-2">
           <p className="mapa-auth-page__panel-kicker">Account portal</p>
-          <h2 className="mapa-auth-page__panel-title">{copy.title}</h2>
+          <h2 className="mapa-auth-page__panel-title">
+            {copy.titleLines.map((line) => (
+              <span className="mapa-auth-page__panel-title-line" key={line}>
+                {line}
+              </span>
+            ))}
+          </h2>
           <p className="mapa-auth-page__panel-copy">{copy.description}</p>
 
           <div className="mapa-auth-page__tabs" role="tablist" aria-label="Authentication mode">
