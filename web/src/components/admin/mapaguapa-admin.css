@@ -330,15 +330,15 @@
   min-height: 2rem;
   padding: 0.2rem 0.78rem;
   border-radius: 999px;
-  border: 1px solid rgba(47, 143, 103, 0.24);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(232, 249, 240, 0.72));
-  color: #1d6c4d;
+  border: 1px solid rgba(28, 109, 77, 0.28);
+  background: linear-gradient(180deg, rgba(245, 255, 250, 0.94), rgba(219, 246, 232, 0.94));
+  color: #15543b;
   font-size: 0.84rem;
   font-weight: 700;
   letter-spacing: -0.01em;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.82),
-    0 4px 12px rgba(0, 215, 160, 0.06);
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 4px 12px rgba(0, 215, 160, 0.08);
   backdrop-filter: blur(12px) saturate(120%);
   -webkit-backdrop-filter: blur(12px) saturate(120%);
 }
@@ -347,9 +347,22 @@
 .mapa-admin-page__preview-card .mapa-admin-page__pill,
 .mapa-admin-page__detail-card .mapa-admin-page__pill,
 .mapa-admin-page__user-row .mapa-admin-page__pill {
-  border-color: rgba(47, 143, 103, 0.2);
-  background: linear-gradient(180deg, rgba(246, 255, 250, 0.78), rgba(226, 247, 236, 0.8));
-  color: #1d6c4d;
+  border-color: rgba(28, 109, 77, 0.24);
+  background: linear-gradient(180deg, rgba(246, 255, 250, 0.96), rgba(224, 248, 236, 0.96));
+  color: #15543b;
+}
+
+.mapa-admin-page__compact-card .mapa-admin-page__nav-badge,
+.mapa-admin-page__preview-card .mapa-admin-page__nav-badge,
+.mapa-admin-page__directory-card .mapa-admin-page__nav-badge,
+.mapa-admin-page__section-card .mapa-admin-page__nav-badge,
+.mapa-admin-page__dialog .mapa-admin-page__nav-badge {
+  border-color: rgba(24, 95, 67, 0.26);
+  background: linear-gradient(180deg, rgba(245, 255, 250, 0.98), rgba(219, 246, 232, 0.96));
+  color: #145038;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    0 6px 16px rgba(0, 215, 160, 0.1);
 }
 
 .mapa-admin-page__nav {
