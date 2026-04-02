@@ -226,6 +226,7 @@
 .mapa-admin-page__profile-name {
   margin: 0;
   font-family: var(--font-display);
+  font-style: normal !important;
   letter-spacing: -0.04em;
   color: #22352c;
 }

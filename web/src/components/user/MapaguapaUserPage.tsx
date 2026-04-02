@@ -104,6 +104,39 @@ function createSectionTitle(area: string) {
   return area === "Baybay City" ? "Student stays around Baybay City" : `Student stays around ${area}`;
 }
 
+function formatPesoLabel(label: string | null | undefined) {
+  const value = label?.trim();
+  if (!value || value.startsWith("₱")) {
+    return value || "Not listed";
+  }
+
+  if (value === allPricesLabel) {
+    return value;
+  }
+
+  const rangeMatch = value.match(/^(\d[\d,]*)(?:\s*-\s*)(\d[\d,]*)$/);
+  if (rangeMatch) {
+    return `₱${rangeMatch[1]}-${rangeMatch[2]}`;
+  }
+
+  const lessThanMatch = value.match(/^Less than\s+(\d[\d,]*)$/i);
+  if (lessThanMatch) {
+    return `Less than ₱${lessThanMatch[1]}`;
+  }
+
+  const orMoreMatch = value.match(/^(\d[\d,]*)\s+or more$/i);
+  if (orMoreMatch) {
+    return `₱${orMoreMatch[1]} or more`;
+  }
+
+  const exactMatch = value.match(/^(\d[\d,]*)$/);
+  if (exactMatch) {
+    return `₱${exactMatch[1]}`;
+  }
+
+  return value;
+}
+
 function sortPhotos(listing: ListingWithPhotos | null) {
   return [...(listing?.listing_photos ?? [])].sort((left, right) => {
     if (left.is_cover !== right.is_cover) {
@@ -263,7 +296,7 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
     activeFeatures.length;
   const modalHighlights = openListing
     ? [
-        { label: "Budget", value: openListing.monthly_rental_label },
+        { label: "Budget", value: formatPesoLabel(openListing.monthly_rental_label) },
         {
           label: "Rooms",
           value: `${openListing.rooms_available ?? 0} room${(openListing.rooms_available ?? 0) === 1 ? "" : "s"}`,
@@ -281,7 +314,7 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
           tone: "overview",
           items: [
             { label: "Address", value: openListing.address },
-            { label: "Price range", value: openListing.monthly_rental_label },
+            { label: "Price range", value: formatPesoLabel(openListing.monthly_rental_label) },
             { label: "Property type", value: openListing.accommodation_type },
             { label: "Setup", value: openListing.exclusivity || "Open to students" },
           ],
@@ -473,7 +506,10 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
         <section className="mapa-user-page__hero">
           <div className="mapa-user-page__hero-main">
             <p className="mapa-user-page__eyebrow">Browse student-friendly accommodations</p>
-            <h2 className="mapa-user-page__hero-title">Find student stays that fit your budget and routine.</h2>
+            <h2 className="mapa-user-page__hero-title">
+              <span className="mapa-user-page__hero-title-line">Find student stays</span>
+              <span className="mapa-user-page__hero-title-line">that fit your budget and routine.</span>
+            </h2>
           </div>
 
           <div className="mapa-user-page__hero-side">
@@ -573,7 +609,7 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
                     onClick={() => setActivePrice(option)}
                     type="button"
                   >
-                    {option}
+                    {formatPesoLabel(option)}
                   </button>
                 ))}
               </div>
@@ -673,7 +709,7 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
                               <h3 className="mapa-user-page__listing-title">{listing.name}</h3>
                               <p className="mapa-user-page__listing-address">{listing.address}</p>
                             </div>
-                            <span className="mapa-user-page__listing-price">{listing.monthly_rental_label}</span>
+                            <span className="mapa-user-page__listing-price">{formatPesoLabel(listing.monthly_rental_label)}</span>
                           </div>
 
                           <p className="mapa-user-page__listing-summary">{fallbackDescription(listing)}</p>
@@ -705,7 +741,7 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
                 <p className="mapa-user-page__listing-address">{openListing.address}</p>
               </div>
               <div className="mapa-user-page__modal-actions">
-                <span className="mapa-user-page__modal-price">{openListing.monthly_rental_label}</span>
+                <span className="mapa-user-page__modal-price">{formatPesoLabel(openListing.monthly_rental_label)}</span>
                 <button className="mapa-user-page__modal-close" onClick={() => setOpenListingId(null)} type="button">
                   Close
                 </button>
@@ -731,7 +767,7 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
                       <p className="mapa-user-page__modal-hero-address">{openListing.address}</p>
                     </div>
                     <div className="mapa-user-page__modal-hero-tags">
-                      <span>{openListing.monthly_rental_label}</span>
+                      <span>{formatPesoLabel(openListing.monthly_rental_label)}</span>
                       <span>{openListing.accommodation_type}</span>
                     </div>
                   </div>
