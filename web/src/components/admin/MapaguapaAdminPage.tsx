@@ -17,6 +17,7 @@ import {
   type ListingWithPhotos,
   type Profile,
 } from "../../lib/models";
+import { compressImageForUpload } from "../../lib/imageCompression";
 import { listingPhotosBucket, supabase } from "../../lib/supabase";
 import HouseMark from "../shared/HouseMark";
 import { usePointerGlow } from "../shared/usePointerGlow";
@@ -129,6 +130,7 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
   const [archiving, setArchiving] = useState(false);
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
   const [photoActionId, setPhotoActionId] = useState<string | null>(null);
+  const [photoDeleteTarget, setPhotoDeleteTarget] = useState<ListingPhotoRow | null>(null);
   const [draggedPhotoId, setDraggedPhotoId] = useState<string | null>(null);
   const [dragOverPhotoId, setDragOverPhotoId] = useState<string | null>(null);
   const [reorderingPhotos, setReorderingPhotos] = useState(false);
@@ -193,6 +195,21 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
       setEditPendingPhotos([]);
     }
   }, [section, selectedListing]);
+
+  useEffect(() => {
+    if (!photoDeleteTarget) {
+      return undefined;
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape" && !photoActionId) {
+        setPhotoDeleteTarget(null);
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [photoDeleteTarget, photoActionId]);
 
   async function loadDashboard(preferredListingId?: string) {
     const client = supabase;
@@ -320,6 +337,20 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
     setEditPendingPhotos((current) => current.filter((_, index) => index !== indexToRemove));
   }
 
+  function openPhotoDeleteDialog(photo: ListingPhotoRow) {
+    setPhotoDeleteTarget(photo);
+    setError(null);
+    setFeedback(null);
+  }
+
+  function closePhotoDeleteDialog() {
+    if (photoActionId) {
+      return;
+    }
+
+    setPhotoDeleteTarget(null);
+  }
+
   function startPhotoDrag(photoId: string) {
     if (reorderingPhotos) {
       return;
@@ -394,20 +425,21 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
     const uploadStamp = Date.now();
 
     for (const [index, file] of files.entries()) {
+      const optimizedFile = await compressImageForUpload(file);
       const extension = file.name.includes(".")
-        ? file.name.split(".").pop()?.toLowerCase() || "jpg"
+        ? optimizedFile.name.split(".").pop()?.toLowerCase() || "jpg"
         : "jpg";
-      const fileStem = slugifyPathSegment(file.name.replace(/\.[^.]+$/, "")) || `photo-${index + 1}`;
+      const fileStem = slugifyPathSegment(optimizedFile.name.replace(/\.[^.]+$/, "")) || `photo-${index + 1}`;
       const listingStem = slugifyPathSegment(listingName) || "listing";
       const uniqueId = typeof crypto !== "undefined" && "randomUUID" in crypto
         ? crypto.randomUUID().slice(0, 8)
         : `${uploadStamp}-${index + 1}`;
       const storagePath = `admin/${listingId}/${uploadStamp}-${index + 1}-${listingStem}-${uniqueId}-${fileStem}.${extension}`;
 
-      const { error: uploadError } = await client.storage.from(listingPhotosBucket).upload(storagePath, file, {
+      const { error: uploadError } = await client.storage.from(listingPhotosBucket).upload(storagePath, optimizedFile, {
         cacheControl: "3600",
         upsert: false,
-        contentType: file.type || undefined,
+        contentType: optimizedFile.type || undefined,
       });
 
       if (uploadError) {
@@ -565,11 +597,6 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
       return;
     }
 
-    const confirmed = window.confirm(`Remove ${photo.caption || photo.alt_text || "this photo"} from ${selectedListing.name}?`);
-    if (!confirmed) {
-      return;
-    }
-
     setPhotoActionId(photo.id);
     setError(null);
     setFeedback(null);
@@ -610,6 +637,7 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
       setError(removeError instanceof Error ? removeError.message : "Failed to remove the photo.");
     } finally {
       setPhotoActionId(null);
+      setPhotoDeleteTarget(null);
     }
   }
 
@@ -856,7 +884,7 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
                     <div>
                       <p className="mapa-admin-page__panel-kicker">Listing photos</p>
                       <h4 className="mapa-admin-page__compact-title">Upload photos for this new listing</h4>
-                      <p className="mapa-admin-page__card-copy">Select one or more images. The first photo becomes the cover image after the listing is created.</p>
+                      <p className="mapa-admin-page__card-copy">Select one or more images. Large uploads are optimized before they go to storage, and the first photo becomes the cover image after the listing is created.</p>
                     </div>
                     <label className="mapa-admin-page__photo-upload-input">
                       <span>Add photos</span>
@@ -1035,7 +1063,7 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
                                     </div>
                                     <div className="mapa-admin-page__photo-library-actions">
                                       <button className="mapa-admin-page__action mapa-admin-page__action--ghost mapa-admin-page__action--small" disabled={photo.is_cover || isBusy || reorderingPhotos} onClick={() => void setCoverPhoto(photo.id)} type="button">{isBusy && !photo.is_cover ? "Updating..." : photo.is_cover ? "Cover photo" : "Set cover"}</button>
-                                      <button className="mapa-admin-page__action mapa-admin-page__action--danger mapa-admin-page__action--small" disabled={isBusy || reorderingPhotos} onClick={() => void removeListingPhoto(photo)} type="button">{isBusy ? "Removing..." : "Delete"}</button>
+                                      <button className="mapa-admin-page__action mapa-admin-page__action--danger mapa-admin-page__action--small" disabled={isBusy || reorderingPhotos} onClick={() => openPhotoDeleteDialog(photo)} type="button">{isBusy ? "Removing..." : "Delete"}</button>
                                     </div>
                                   </article>
                                 );
@@ -1049,7 +1077,7 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
                             <div>
                               <p className="mapa-admin-page__panel-kicker">Add more photos</p>
                               <h4 className="mapa-admin-page__compact-title">Upload fresh images for this listing</h4>
-                              <p className="mapa-admin-page__card-copy">New uploads are added to the gallery and can become the cover photo if the listing does not have one yet.</p>
+                              <p className="mapa-admin-page__card-copy">New uploads are optimized before storage, then added to the gallery and can become the cover photo if the listing does not have one yet.</p>
                             </div>
                             <label className="mapa-admin-page__photo-upload-input">
                               <span>Select images</span>
@@ -1212,6 +1240,39 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
           </div>
         </section>
       </div>
+
+      {photoDeleteTarget && selectedListing ? (
+        <div className="mapa-admin-page__dialog-backdrop" onClick={closePhotoDeleteDialog} role="presentation">
+          <div
+            aria-labelledby="mapa-admin-photo-delete-title"
+            aria-modal="true"
+            className="mapa-admin-page__dialog"
+            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+          >
+            <p className="mapa-admin-page__panel-kicker">Delete photo</p>
+            <h3 className="mapa-admin-page__dialog-title" id="mapa-admin-photo-delete-title">
+              Remove this image from {selectedListing.name}?
+            </h3>
+            <p className="mapa-admin-page__card-copy">
+              {photoDeleteTarget.caption || photoDeleteTarget.alt_text || "This photo"} will be removed from the gallery and deleted from storage.
+              {photoDeleteTarget.is_cover ? " The next available image will become the cover photo." : ""}
+            </p>
+            <div
+              className="mapa-admin-page__dialog-preview"
+              style={toPublicPhotoUrl(photoDeleteTarget) ? { backgroundImage: `linear-gradient(rgba(8, 19, 15, 0.14), rgba(8, 19, 15, 0.42)), url(${toPublicPhotoUrl(photoDeleteTarget)})` } : undefined}
+            />
+            <div className="mapa-admin-page__form-actions mapa-admin-page__dialog-actions">
+              <button className="mapa-admin-page__action mapa-admin-page__action--ghost" disabled={photoActionId === photoDeleteTarget.id} onClick={closePhotoDeleteDialog} type="button">
+                Keep photo
+              </button>
+              <button className="mapa-admin-page__action mapa-admin-page__action--danger" disabled={photoActionId === photoDeleteTarget.id} onClick={() => void removeListingPhoto(photoDeleteTarget)} type="button">
+                {photoActionId === photoDeleteTarget.id ? "Deleting..." : "Delete photo"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }
