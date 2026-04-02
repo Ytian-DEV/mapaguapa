@@ -2,7 +2,12 @@
 
 @font-face {
   font-family: "Agoma";
-  src: local("Agoma"), local("AGOMA"), local("Agoma Display");
+  /* Add licensed Agoma font files under web/public/fonts if you want to bundle the real typeface. */
+  src:
+    local("Agoma"),
+    local("AGOMA"),
+    local("Agoma Display");
+  font-style: normal;
   font-display: swap;
 }
 
@@ -10,6 +15,20 @@
   font-family: "Inter", Arial, sans-serif;
   --font-body: "Inter", Arial, sans-serif;
   --font-display: "Agoma", "Inter", Arial, sans-serif;
+  --mapa-emerald-950: #04110c;
+  --mapa-emerald-900: #07150f;
+  --mapa-emerald-850: #072117;
+  --mapa-emerald-800: #0b2b1d;
+  --mapa-emerald-700: #164a35;
+  --mapa-mint-500: #00d7a0;
+  --mapa-mint-400: #34d399;
+  --mapa-mint-300: #7feec6;
+  --mapa-mint-200: #b5f3da;
+  --mapa-mint-100: #e9fbf2;
+  --mapa-surface-0: #f6fff9;
+  --mapa-surface-1: #eefaf3;
+  --mapa-ink: #163126;
+  --mapa-ink-soft: rgba(22, 49, 38, 0.72);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;

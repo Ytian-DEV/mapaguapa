@@ -1,18 +1,18 @@
 .mapa-admin-page {
-  --admin-bg: #eef5ef;
-  --admin-surface: rgba(255, 255, 255, 0.84);
-  --admin-surface-strong: rgba(255, 255, 255, 0.94);
-  --admin-surface-soft: rgba(245, 250, 246, 0.88);
-  --admin-border: rgba(22, 74, 53, 0.1);
-  --admin-border-strong: rgba(22, 74, 53, 0.16);
-  --admin-shadow: 0 22px 52px rgba(13, 41, 30, 0.12);
-  --admin-shadow-soft: 0 14px 32px rgba(15, 43, 31, 0.08);
+  --admin-bg: #07150f;
+  --admin-surface: rgba(246, 255, 250, 0.88);
+  --admin-surface-strong: rgba(251, 255, 252, 0.94);
+  --admin-surface-soft: rgba(238, 249, 243, 0.9);
+  --admin-border: rgba(11, 52, 36, 0.1);
+  --admin-border-strong: rgba(11, 52, 36, 0.16);
+  --admin-shadow: 0 22px 52px rgba(4, 17, 12, 0.22);
+  --admin-shadow-soft: 0 14px 32px rgba(7, 21, 15, 0.12);
   --admin-ink: #20332a;
   --admin-ink-soft: #5f7469;
-  --admin-accent: #164a35;
-  --admin-accent-strong: #0d3827;
-  --admin-accent-soft: #2f8f67;
-  --admin-pill: #e1efe6;
+  --admin-accent: #00d7a0;
+  --admin-accent-strong: #072117;
+  --admin-accent-soft: #7feec6;
+  --admin-pill: rgba(0, 215, 160, 0.08);
   --admin-danger: #a25555;
   --admin-danger-bg: #f8eded;
   --pointer-x: 68%;
@@ -26,9 +26,9 @@
   min-height: 100vh;
   overflow: hidden;
   background:
-    radial-gradient(circle at 14% 18%, rgba(65, 151, 114, 0.18), transparent 30%),
-    radial-gradient(circle at 84% 12%, rgba(92, 173, 133, 0.14), transparent 26%),
-    linear-gradient(180deg, #eaf2eb 0%, #edf4ed 42%, #e8f0e8 100%);
+    radial-gradient(circle at 14% 18%, rgba(31, 255, 174, 0.12), transparent 30%),
+    radial-gradient(circle at 84% 12%, rgba(0, 224, 152, 0.08), transparent 26%),
+    linear-gradient(180deg, #07150f 0%, #0b241a 28%, #eff8f2 100%);
   color: var(--admin-ink);
   font-family: var(--font-body);
 }
@@ -174,6 +174,9 @@
   gap: 1rem;
   padding: 1rem;
   border-radius: 30px;
+  border: 1px solid rgba(127, 238, 198, 0.14);
+  background: linear-gradient(180deg, rgba(7, 21, 15, 0.92), rgba(7, 33, 23, 0.9));
+  box-shadow: 0 26px 54px rgba(4, 17, 12, 0.3);
   backdrop-filter: blur(16px);
 }
 
@@ -195,10 +198,10 @@
   width: 48px;
   height: 48px;
   border-radius: 16px;
-  border: 1px solid rgba(22, 74, 53, 0.12);
-  background: linear-gradient(180deg, rgba(228, 241, 233, 0.96), rgba(219, 234, 225, 0.88));
+  border: 1px solid rgba(127, 238, 198, 0.16);
+  background: linear-gradient(180deg, rgba(0, 215, 160, 0.12), rgba(0, 215, 160, 0.05));
   color: var(--admin-accent);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .mapa-admin-page__house-icon {
@@ -220,18 +223,18 @@
 .mapa-admin-page__brand-title,
 .mapa-admin-page__workspace-title,
 .mapa-admin-page__section-title,
-.mapa-admin-page__profile-name,
-.mapa-admin-page__stat-value {
+.mapa-admin-page__profile-name {
   margin: 0;
-  font-family: var(--font-body);
+  font-family: var(--font-display);
   letter-spacing: -0.04em;
   color: #22352c;
 }
 
 .mapa-admin-page__brand-title {
   font-size: clamp(2rem, 2vw, 2.35rem);
-  font-weight: 800;
+  font-weight: 400;
   line-height: 0.98;
+  color: #f4fff8;
 }
 
 .mapa-admin-page__profile-card {
@@ -239,10 +242,12 @@
   gap: 0.55rem;
   padding: 1rem;
   border-radius: 24px;
+  background: linear-gradient(180deg, rgba(249, 255, 251, 0.94), rgba(236, 249, 243, 0.9));
 }
 
 .mapa-admin-page__profile-name {
   font-size: 1rem;
+  font-family: var(--font-body);
   font-weight: 800;
   line-height: 1.15;
 }
@@ -320,33 +325,37 @@
 }
 
 .mapa-admin-page__nav-item:hover {
-  background: rgba(239, 247, 241, 0.92);
-  border-color: rgba(22, 74, 53, 0.08);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(127, 238, 198, 0.12);
 }
 
 .mapa-admin-page__nav-item.is-active {
-  background: linear-gradient(180deg, #164a35, #123e2d);
-  box-shadow: 0 16px 30px rgba(16, 53, 38, 0.2);
+  background: linear-gradient(90deg, #00d7a0 0%, #34d399 100%);
+  box-shadow: 0 16px 30px rgba(0, 215, 160, 0.14);
 }
 
 .mapa-admin-page__nav-label {
   display: block;
   margin-bottom: 0.18rem;
-  color: #23342c;
+  color: rgba(244, 255, 248, 0.92);
   font-size: 1.02rem;
   font-weight: 800;
   letter-spacing: -0.03em;
 }
 
+.mapa-admin-page__nav-caption {
+  color: rgba(210, 239, 223, 0.62);
+}
+
 .mapa-admin-page__nav-item.is-active .mapa-admin-page__nav-label,
 .mapa-admin-page__nav-item.is-active .mapa-admin-page__nav-caption {
-  color: #f4faf6;
+  color: #062016;
 }
 
 .mapa-admin-page__nav-item.is-active .mapa-admin-page__nav-badge {
-  background: rgba(255, 255, 255, 0.16);
-  border-color: rgba(255, 255, 255, 0.14);
-  color: #eff8f2;
+  background: rgba(6, 32, 22, 0.08);
+  border-color: rgba(6, 32, 22, 0.12);
+  color: #062016;
 }
 
 .mapa-admin-page__sidebar-footer {
@@ -358,8 +367,8 @@
   min-height: 3.35rem;
   border-radius: 18px;
   border-color: var(--admin-border);
-  background: rgba(246, 250, 247, 0.9);
-  color: #22352c;
+  background: linear-gradient(90deg, #2add98 0%, #34d399 100%);
+  color: #062016;
   cursor: pointer;
   font-size: 1.02rem;
   font-weight: 700;
@@ -385,12 +394,13 @@
   gap: 1rem;
   padding: 1.25rem 1.35rem;
   border-radius: 30px;
+  background: linear-gradient(180deg, rgba(251, 255, 252, 0.94), rgba(239, 249, 244, 0.9));
 }
 
 .mapa-admin-page__workspace-title {
   font-size: clamp(2.2rem, 2.4vw, 3rem);
-  font-weight: 800;
-  line-height: 1.02;
+  font-weight: 400;
+  line-height: 0.96;
 }
 
 .mapa-admin-page__workspace-copy {
@@ -423,9 +433,9 @@
 
 .mapa-admin-page__action--primary {
   border-color: rgba(18, 62, 45, 0.12);
-  background: linear-gradient(180deg, #1c5d43, #164a35);
-  color: #f4fbf6;
-  box-shadow: 0 14px 24px rgba(18, 62, 45, 0.2);
+  background: linear-gradient(90deg, #00d7a0 0%, #34d399 100%);
+  color: #062016;
+  box-shadow: 0 14px 24px rgba(0, 215, 160, 0.16);
 }
 
 .mapa-admin-page__action--danger {
@@ -495,7 +505,8 @@
 
 .mapa-admin-page__stat-value {
   font-size: clamp(2.15rem, 2vw, 2.65rem);
-  font-weight: 800;
+  font-family: var(--font-display);
+  font-weight: 400;
   line-height: 0.9;
 }
 
@@ -553,8 +564,8 @@
 
 .mapa-admin-page__section-title {
   font-size: clamp(1.45rem, 1.55vw, 1.9rem);
-  font-weight: 800;
-  line-height: 1.04;
+  font-weight: 400;
+  line-height: 0.98;
 }
 
 .mapa-admin-page__list-stack,
