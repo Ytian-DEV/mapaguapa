@@ -1,15 +1,5 @@
+@import url("https://fonts.cdnfonts.com/css/agoma");
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
-
-@font-face {
-  font-family: "Agoma";
-  /* Add licensed Agoma font files under web/public/fonts if you want to bundle the real typeface. */
-  src:
-    local("Agoma"),
-    local("AGOMA"),
-    local("Agoma Display");
-  font-style: normal;
-  font-display: swap;
-}
 
 :root {
   font-family: "Inter", Arial, sans-serif;
