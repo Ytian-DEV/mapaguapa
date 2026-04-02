@@ -85,6 +85,35 @@ function formatFileSize(bytes: number) {
   return `${bytes} B`;
 }
 
+function formatPesoLabel(label: string | null | undefined) {
+  const value = label?.trim();
+  if (!value || value.startsWith("\u20b1")) {
+    return value || "Not listed";
+  }
+
+  const rangeMatch = value.match(/^(\d[\d,]*)(?:\s*-\s*)(\d[\d,]*)$/);
+  if (rangeMatch) {
+    return `\u20b1${rangeMatch[1]}-${rangeMatch[2]}`;
+  }
+
+  const lessThanMatch = value.match(/^Less than\s+(\d[\d,]*)$/i);
+  if (lessThanMatch) {
+    return `Less than \u20b1${lessThanMatch[1]}`;
+  }
+
+  const orMoreMatch = value.match(/^(\d[\d,]*)\s+or more$/i);
+  if (orMoreMatch) {
+    return `\u20b1${orMoreMatch[1]} or more`;
+  }
+
+  const exactMatch = value.match(/^(\d[\d,]*)$/);
+  if (exactMatch) {
+    return `\u20b1${exactMatch[1]}`;
+  }
+
+  return value;
+}
+
 export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdminPageProps) {
   const [section, setSection] = useState<AdminSection>("overview");
   const [listings, setListings] = useState<ListingWithPhotos[]>([]);
@@ -654,13 +683,13 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
         <aside className="mapa-admin-page__sidebar mapa-admin-page__fade-up">
           <div className="mapa-admin-page__sidebar-top">
             <div className="mapa-admin-page__brand-box">
-              <div className="mapa-admin-page__brand-icon">
-                <HouseMark className="mapa-admin-page__house-icon" />
+              <div className="mapa-admin-page__brand-row">
+                <div className="mapa-admin-page__brand-icon">
+                  <HouseMark className="mapa-admin-page__house-icon" />
+                </div>
+                <p className="mapa-admin-page__eyebrow mapa-admin-page__brand-wordmark">MAPAGUAPA</p>
               </div>
-              <div>
-                <p className="mapa-admin-page__eyebrow">MAPAGUAPA</p>
-                <h1 className="mapa-admin-page__brand-title">Admin dashboard</h1>
-              </div>
+              <h1 className="mapa-admin-page__brand-title">Admin dashboard</h1>
             </div>
 
             <div className="mapa-admin-page__profile-card">
@@ -762,7 +791,7 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
                             <h4 className="mapa-admin-page__compact-title">{listing.name}</h4>
                             <p className="mapa-admin-page__compact-copy">{listing.address}</p>
                           </div>
-                          <span className="mapa-admin-page__nav-badge">{listing.monthly_rental_label}</span>
+                          <span className="mapa-admin-page__nav-badge">{formatPesoLabel(listing.monthly_rental_label)}</span>
                         </button>
                       ))}
                     </div>
@@ -864,13 +893,13 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
                           <p className="mapa-admin-page__panel-kicker">Preview</p>
                           <h3 className="mapa-admin-page__section-title">Draft listing preview</h3>
                         </div>
-                        <span className="mapa-admin-page__nav-badge">{draft.monthlyRentalLabel.trim() || "Draft"}</span>
+                        <span className="mapa-admin-page__nav-badge">{draft.monthlyRentalLabel.trim() ? formatPesoLabel(draft.monthlyRentalLabel) : "Draft"}</span>
                       </div>
                       <article className="mapa-admin-page__preview-card">
                         <div className="mapa-admin-page__preview-copy">
                           <h4 className="mapa-admin-page__section-title">{draft.name.trim() || "Untitled listing"}</h4>
                           <p className="mapa-admin-page__compact-copy">{draft.address.trim() || "Address will appear here once you fill in the form."}</p>
-                          <p className="mapa-admin-page__card-copy">{draft.description.trim() || `${draft.accommodationType || "Listing"} in ${draft.address.trim() || "your selected location"} with ${draft.monthlyRentalLabel.toLowerCase()} monthly rent.`}</p>
+                          <p className="mapa-admin-page__card-copy">{draft.description.trim() || `${draft.accommodationType || "Listing"} in ${draft.address.trim() || "your selected location"} with ${formatPesoLabel(draft.monthlyRentalLabel).toLowerCase()} monthly rent.`}</p>
                           <div className="mapa-admin-page__preview-meta">
                             <span className="mapa-admin-page__pill">{draft.accommodationType.trim() || "Listing"}</span>
                             {draft.exclusivity.trim() && <span className="mapa-admin-page__pill">{draft.exclusivity}</span>}
@@ -914,7 +943,7 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
                           <h4 className="mapa-admin-page__compact-title">{listing.name}</h4>
                           <p className="mapa-admin-page__compact-copy">{listing.address}</p>
                         </div>
-                        <span className="mapa-admin-page__nav-badge">{listing.monthly_rental_label}</span>
+                        <span className="mapa-admin-page__nav-badge">{formatPesoLabel(listing.monthly_rental_label)}</span>
                       </button>
                     ))}
                   </div>
@@ -936,12 +965,15 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
                           <div className="mapa-admin-page__hero-photo" style={getListingCover(selectedListing) ? { backgroundImage: `linear-gradient(rgba(8, 19, 15, 0.14), rgba(8, 19, 15, 0.44)), url(${getListingCover(selectedListing)})` } : undefined} />
                           <div className="mapa-admin-page__mini-photo-grid">
                             {selectedPhotos.length > 0 ? (
-                              selectedPhotos.map((photo) => {
+                              selectedPhotos.map((photo, index) => {
                                 const photoUrl = toPublicPhotoUrl(photo);
                                 return (
                                   <article className="mapa-admin-page__mini-photo-card" key={photo.id}>
                                     <div className="mapa-admin-page__mini-photo" style={photoUrl ? { backgroundImage: `linear-gradient(rgba(8, 19, 15, 0.14), rgba(8, 19, 15, 0.44)), url(${photoUrl})` } : undefined} />
-                                    <p className="mapa-admin-page__compact-title">{photo.caption || photo.alt_text || "Listing photo"}</p>
+                                    <div className="mapa-admin-page__mini-photo-copy">
+                                      <p className="mapa-admin-page__mini-photo-name">{photo.caption || photo.alt_text || `Photo ${index + 1}`}</p>
+                                      <p className="mapa-admin-page__mini-photo-meta">{photo.is_cover ? "Cover image" : `Gallery photo ${index + 1}`}</p>
+                                    </div>
                                   </article>
                                 );
                               })
@@ -999,7 +1031,7 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
                                     <div className="mapa-admin-page__photo-library-image" style={photoUrl ? { backgroundImage: `linear-gradient(rgba(8, 19, 15, 0.12), rgba(8, 19, 15, 0.34)), url(${photoUrl})` } : undefined} />
                                     <div className="mapa-admin-page__photo-library-copy">
                                       <p className="mapa-admin-page__compact-title">{photo.caption || photo.alt_text || "Listing photo"}</p>
-                                      <p className="mapa-admin-page__compact-copy">{photo.is_cover ? "Current cover photo" : reorderingPhotos ? "Updating order..." : `Photo ${photo.sort_order + 1} • Drag to reorder`}</p>
+                                      <p className="mapa-admin-page__compact-copy">{photo.is_cover ? "Current cover photo" : reorderingPhotos ? "Updating order..." : `Photo ${photo.sort_order + 1} ï¿½ Drag to reorder`}</p>
                                     </div>
                                     <div className="mapa-admin-page__photo-library-actions">
                                       <button className="mapa-admin-page__action mapa-admin-page__action--ghost mapa-admin-page__action--small" disabled={photo.is_cover || isBusy || reorderingPhotos} onClick={() => void setCoverPhoto(photo.id)} type="button">{isBusy && !photo.is_cover ? "Updating..." : photo.is_cover ? "Cover photo" : "Set cover"}</button>
