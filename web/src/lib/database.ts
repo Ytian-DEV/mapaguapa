@@ -66,6 +66,8 @@ export type Database = {
           contact_person: string | null;
           contact_number: string | null;
           other_contact_information: string | null;
+          location_lat: number | null;
+          location_lng: number | null;
           raw_import_data: Json;
           source_row_number: number | null;
           status: "active" | "deleted";

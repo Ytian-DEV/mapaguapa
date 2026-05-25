@@ -51,6 +51,8 @@ export const listingSelect = `
   contact_person,
   contact_number,
   other_contact_information,
+  location_lat,
+  location_lng,
   raw_import_data,
   source_row_number,
   status,
@@ -99,6 +101,8 @@ export type ListingDraft = {
   security: boolean;
   laundryArea: boolean;
   dryingArea: boolean;
+  locationLat: string;
+  locationLng: string;
 };
 
 export const emptyListingDraft: ListingDraft = {
@@ -125,6 +129,8 @@ export const emptyListingDraft: ListingDraft = {
   security: false,
   laundryArea: false,
   dryingArea: false,
+  locationLat: "",
+  locationLng: "",
 };
 
 export function parseSignalsInput(raw: string) {
@@ -163,11 +169,15 @@ export function listingToDraft(listing: ListingRow | null | undefined): ListingD
     security: Boolean(listing.has_security_cctv),
     laundryArea: Boolean(listing.has_laundry_area),
     dryingArea: Boolean(listing.has_drying_area),
+    locationLat: listing.location_lat == null ? "" : String(listing.location_lat),
+    locationLng: listing.location_lng == null ? "" : String(listing.location_lng),
   };
 }
 
 export function draftToListingPayload(draft: ListingDraft): Database["public"]["Tables"]["listings"]["Insert"] {
   const rooms = Number.parseInt(draft.roomsAvailable, 10);
+  const latitude = Number.parseFloat(draft.locationLat);
+  const longitude = Number.parseFloat(draft.locationLng);
 
   return {
     name: draft.name.trim(),
@@ -194,6 +204,8 @@ export function draftToListingPayload(draft: ListingDraft): Database["public"]["
     has_security_cctv: draft.security,
     has_laundry_area: draft.laundryArea,
     has_drying_area: draft.dryingArea,
+    location_lat: Number.isFinite(latitude) ? latitude : null,
+    location_lng: Number.isFinite(longitude) ? longitude : null,
     status: "active",
   };
 }

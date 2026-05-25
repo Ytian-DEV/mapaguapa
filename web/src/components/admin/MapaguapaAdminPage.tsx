@@ -20,6 +20,7 @@ import {
 import { compressImageForUpload } from "../../lib/imageCompression";
 import { listingPhotosBucket, supabase } from "../../lib/supabase";
 import HouseMark from "../shared/HouseMark";
+import { PropertyMap, type PropertyCoordinates } from "../shared/PropertyMap";
 import { usePointerGlow } from "../shared/usePointerGlow";
 import "./mapaguapa-admin.css";
 
@@ -115,6 +116,17 @@ function formatPesoLabel(label: string | null | undefined) {
   return value;
 }
 
+function getDraftCoordinates(draft: ListingDraft): PropertyCoordinates | null {
+  const lat = Number.parseFloat(draft.locationLat);
+  const lng = Number.parseFloat(draft.locationLng);
+
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+    return null;
+  }
+
+  return { lat, lng };
+}
+
 export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdminPageProps) {
   const [section, setSection] = useState<AdminSection>("overview");
   const [listings, setListings] = useState<ListingWithPhotos[]>([]);
@@ -136,6 +148,8 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
   const [reorderingPhotos, setReorderingPhotos] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [locationSearch, setLocationSearch] = useState("");
+  const [locationSearching, setLocationSearching] = useState(false);
   const { pageRef, handlePointerEnter, handlePointerLeave, handlePointerMove } = usePointerGlow({
     centerXRatio: 0.68,
     centerYRatio: 0.42,
@@ -275,6 +289,50 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
 
   function updateDraft<K extends keyof ListingDraft>(key: K, value: ListingDraft[K]) {
     setDraft((current) => ({ ...current, [key]: value }));
+  }
+
+  function updateDraftCoordinates(coordinates: PropertyCoordinates) {
+    setDraft((current) => ({
+      ...current,
+      locationLat: coordinates.lat.toFixed(6),
+      locationLng: coordinates.lng.toFixed(6),
+    }));
+  }
+
+  async function searchLocation() {
+    const query = locationSearch.trim() || draft.address.trim();
+
+    if (!query) {
+      setError("Enter an address or search term before searching the map.");
+      return;
+    }
+
+    setLocationSearching(true);
+    setError(null);
+
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`
+      );
+
+      if (!response.ok) {
+        throw new Error("Map search is unavailable right now.");
+      }
+
+      const results = (await response.json()) as Array<{ lat: string; lon: string }>;
+      const firstResult = results[0];
+
+      if (!firstResult) {
+        setError("No map result found for that search.");
+        return;
+      }
+
+      updateDraftCoordinates({ lat: Number.parseFloat(firstResult.lat), lng: Number.parseFloat(firstResult.lon) });
+    } catch (searchError) {
+      setError(searchError instanceof Error ? searchError.message : "Failed to search for that location.");
+    } finally {
+      setLocationSearching(false);
+    }
   }
 
   function handlePhotoSelection(event: ChangeEvent<HTMLInputElement>) {
@@ -870,6 +928,32 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
                     <label className="mapa-admin-page__field mapa-admin-page__field--wide"><span>Other contact information</span><textarea onChange={(event) => updateDraft("otherContactInformation", event.target.value)} rows={3} value={draft.otherContactInformation} /></label>
                     <label className="mapa-admin-page__field mapa-admin-page__field--wide"><span>Description</span><textarea onChange={(event) => updateDraft("description", event.target.value)} rows={4} value={draft.description} /></label>
                   </div>
+                  <div className="mapa-admin-page__location-picker">
+                    <div className="mapa-admin-page__location-head">
+                      <div>
+                        <p className="mapa-admin-page__panel-kicker">Property location</p>
+                        <h4 className="mapa-admin-page__compact-title">Pinpoint the exact map position</h4>
+                        <p className="mapa-admin-page__card-copy">Search by address, then click or drag the marker to fine-tune the saved coordinates.</p>
+                      </div>
+                      {getDraftCoordinates(draft) && (
+                        <span className="mapa-admin-page__nav-badge">
+                          {Number.parseFloat(draft.locationLat).toFixed(4)}, {Number.parseFloat(draft.locationLng).toFixed(4)}
+                        </span>
+                      )}
+                    </div>
+                    <div className="mapa-admin-page__location-search">
+                      <input
+                        onChange={(event) => setLocationSearch(event.target.value)}
+                        placeholder="Search an address or landmark"
+                        type="text"
+                        value={locationSearch}
+                      />
+                      <button className="mapa-admin-page__action mapa-admin-page__action--ghost" disabled={locationSearching} onClick={() => void searchLocation()} type="button">
+                        {locationSearching ? "Searching..." : "Search map"}
+                      </button>
+                    </div>
+                    <PropertyMap coordinates={getDraftCoordinates(draft)} mode="picker" onChange={updateDraftCoordinates} />
+                  </div>
                   <div className="mapa-admin-page__checkbox-grid">
                     <label className="mapa-admin-page__checkbox"><input checked={draft.utilitiesIncluded} onChange={(event) => updateDraft("utilitiesIncluded", event.target.checked)} type="checkbox" /><span>Utilities included</span></label>
                     <label className="mapa-admin-page__checkbox"><input checked={draft.wifi} onChange={(event) => updateDraft("wifi", event.target.checked)} type="checkbox" /><span>Wi-Fi available</span></label>
@@ -1127,6 +1211,32 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
                           <label className="mapa-admin-page__field"><span>Contact number</span><input onChange={(event) => updateDraft("contactNumber", event.target.value)} type="text" value={draft.contactNumber} /></label>
                           <label className="mapa-admin-page__field mapa-admin-page__field--wide"><span>Other contact information</span><textarea onChange={(event) => updateDraft("otherContactInformation", event.target.value)} rows={3} value={draft.otherContactInformation} /></label>
                           <label className="mapa-admin-page__field mapa-admin-page__field--wide"><span>Description</span><textarea onChange={(event) => updateDraft("description", event.target.value)} rows={4} value={draft.description} /></label>
+                        </div>
+                        <div className="mapa-admin-page__location-picker">
+                          <div className="mapa-admin-page__location-head">
+                            <div>
+                              <p className="mapa-admin-page__panel-kicker">Property location</p>
+                              <h4 className="mapa-admin-page__compact-title">Update the map pin</h4>
+                              <p className="mapa-admin-page__card-copy">Search by address, then click or drag the marker to fine-tune the saved coordinates.</p>
+                            </div>
+                            {getDraftCoordinates(draft) && (
+                              <span className="mapa-admin-page__nav-badge">
+                                {Number.parseFloat(draft.locationLat).toFixed(4)}, {Number.parseFloat(draft.locationLng).toFixed(4)}
+                              </span>
+                            )}
+                          </div>
+                          <div className="mapa-admin-page__location-search">
+                            <input
+                              onChange={(event) => setLocationSearch(event.target.value)}
+                              placeholder="Search an address or landmark"
+                              type="text"
+                              value={locationSearch}
+                            />
+                            <button className="mapa-admin-page__action mapa-admin-page__action--ghost" disabled={locationSearching} onClick={() => void searchLocation()} type="button">
+                              {locationSearching ? "Searching..." : "Search map"}
+                            </button>
+                          </div>
+                          <PropertyMap coordinates={getDraftCoordinates(draft)} mode="picker" onChange={updateDraftCoordinates} />
                         </div>
                         <div className="mapa-admin-page__checkbox-grid">
                           <label className="mapa-admin-page__checkbox"><input checked={draft.utilitiesIncluded} onChange={(event) => updateDraft("utilitiesIncluded", event.target.checked)} type="checkbox" /><span>Utilities included</span></label>
