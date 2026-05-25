@@ -980,6 +980,133 @@
   animation-delay: 90ms;
 }
 
+.mapa-admin-page {
+  --admin-surface: #ffffff;
+  --admin-surface-strong: #ffffff;
+  --admin-surface-soft: #f3f6f3;
+  --admin-border: rgba(16, 49, 36, 0.16);
+  --admin-border-strong: rgba(16, 49, 36, 0.24);
+  background:
+    radial-gradient(circle at 14% 18%, rgba(31, 255, 174, 0.07), transparent 30%),
+    linear-gradient(180deg, #061911 0%, #0c2a1d 30%, #f4f7f4 100%);
+}
+
+.mapa-admin-page__workspace,
+.mapa-admin-page__workspace-frame,
+.mapa-admin-page__overview-grid,
+.mapa-admin-page__users-layout,
+.mapa-admin-page__overview-panels,
+.mapa-admin-page__form-layout,
+.mapa-admin-page__two-column-layout,
+.mapa-admin-page__editor-layout,
+.mapa-admin-page__editor-stack {
+  gap: 1.25rem;
+}
+
+.mapa-admin-page__workspace-header,
+.mapa-admin-page__stat-card,
+.mapa-admin-page__section-card,
+.mapa-admin-page__profile-card {
+  background: #ffffff;
+  border-color: var(--admin-border);
+  box-shadow: 0 18px 36px rgba(6, 21, 15, 0.12);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.mapa-admin-page__workspace-header {
+  border-radius: 24px;
+  border-top: 5px solid var(--admin-accent);
+}
+
+.mapa-admin-page__workspace-header::before,
+.mapa-admin-page__workspace-header::after,
+.mapa-admin-page__stat-card::after,
+.mapa-admin-page__section-card::after,
+.mapa-admin-page__stat-card::before,
+.mapa-admin-page__section-card::before {
+  display: none;
+}
+
+.mapa-admin-page__stat-card {
+  min-height: 160px;
+  border-radius: 22px;
+  border-top: 5px solid #5d7568;
+  background: #f8faf8;
+}
+
+.mapa-admin-page__section-card {
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 24px;
+  background: #ffffff;
+}
+
+.mapa-admin-page__section-head {
+  padding: 1rem 1.1rem;
+  background: #eef4ef;
+  border-bottom: 1px solid rgba(16, 49, 36, 0.14);
+}
+
+.mapa-admin-page__section-card > :not(.mapa-admin-page__section-head) {
+  margin: 1rem 1.1rem;
+}
+
+.mapa-admin-page__section-card > .mapa-admin-page__section-head + * {
+  margin-top: 1rem;
+}
+
+.mapa-admin-page__section-title {
+  color: #102a20;
+}
+
+.mapa-admin-page__panel-kicker,
+.mapa-admin-page__workspace-kicker {
+  color: #16835d;
+  text-shadow: none;
+}
+
+.mapa-admin-page__compact-card,
+.mapa-admin-page__directory-card,
+.mapa-admin-page__user-row,
+.mapa-admin-page__mini-photo-card,
+.mapa-admin-page__detail-card,
+.mapa-admin-page__preview-card,
+.mapa-admin-page__photo-upload,
+.mapa-admin-page__photo-library-card {
+  background: #ffffff;
+  border-color: rgba(16, 49, 36, 0.16);
+  box-shadow: 0 8px 18px rgba(12, 35, 25, 0.06);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.mapa-admin-page__compact-card::before,
+.mapa-admin-page__directory-card::before,
+.mapa-admin-page__user-row::before,
+.mapa-admin-page__mini-photo-card::before,
+.mapa-admin-page__detail-card::before,
+.mapa-admin-page__preview-card::before,
+.mapa-admin-page__photo-upload::before {
+  display: none;
+}
+
+.mapa-admin-page__directory-card.is-selected {
+  background: #eef4ef;
+  border-color: rgba(22, 131, 93, 0.34);
+  box-shadow: 0 10px 22px rgba(22, 83, 59, 0.12);
+}
+
+.mapa-admin-page__form-grid,
+.mapa-admin-page__checkbox-grid,
+.mapa-admin-page__list-stack,
+.mapa-admin-page__directory-list,
+.mapa-admin-page__rule-stack,
+.mapa-admin-page__user-list {
+  gap: 0.95rem;
+}
+
 @keyframes mapa-admin-page-fade-up {
   from {
     opacity: 0;
@@ -1079,6 +1206,49 @@
   background: rgba(246, 250, 247, 0.46);
   backdrop-filter: blur(16px) saturate(120%);
   -webkit-backdrop-filter: blur(16px) saturate(120%);
+}
+
+.mapa-admin-page__location-picker {
+  display: grid;
+  gap: 0.9rem;
+  padding: 1rem;
+  border-radius: 22px;
+  border: 1px solid rgba(16, 49, 36, 0.16);
+  background: #ffffff;
+  box-shadow: 0 8px 18px rgba(12, 35, 25, 0.06);
+}
+
+.mapa-admin-page__location-head,
+.mapa-admin-page__location-search {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.85rem;
+}
+
+.mapa-admin-page__location-search {
+  align-items: center;
+}
+
+.mapa-admin-page__location-search input {
+  width: 100%;
+  min-height: 3rem;
+  border: 1px solid rgba(16, 49, 36, 0.14);
+  border-radius: 18px;
+  background: #f8faf8;
+  color: var(--admin-ink);
+  outline: none;
+  padding: 0 1rem;
+}
+
+.mapa-admin-page .mapa-property-map {
+  height: 320px;
+  min-height: 320px;
+  width: 100%;
+  border-radius: 20px;
+  border: 1px solid rgba(16, 49, 36, 0.16);
+  overflow: hidden;
+  background: #eef4ef;
 }
 
 .mapa-admin-page__photo-upload-input {
