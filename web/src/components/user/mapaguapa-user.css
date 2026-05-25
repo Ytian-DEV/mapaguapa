@@ -1240,6 +1240,122 @@
   border-top-color: rgba(210, 242, 226, 0.12);
 }
 
+.mapa-user-page__modal-location {
+  display: grid;
+  gap: 0;
+  overflow: hidden;
+  border-radius: 24px;
+  border: 1px solid rgba(18, 65, 46, 0.18);
+  background: #ffffff;
+  box-shadow: 0 12px 26px rgba(18, 50, 36, 0.08);
+}
+
+.mapa-user-page__modal-location-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 1rem;
+  background: #eef4ef;
+  border-bottom: 1px solid rgba(18, 65, 46, 0.12);
+}
+
+.mapa-user-page__modal-location-head h4,
+.mapa-user-page__modal-location-head p {
+  margin: 0;
+}
+
+.mapa-user-page__modal-location-head h4 {
+  color: #102a20;
+  font-size: 1.12rem;
+}
+
+.mapa-user-page__modal-location-head p:not(.mapa-user-page__modal-card-eyebrow) {
+  margin-top: 0.18rem;
+  color: rgba(25, 49, 38, 0.68);
+  font-size: 0.9rem;
+}
+
+.mapa-user-page__directions-link {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0 1rem;
+  border-radius: 999px;
+  background: #173c2d;
+  color: #f8fffb;
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: 0 12px 22px rgba(16, 49, 36, 0.16);
+}
+
+.mapa-user-page .mapa-property-map {
+  height: 340px;
+  min-height: 340px;
+  width: 100%;
+  border-radius: 0;
+  background: #eef4ef;
+}
+
+.mapa-property-map {
+  position: relative;
+}
+
+.mapa-property-map::after {
+  display: none;
+}
+
+.mapa-property-map .leaflet-tile {
+  filter: saturate(1.1) contrast(1.02);
+}
+
+.mapa-property-map .leaflet-pane {
+  background: #dff0e7;
+}
+
+.mapa-property-map .leaflet-control-zoom a {
+  border-color: rgba(16, 74, 52, 0.18);
+  color: #102a20;
+}
+
+.mapa-property-map .leaflet-control-attribution {
+  background: rgba(236, 252, 244, 0.86);
+  color: #315846;
+}
+
+.mapa-property-map__marker {
+  background: transparent;
+  border: 0;
+}
+
+.mapa-property-map__marker-pin {
+  position: relative;
+  display: block;
+  width: 26px;
+  height: 26px;
+  border: 3px solid #f8fffb;
+  border-radius: 50% 50% 50% 0;
+  background: linear-gradient(180deg, #18c98f 0%, #0f7d55 100%);
+  box-shadow:
+    0 12px 22px rgba(10, 48, 34, 0.26),
+    0 0 0 7px rgba(24, 201, 143, 0.18);
+  transform: rotate(-45deg);
+}
+
+.mapa-property-map__marker-pin::after {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #f8fffb;
+  box-shadow: 0 0 0 2px rgba(16, 74, 52, 0.12);
+}
+
 .mapa-user-page {
   background:
     radial-gradient(circle at top left, rgba(31, 255, 174, 0.08), transparent 24%),

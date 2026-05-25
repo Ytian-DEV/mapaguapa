@@ -1,5 +1,6 @@
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import HouseMark from "../shared/HouseMark";
+import { PropertyMap, type PropertyCoordinates } from "../shared/PropertyMap";
 import { usePointerGlow } from "../shared/usePointerGlow";
 import { fetchActiveListings } from "../../lib/listingService";
 import {
@@ -151,6 +152,17 @@ function getPhotoUrl(photo: ListingPhotoRow | undefined) {
   return photo ? toPublicPhotoUrl(photo) : "";
 }
 
+function getListingCoordinates(listing: ListingWithPhotos | null): PropertyCoordinates | null {
+  const lat = listing?.location_lat;
+  const lng = listing?.location_lng;
+
+  if (typeof lat !== "number" || typeof lng !== "number") {
+    return null;
+  }
+
+  return { lat, lng };
+}
+
 export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserPageProps) {
   const [listings, setListings] = useState<ListingWithPhotos[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -284,6 +296,10 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
   const openListingPhotos = useMemo(() => sortPhotos(openListing), [openListing]);
   const activePhoto = openListingPhotos[activePhotoIndex] ?? openListingPhotos[0];
   const activePhotoUrl = getPhotoUrl(activePhoto);
+  const openListingCoordinates = getListingCoordinates(openListing);
+  const directionsUrl = openListingCoordinates
+    ? `https://www.google.com/maps/dir/?api=1&destination=${openListingCoordinates.lat},${openListingCoordinates.lng}`
+    : "";
   const firstName = getFirstName(profile);
   const initials = getInitials(profile);
   const filteredCount = filteredListings.length.toString().padStart(2, "0");
@@ -832,6 +848,22 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
                   </article>
                 ))}
               </div>
+
+              {openListingCoordinates && (
+                <section className="mapa-user-page__modal-location">
+                  <div className="mapa-user-page__modal-location-head">
+                    <div>
+                      <p className="mapa-user-page__modal-card-eyebrow">Location</p>
+                      <h4>Property map</h4>
+                      <p>{openListing.address}</p>
+                    </div>
+                    <a className="mapa-user-page__directions-link" href={directionsUrl} rel="noreferrer" target="_blank">
+                      Get Directions
+                    </a>
+                  </div>
+                  <PropertyMap coordinates={openListingCoordinates} mode="readonly" />
+                </section>
+              )}
             </div>
           </div>
         </div>

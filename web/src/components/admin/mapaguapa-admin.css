@@ -1208,6 +1208,49 @@
   -webkit-backdrop-filter: blur(16px) saturate(120%);
 }
 
+.mapa-admin-page__location-picker {
+  display: grid;
+  gap: 0.9rem;
+  padding: 1rem;
+  border-radius: 22px;
+  border: 1px solid rgba(16, 49, 36, 0.16);
+  background: #ffffff;
+  box-shadow: 0 8px 18px rgba(12, 35, 25, 0.06);
+}
+
+.mapa-admin-page__location-head,
+.mapa-admin-page__location-search {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.85rem;
+}
+
+.mapa-admin-page__location-search {
+  align-items: center;
+}
+
+.mapa-admin-page__location-search input {
+  width: 100%;
+  min-height: 3rem;
+  border: 1px solid rgba(16, 49, 36, 0.14);
+  border-radius: 18px;
+  background: #f8faf8;
+  color: var(--admin-ink);
+  outline: none;
+  padding: 0 1rem;
+}
+
+.mapa-admin-page .mapa-property-map {
+  height: 320px;
+  min-height: 320px;
+  width: 100%;
+  border-radius: 20px;
+  border: 1px solid rgba(16, 49, 36, 0.16);
+  overflow: hidden;
+  background: #eef4ef;
+}
+
 .mapa-admin-page__photo-upload-input {
   position: relative;
   display: flex;
