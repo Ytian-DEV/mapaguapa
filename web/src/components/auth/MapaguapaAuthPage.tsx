@@ -11,12 +11,15 @@ type Credentials = {
   fullName?: string;
 };
 
+type OAuthProvider = "google";
+
 type MapaguapaAuthPageProps = {
   authConfigured: boolean;
   authError: string | null;
   authInfo: string | null;
   isSubmitting: boolean;
   onLogin: (credentials: Credentials) => Promise<void>;
+  onOAuthLogin: (provider: OAuthProvider) => Promise<void>;
   onSignup: (credentials: Credentials) => Promise<boolean>;
 };
 
@@ -65,6 +68,7 @@ export default function MapaguapaAuthPage({
   authInfo,
   isSubmitting,
   onLogin,
+  onOAuthLogin,
   onSignup,
 }: MapaguapaAuthPageProps) {
   const [mode, setMode] = useState<Mode>("login");
@@ -127,6 +131,17 @@ export default function MapaguapaAuthPage({
     if (visibleNotification) {
       setDismissedNotificationKey(visibleNotification.key);
     }
+  };
+
+  const handleOAuthLogin = (provider: OAuthProvider) => {
+    setLocalError(null);
+
+    if (!authConfigured) {
+      setLocalError("Supabase environment variables are missing.");
+      return;
+    }
+
+    void onOAuthLogin(provider);
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -371,11 +386,13 @@ export default function MapaguapaAuthPage({
             </div>
 
             <div className="mapa-auth-page__social-row">
-              <button className="mapa-auth-page__ghost-button" disabled type="button">
+              <button
+                className="mapa-auth-page__ghost-button"
+                disabled={isSubmitting}
+                onClick={() => handleOAuthLogin("google")}
+                type="button"
+              >
                 Google
-              </button>
-              <button className="mapa-auth-page__ghost-button" disabled type="button">
-                Facebook
               </button>
             </div>
           </form>
