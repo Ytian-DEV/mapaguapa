@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import HouseMark from "../shared/HouseMark";
 import { usePointerGlow } from "../shared/usePointerGlow";
 import "./mapaguapa-auth.css";
@@ -75,6 +75,7 @@ export default function MapaguapaAuthPage({
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [localError, setLocalError] = useState<string | null>(null);
+  const [dismissedNotificationKey, setDismissedNotificationKey] = useState<string | null>(null);
   const {
     pageRef,
     handlePointerEnter,
@@ -93,6 +94,40 @@ export default function MapaguapaAuthPage({
 
     return authInfo;
   }, [authConfigured, authInfo]);
+  const notification = activeError
+    ? { key: `error:${activeError}`, message: activeError, tone: "error" as const, title: "Something needs attention" }
+    : helperText
+      ? { key: `info:${helperText}`, message: helperText, tone: "info" as const, title: "Notice" }
+      : null;
+  const visibleNotification =
+    notification && notification.key !== dismissedNotificationKey ? notification : null;
+
+  useEffect(() => {
+    setDismissedNotificationKey(null);
+  }, [notification?.key]);
+
+  useEffect(() => {
+    if (!visibleNotification) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setDismissedNotificationKey(visibleNotification.key);
+    }, 5000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [visibleNotification?.key]);
+
+  const dismissNotification = () => {
+    if (visibleNotification?.tone === "error" && localError) {
+      setLocalError(null);
+      return;
+    }
+
+    if (visibleNotification) {
+      setDismissedNotificationKey(visibleNotification.key);
+    }
+  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -159,6 +194,28 @@ export default function MapaguapaAuthPage({
       <div className="mapa-auth-page__grid" />
       <div className="mapa-auth-page__mouse-glow" />
       <div className="mapa-auth-page__mouse-warp" />
+      {visibleNotification && (
+        <div className="mapa-auth-page__notice-layer" role="presentation">
+          <section
+            aria-live="polite"
+            className={`mapa-auth-page__notice mapa-auth-page__notice--${visibleNotification.tone}`}
+            role="dialog"
+          >
+            <div className="mapa-auth-page__notice-content">
+              <p className="mapa-auth-page__notice-title">{visibleNotification.title}</p>
+              <p className="mapa-auth-page__notice-message">{visibleNotification.message}</p>
+            </div>
+            <button
+              aria-label="Dismiss notification"
+              className="mapa-auth-page__notice-close"
+              onClick={dismissNotification}
+              type="button"
+            >
+              X
+            </button>
+          </section>
+        </div>
+      )}
 
       <div className="mapa-auth-page__shell">
         <section className="mapa-auth-page__hero mapa-auth-page__fade-up">
@@ -304,9 +361,6 @@ export default function MapaguapaAuthPage({
                 </button>
               </div>
             )}
-
-            {activeError && <p className="mapa-auth-page__feedback mapa-auth-page__feedback--error">{activeError}</p>}
-            {helperText && <p className="mapa-auth-page__feedback mapa-auth-page__feedback--info">{helperText}</p>}
 
             <button className="mapa-auth-page__primary-button" disabled={isSubmitting} type="submit">
               {isSubmitting ? "Please wait..." : copy.submitLabel}
