@@ -17,7 +17,7 @@ type MapaguapaAuthPageProps = {
   authInfo: string | null;
   isSubmitting: boolean;
   onLogin: (credentials: Credentials) => Promise<void>;
-  onSignup: (credentials: Credentials) => Promise<void>;
+  onSignup: (credentials: Credentials) => Promise<boolean>;
 };
 
 type HeroHighlight = {
@@ -119,11 +119,22 @@ export default function MapaguapaAuthPage({
         return;
       }
 
-      await onSignup({
-        email: email.trim(),
+      const signupEmail = email.trim();
+      const signupSucceeded = await onSignup({
+        email: signupEmail,
         password,
         fullName: fullName.trim(),
       });
+
+      if (signupSucceeded) {
+        setMode("login");
+        setFullName("");
+        setEmail(signupEmail);
+        setPassword("");
+        setConfirmPassword("");
+        setShowPassword(false);
+        setShowConfirmPassword(false);
+      }
       return;
     }
 
