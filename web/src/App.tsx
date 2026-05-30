@@ -14,7 +14,10 @@ type Credentials = {
   fullName?: string;
 };
 
+type OAuthProvider = "google";
+
 const profileSelect = "id, email, full_name, phone, avatar_url, role, is_active, created_at, updated_at";
+const authRedirectTo = import.meta.env.VITE_AUTH_REDIRECT_URL?.trim();
 
 async function fetchProfileWithRetry(client: SupabaseClient<Database>, userId: string) {
   for (let attempt = 0; attempt < 5; attempt += 1) {
@@ -199,6 +202,29 @@ export default function App() {
     return true;
   };
 
+  const handleOAuthLogin = async (provider: OAuthProvider) => {
+    const client = supabase;
+    if (!client) {
+      return;
+    }
+
+    setSubmitting(true);
+    setAuthError(null);
+    setAuthInfo(null);
+
+    const { error } = await client.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: authRedirectTo || `${window.location.origin}/dashboard`,
+      },
+    });
+
+    if (error) {
+      setAuthError(getFriendlyAuthError(error.message));
+      setSubmitting(false);
+    }
+  };
+
   const handleSignOut = async () => {
     const client = supabase;
     if (!client) {
@@ -228,6 +254,7 @@ export default function App() {
         authInfo={authInfo}
         isSubmitting={submitting}
         onLogin={handleLogin}
+        onOAuthLogin={handleOAuthLogin}
         onSignup={handleSignup}
       />
     );
