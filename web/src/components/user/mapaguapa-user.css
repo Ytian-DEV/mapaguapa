@@ -1291,6 +1291,40 @@
   box-shadow: 0 12px 22px rgba(16, 49, 36, 0.16);
 }
 
+.mapa-user-page__modal-contact-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 1rem;
+  border-radius: 24px;
+  border: 1px solid rgba(18, 65, 46, 0.14);
+  background: #ffffff;
+  box-shadow: 0 12px 26px rgba(18, 50, 36, 0.08);
+}
+
+.mapa-user-page__contact-action {
+  min-height: 2.65rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 1rem;
+  border: 0;
+  border-radius: 999px;
+  background: #173c2d;
+  color: #f8fffb;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.mapa-user-page__contact-feedback {
+  margin: 0;
+  color: rgba(25, 49, 38, 0.68);
+  font-size: 0.92rem;
+}
+
 .mapa-user-page .mapa-property-map {
   height: 340px;
   min-height: 340px;

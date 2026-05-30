@@ -20,6 +20,7 @@ type MapaguapaAuthPageProps = {
   isSubmitting: boolean;
   onLogin: (credentials: Credentials) => Promise<void>;
   onOAuthLogin: (provider: OAuthProvider) => Promise<void>;
+  onPasswordReset: (email: string) => Promise<void>;
   onSignup: (credentials: Credentials) => Promise<boolean>;
 };
 
@@ -69,6 +70,7 @@ export default function MapaguapaAuthPage({
   isSubmitting,
   onLogin,
   onOAuthLogin,
+  onPasswordReset,
   onSignup,
 }: MapaguapaAuthPageProps) {
   const [mode, setMode] = useState<Mode>("login");
@@ -142,6 +144,23 @@ export default function MapaguapaAuthPage({
     }
 
     void onOAuthLogin(provider);
+  };
+
+  const handlePasswordReset = () => {
+    setLocalError(null);
+
+    if (!authConfigured) {
+      setLocalError("Supabase environment variables are missing.");
+      return;
+    }
+
+    const resetEmail = email.trim();
+    if (!resetEmail) {
+      setLocalError("Enter your email first so we know where to send the reset link.");
+      return;
+    }
+
+    void onPasswordReset(resetEmail);
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -367,11 +386,8 @@ export default function MapaguapaAuthPage({
 
             {!isSignup && (
               <div className="mapa-auth-page__form-meta">
-                <label className="mapa-auth-page__remember-row">
-                  <input type="checkbox" />
-                  <span>Remember me</span>
-                </label>
-                <button className="mapa-auth-page__text-button" type="button">
+                <span className="mapa-auth-page__session-note">You stay signed in on this device.</span>
+                <button className="mapa-auth-page__text-button" onClick={handlePasswordReset} type="button">
                   Forgot password?
                 </button>
               </div>
@@ -382,7 +398,7 @@ export default function MapaguapaAuthPage({
             </button>
 
             <div className="mapa-auth-page__divider">
-              <span>or continue with</span>
+              <span>or use Google</span>
             </div>
 
             <div className="mapa-auth-page__social-row">
@@ -392,6 +408,7 @@ export default function MapaguapaAuthPage({
                 onClick={() => handleOAuthLogin("google")}
                 type="button"
               >
+                <span className="mapa-auth-page__google-mark" aria-hidden="true">G</span>
                 Google
               </button>
             </div>

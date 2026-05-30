@@ -143,9 +143,12 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
   const [photoActionId, setPhotoActionId] = useState<string | null>(null);
   const [photoDeleteTarget, setPhotoDeleteTarget] = useState<ListingPhotoRow | null>(null);
+  const [archiveConfirmOpen, setArchiveConfirmOpen] = useState(false);
+  const [archivePassword, setArchivePassword] = useState("");
   const [draggedPhotoId, setDraggedPhotoId] = useState<string | null>(null);
   const [dragOverPhotoId, setDragOverPhotoId] = useState<string | null>(null);
   const [reorderingPhotos, setReorderingPhotos] = useState(false);
+  const [userActionId, setUserActionId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [locationSearch, setLocationSearch] = useState("");
@@ -211,19 +214,21 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
   }, [section, selectedListing]);
 
   useEffect(() => {
-    if (!photoDeleteTarget) {
+    if (!photoDeleteTarget && !archiveConfirmOpen) {
       return undefined;
     }
 
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape" && !photoActionId) {
+      if (event.key === "Escape" && !photoActionId && !archiving) {
         setPhotoDeleteTarget(null);
+        setArchiveConfirmOpen(false);
+        setArchivePassword("");
       }
     }
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [photoDeleteTarget, photoActionId]);
+  }, [archiveConfirmOpen, archiving, photoDeleteTarget, photoActionId]);
 
   async function loadDashboard(preferredListingId?: string) {
     const client = supabase;
@@ -407,6 +412,26 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
     }
 
     setPhotoDeleteTarget(null);
+  }
+
+  function openArchiveDialog() {
+    if (!selectedListing) {
+      return;
+    }
+
+    setArchiveConfirmOpen(true);
+    setArchivePassword("");
+    setError(null);
+    setFeedback(null);
+  }
+
+  function closeArchiveDialog() {
+    if (archiving) {
+      return;
+    }
+
+    setArchiveConfirmOpen(false);
+    setArchivePassword("");
   }
 
   function startPhotoDrag(photoId: string) {
@@ -710,8 +735,9 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
       return;
     }
 
-    const password = window.prompt(`Re-enter the admin password to archive ${selectedListing.name}.`);
+    const password = archivePassword.trim();
     if (!password) {
+      setError("Enter your admin password before archiving this listing.");
       return;
     }
 
@@ -741,10 +767,81 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
       setFeedback(`${selectedListing.name} was archived.`);
       await loadDashboard();
       setSection("archive");
+      setArchiveConfirmOpen(false);
+      setArchivePassword("");
     } catch (archiveError) {
       setError(archiveError instanceof Error ? archiveError.message : "Failed to archive listing.");
     } finally {
       setArchiving(false);
+    }
+  }
+
+  async function toggleUserActive(user: Profile) {
+    const client = supabase;
+    if (!client) {
+      setError("Supabase is not configured.");
+      return;
+    }
+
+    if (user.id === profile.id && user.is_active) {
+      setError("You cannot deactivate your own admin account while signed in.");
+      return;
+    }
+
+    setUserActionId(user.id);
+    setError(null);
+    setFeedback(null);
+
+    try {
+      const { error: updateError } = await ((client.from("profiles") as any)
+        .update({ is_active: !user.is_active })
+        .eq("id", user.id));
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      setFeedback(`${user.full_name || user.email || "User"} is now ${user.is_active ? "inactive" : "active"}.`);
+      await loadDashboard(selectedListing?.id);
+    } catch (updateError) {
+      setError(updateError instanceof Error ? updateError.message : "Failed to update the user.");
+    } finally {
+      setUserActionId(null);
+    }
+  }
+
+  async function toggleUserRole(user: Profile) {
+    const client = supabase;
+    if (!client) {
+      setError("Supabase is not configured.");
+      return;
+    }
+
+    if (user.id === profile.id && user.role === "admin") {
+      setError("You cannot remove your own admin role while signed in.");
+      return;
+    }
+
+    const nextRole = user.role === "admin" ? "user" : "admin";
+    setUserActionId(user.id);
+    setError(null);
+    setFeedback(null);
+
+    try {
+      const { error: updateError } = await ((client.from("profiles") as any)
+        .update({ role: nextRole })
+        .eq("id", user.id));
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      setFeedback(`${user.full_name || user.email || "User"} is now ${nextRole === "admin" ? "an admin" : "a user"}.`);
+      await loadDashboard(selectedListing?.id);
+    } catch (updateError) {
+      setError(updateError instanceof Error ? updateError.message : "Failed to update the user role.");
+    } finally {
+      setUserActionId(null);
     }
   }
 
@@ -825,7 +922,7 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
                 Refresh
               </button>
               {section === "edit" && selectedListing && (
-                <button className="mapa-admin-page__action mapa-admin-page__action--danger" disabled={archiving} onClick={() => void archiveSelected()} type="button">
+                <button className="mapa-admin-page__action mapa-admin-page__action--danger" disabled={archiving} onClick={openArchiveDialog} type="button">
                   {archiving ? "Archiving..." : "Archive listing"}
                 </button>
               )}
@@ -1340,6 +1437,22 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
                         <div className="mapa-admin-page__user-meta">
                           <span className="mapa-admin-page__pill">{user.role}</span>
                           <span className="mapa-admin-page__pill">{user.is_active ? "Active" : "Inactive"}</span>
+                          <button
+                            className="mapa-admin-page__action mapa-admin-page__action--ghost mapa-admin-page__action--small"
+                            disabled={userActionId === user.id}
+                            onClick={() => void toggleUserActive(user)}
+                            type="button"
+                          >
+                            {userActionId === user.id ? "Updating..." : user.is_active ? "Deactivate" : "Activate"}
+                          </button>
+                          <button
+                            className="mapa-admin-page__action mapa-admin-page__action--ghost mapa-admin-page__action--small"
+                            disabled={userActionId === user.id}
+                            onClick={() => void toggleUserRole(user)}
+                            type="button"
+                          >
+                            {user.role === "admin" ? "Make user" : "Make admin"}
+                          </button>
                         </div>
                       </article>
                     ))}
@@ -1350,6 +1463,43 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
           </div>
         </section>
       </div>
+
+      {archiveConfirmOpen && selectedListing ? (
+        <div className="mapa-admin-page__dialog-backdrop" onClick={closeArchiveDialog} role="presentation">
+          <div
+            aria-labelledby="mapa-admin-archive-title"
+            aria-modal="true"
+            className="mapa-admin-page__dialog"
+            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+          >
+            <p className="mapa-admin-page__panel-kicker">Archive listing</p>
+            <h3 className="mapa-admin-page__dialog-title" id="mapa-admin-archive-title">
+              Archive {selectedListing.name}?
+            </h3>
+            <p className="mapa-admin-page__card-copy">
+              This removes the listing from the student catalog and stores an archive record. Enter your admin password to continue.
+            </p>
+            <label className="mapa-admin-page__field">
+              <span>Admin password</span>
+              <input
+                autoComplete="current-password"
+                onChange={(event) => setArchivePassword(event.target.value)}
+                type="password"
+                value={archivePassword}
+              />
+            </label>
+            <div className="mapa-admin-page__form-actions mapa-admin-page__dialog-actions">
+              <button className="mapa-admin-page__action mapa-admin-page__action--ghost" disabled={archiving} onClick={closeArchiveDialog} type="button">
+                Cancel
+              </button>
+              <button className="mapa-admin-page__action mapa-admin-page__action--danger" disabled={archiving} onClick={() => void archiveSelected()} type="button">
+                {archiving ? "Archiving..." : "Archive listing"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {photoDeleteTarget && selectedListing ? (
         <div className="mapa-admin-page__dialog-backdrop" onClick={closePhotoDeleteDialog} role="presentation">
