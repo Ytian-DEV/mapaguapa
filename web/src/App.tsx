@@ -133,6 +133,16 @@ export default function App() {
     };
   }, [session?.user?.id]);
 
+  const getFriendlyAuthError = (message: string) => {
+    const normalizedMessage = message.toLowerCase();
+
+    if (normalizedMessage.includes("email not confirmed")) {
+      return "Please confirm your email using the link we sent before logging in.";
+    }
+
+    return message;
+  };
+
   const handleLogin = async ({ email, password }: Credentials) => {
     const client = supabase;
     if (!client) {
@@ -149,7 +159,7 @@ export default function App() {
     });
 
     if (error) {
-      setAuthError(error.message);
+      setAuthError(getFriendlyAuthError(error.message));
     }
 
     setSubmitting(false);
@@ -158,7 +168,7 @@ export default function App() {
   const handleSignup = async ({ email, password, fullName }: Credentials) => {
     const client = supabase;
     if (!client) {
-      return;
+      return false;
     }
 
     setSubmitting(true);
@@ -176,7 +186,9 @@ export default function App() {
     });
 
     if (error) {
-      setAuthError(error.message);
+      setAuthError(getFriendlyAuthError(error.message));
+      setSubmitting(false);
+      return false;
     } else if (!data.session) {
       setAuthInfo("Account created. Check your email to confirm before signing in.");
     } else {
@@ -184,6 +196,7 @@ export default function App() {
     }
 
     setSubmitting(false);
+    return true;
   };
 
   const handleSignOut = async () => {
