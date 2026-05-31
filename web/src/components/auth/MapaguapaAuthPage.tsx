@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import HouseMark from "../shared/HouseMark";
 import { usePointerGlow } from "../shared/usePointerGlow";
 import "./mapaguapa-auth.css";
@@ -11,13 +11,17 @@ type Credentials = {
   fullName?: string;
 };
 
+type OAuthProvider = "google";
+
 type MapaguapaAuthPageProps = {
   authConfigured: boolean;
   authError: string | null;
   authInfo: string | null;
   isSubmitting: boolean;
   onLogin: (credentials: Credentials) => Promise<void>;
-  onSignup: (credentials: Credentials) => Promise<void>;
+  onOAuthLogin: (provider: OAuthProvider) => Promise<void>;
+  onPasswordReset: (email: string) => Promise<void>;
+  onSignup: (credentials: Credentials) => Promise<boolean>;
 };
 
 type HeroHighlight = {
@@ -65,6 +69,8 @@ export default function MapaguapaAuthPage({
   authInfo,
   isSubmitting,
   onLogin,
+  onOAuthLogin,
+  onPasswordReset,
   onSignup,
 }: MapaguapaAuthPageProps) {
   const [mode, setMode] = useState<Mode>("login");
@@ -75,6 +81,7 @@ export default function MapaguapaAuthPage({
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [localError, setLocalError] = useState<string | null>(null);
+  const [dismissedNotificationKey, setDismissedNotificationKey] = useState<string | null>(null);
   const {
     pageRef,
     handlePointerEnter,
@@ -93,6 +100,68 @@ export default function MapaguapaAuthPage({
 
     return authInfo;
   }, [authConfigured, authInfo]);
+  const notification = activeError
+    ? { key: `error:${activeError}`, message: activeError, tone: "error" as const, title: "Something needs attention" }
+    : helperText
+      ? { key: `info:${helperText}`, message: helperText, tone: "info" as const, title: "Notice" }
+      : null;
+  const visibleNotification =
+    notification && notification.key !== dismissedNotificationKey ? notification : null;
+
+  useEffect(() => {
+    setDismissedNotificationKey(null);
+  }, [notification?.key]);
+
+  useEffect(() => {
+    if (!visibleNotification) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setDismissedNotificationKey(visibleNotification.key);
+    }, 5000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [visibleNotification?.key]);
+
+  const dismissNotification = () => {
+    if (visibleNotification?.tone === "error" && localError) {
+      setLocalError(null);
+      return;
+    }
+
+    if (visibleNotification) {
+      setDismissedNotificationKey(visibleNotification.key);
+    }
+  };
+
+  const handleOAuthLogin = (provider: OAuthProvider) => {
+    setLocalError(null);
+
+    if (!authConfigured) {
+      setLocalError("Supabase environment variables are missing.");
+      return;
+    }
+
+    void onOAuthLogin(provider);
+  };
+
+  const handlePasswordReset = () => {
+    setLocalError(null);
+
+    if (!authConfigured) {
+      setLocalError("Supabase environment variables are missing.");
+      return;
+    }
+
+    const resetEmail = email.trim();
+    if (!resetEmail) {
+      setLocalError("Enter your email first so we know where to send the reset link.");
+      return;
+    }
+
+    void onPasswordReset(resetEmail);
+  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -119,11 +188,22 @@ export default function MapaguapaAuthPage({
         return;
       }
 
-      await onSignup({
-        email: email.trim(),
+      const signupEmail = email.trim();
+      const signupSucceeded = await onSignup({
+        email: signupEmail,
         password,
         fullName: fullName.trim(),
       });
+
+      if (signupSucceeded) {
+        setMode("login");
+        setFullName("");
+        setEmail(signupEmail);
+        setPassword("");
+        setConfirmPassword("");
+        setShowPassword(false);
+        setShowConfirmPassword(false);
+      }
       return;
     }
 
@@ -148,6 +228,28 @@ export default function MapaguapaAuthPage({
       <div className="mapa-auth-page__grid" />
       <div className="mapa-auth-page__mouse-glow" />
       <div className="mapa-auth-page__mouse-warp" />
+      {visibleNotification && (
+        <div className="mapa-auth-page__notice-layer" role="presentation">
+          <section
+            aria-live="polite"
+            className={`mapa-auth-page__notice mapa-auth-page__notice--${visibleNotification.tone}`}
+            role="dialog"
+          >
+            <div className="mapa-auth-page__notice-content">
+              <p className="mapa-auth-page__notice-title">{visibleNotification.title}</p>
+              <p className="mapa-auth-page__notice-message">{visibleNotification.message}</p>
+            </div>
+            <button
+              aria-label="Dismiss notification"
+              className="mapa-auth-page__notice-close"
+              onClick={dismissNotification}
+              type="button"
+            >
+              X
+            </button>
+          </section>
+        </div>
+      )}
 
       <div className="mapa-auth-page__shell">
         <section className="mapa-auth-page__hero mapa-auth-page__fade-up">
@@ -284,33 +386,30 @@ export default function MapaguapaAuthPage({
 
             {!isSignup && (
               <div className="mapa-auth-page__form-meta">
-                <label className="mapa-auth-page__remember-row">
-                  <input type="checkbox" />
-                  <span>Remember me</span>
-                </label>
-                <button className="mapa-auth-page__text-button" type="button">
+                <span className="mapa-auth-page__session-note">You stay signed in on this device.</span>
+                <button className="mapa-auth-page__text-button" onClick={handlePasswordReset} type="button">
                   Forgot password?
                 </button>
               </div>
             )}
-
-            {activeError && <p className="mapa-auth-page__feedback mapa-auth-page__feedback--error">{activeError}</p>}
-            {helperText && <p className="mapa-auth-page__feedback mapa-auth-page__feedback--info">{helperText}</p>}
 
             <button className="mapa-auth-page__primary-button" disabled={isSubmitting} type="submit">
               {isSubmitting ? "Please wait..." : copy.submitLabel}
             </button>
 
             <div className="mapa-auth-page__divider">
-              <span>or continue with</span>
+              <span>or use Google</span>
             </div>
 
             <div className="mapa-auth-page__social-row">
-              <button className="mapa-auth-page__ghost-button" disabled type="button">
+              <button
+                className="mapa-auth-page__ghost-button"
+                disabled={isSubmitting}
+                onClick={() => handleOAuthLogin("google")}
+                type="button"
+              >
+                <span className="mapa-auth-page__google-mark" aria-hidden="true">G</span>
                 Google
-              </button>
-              <button className="mapa-auth-page__ghost-button" disabled type="button">
-                Facebook
               </button>
             </div>
           </form>

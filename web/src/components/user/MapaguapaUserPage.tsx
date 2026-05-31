@@ -60,6 +60,7 @@ const allAreasLabel = "All areas";
 const allTypesLabel = "All stay types";
 const allPricesLabel = "All budgets";
 const allExclusivityLabel = "All setups";
+const savedListingsStorageKey = "mapaguapa:saved-listings";
 
 function getFirstName(profile: Profile) {
   if (profile.full_name?.trim()) {
@@ -173,6 +174,15 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
   const [activeFeatures, setActiveFeatures] = useState<FeatureFilterKey[]>([]);
   const [openListingId, setOpenListingId] = useState<string | null>(null);
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
+  const [savedListingIds, setSavedListingIds] = useState<string[]>(() => {
+    try {
+      const parsed = JSON.parse(window.localStorage.getItem(savedListingsStorageKey) ?? "[]");
+      return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === "string") : [];
+    } catch {
+      return [];
+    }
+  });
+  const [contactFeedback, setContactFeedback] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const deferredSearch = useDeferredValue(searchQuery.trim().toLowerCase());
@@ -302,6 +312,11 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
     : "";
   const firstName = getFirstName(profile);
   const initials = getInitials(profile);
+  const savedListings = useMemo(
+    () => listings.filter((listing) => savedListingIds.includes(listing.id)),
+    [listings, savedListingIds]
+  );
+  const isOpenListingSaved = openListing ? savedListingIds.includes(openListing.id) : false;
   const filteredCount = filteredListings.length.toString().padStart(2, "0");
   const totalCount = listings.length.toString().padStart(2, "0");
   const activeFilterCount =
@@ -425,7 +440,12 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
 
   useEffect(() => {
     setActivePhotoIndex(0);
+    setContactFeedback(null);
   }, [openListingId]);
+
+  useEffect(() => {
+    window.localStorage.setItem(savedListingsStorageKey, JSON.stringify(savedListingIds));
+  }, [savedListingIds]);
 
   useEffect(() => {
     if (!openListing) {
@@ -461,6 +481,26 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
     setActivePrice(allPricesLabel);
     setActiveExclusivity(allExclusivityLabel);
     setActiveFeatures([]);
+  };
+
+  const toggleSavedListing = (listingId: string) => {
+    setSavedListingIds((current) =>
+      current.includes(listingId) ? current.filter((id) => id !== listingId) : [...current, listingId]
+    );
+  };
+
+  const copyContactNumber = async () => {
+    if (!openListing?.contact_number) {
+      setContactFeedback("No contact number is listed for this property.");
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(openListing.contact_number);
+      setContactFeedback("Contact number copied.");
+    } catch {
+      setContactFeedback(openListing.contact_number);
+    }
   };
 
   return (
@@ -548,6 +588,10 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
               <div className="mapa-user-page__hero-summary-item">
                 <strong>{activeFilterCount}</strong>
                 <span>filters active</span>
+              </div>
+              <div className="mapa-user-page__hero-summary-item">
+                <strong>{savedListings.length.toString().padStart(2, "0")}</strong>
+                <span>saved places</span>
               </div>
             </div>
           </div>
@@ -758,6 +802,9 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
               </div>
               <div className="mapa-user-page__modal-actions">
                 <span className="mapa-user-page__modal-price">{formatPesoLabel(openListing.monthly_rental_label)}</span>
+                <button className="mapa-user-page__modal-close" onClick={() => toggleSavedListing(openListing.id)} type="button">
+                  {isOpenListingSaved ? "Saved" : "Save"}
+                </button>
                 <button className="mapa-user-page__modal-close" onClick={() => setOpenListingId(null)} type="button">
                   Close
                 </button>
@@ -864,6 +911,23 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
                   <PropertyMap coordinates={openListingCoordinates} mode="readonly" />
                 </section>
               )}
+
+              <section className="mapa-user-page__modal-contact-actions">
+                <button className="mapa-user-page__contact-action" onClick={copyContactNumber} type="button">
+                  Copy number
+                </button>
+                {openListing.contact_number && (
+                  <>
+                    <a className="mapa-user-page__contact-action" href={`tel:${openListing.contact_number}`}>
+                      Call
+                    </a>
+                    <a className="mapa-user-page__contact-action" href={`sms:${openListing.contact_number}`}>
+                      SMS
+                    </a>
+                  </>
+                )}
+                {contactFeedback && <p className="mapa-user-page__contact-feedback">{contactFeedback}</p>}
+              </section>
             </div>
           </div>
         </div>

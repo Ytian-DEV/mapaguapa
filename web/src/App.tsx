@@ -1,12 +1,13 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import type { Session, SupabaseClient } from "@supabase/supabase-js";
-import MapaguapaAdminPage from "./components/admin/MapaguapaAdminPage";
-import MapaguapaAuthPage from "./components/auth/MapaguapaAuthPage";
-import MapaguapaUserPage from "./components/user/MapaguapaUserPage";
 import type { Database } from "./lib/database";
 import type { Profile } from "./lib/models";
 import { hasSupabaseEnv, supabase } from "./lib/supabase";
 import "./app.css";
+
+const MapaguapaAdminPage = lazy(() => import("./components/admin/MapaguapaAdminPage"));
+const MapaguapaAuthPage = lazy(() => import("./components/auth/MapaguapaAuthPage"));
+const MapaguapaUserPage = lazy(() => import("./components/user/MapaguapaUserPage"));
 
 type Credentials = {
   email: string;
@@ -14,7 +15,11 @@ type Credentials = {
   fullName?: string;
 };
 
+type OAuthProvider = "google";
+
 const profileSelect = "id, email, full_name, phone, avatar_url, role, is_active, created_at, updated_at";
+const authRedirectTo = import.meta.env.VITE_AUTH_REDIRECT_URL?.trim();
+const passwordResetRedirectTo = import.meta.env.VITE_PASSWORD_RESET_REDIRECT_URL?.trim();
 
 async function fetchProfileWithRetry(client: SupabaseClient<Database>, userId: string) {
   for (let attempt = 0; attempt < 5; attempt += 1) {
@@ -36,6 +41,40 @@ async function fetchProfileWithRetry(client: SupabaseClient<Database>, userId: s
   }
 
   return null;
+}
+
+async function ensureProfile(client: SupabaseClient<Database>, session: Session) {
+  const existingProfile = await fetchProfileWithRetry(client, session.user.id);
+  if (existingProfile) {
+    return existingProfile;
+  }
+
+  const metadata = session.user.user_metadata;
+  const fullName =
+    typeof metadata.full_name === "string"
+      ? metadata.full_name
+      : typeof metadata.name === "string"
+        ? metadata.name
+        : null;
+  const avatarUrl = typeof metadata.avatar_url === "string" ? metadata.avatar_url : null;
+
+  const { data, error } = await ((client.from("profiles") as any)
+    .insert({
+      id: session.user.id,
+      email: session.user.email ?? null,
+      full_name: fullName,
+      avatar_url: avatarUrl,
+      role: "user",
+      is_active: true,
+    })
+    .select(profileSelect)
+    .single());
+
+  if (error) {
+    throw error;
+  }
+
+  return data as Profile;
 }
 
 export default function App() {
@@ -111,11 +150,21 @@ export default function App() {
     let cancelled = false;
     setLoadingProfile(true);
 
-    void fetchProfileWithRetry(client, session.user.id)
+    void ensureProfile(client, session)
       .then((nextProfile) => {
-        if (!cancelled) {
-          setProfile(nextProfile);
+        if (cancelled) {
+          return;
         }
+
+        if (!nextProfile.is_active) {
+          void client.auth.signOut();
+          setSession(null);
+          setProfile(null);
+          setAuthError("Your account is inactive. Please contact the MAPAGUAPA admin.");
+          return;
+        }
+
+        setProfile(nextProfile);
       })
       .catch((profileError) => {
         if (!cancelled) {
@@ -133,6 +182,16 @@ export default function App() {
     };
   }, [session?.user?.id]);
 
+  const getFriendlyAuthError = (message: string) => {
+    const normalizedMessage = message.toLowerCase();
+
+    if (normalizedMessage.includes("email not confirmed")) {
+      return "Please confirm your email using the link we sent before logging in.";
+    }
+
+    return message;
+  };
+
   const handleLogin = async ({ email, password }: Credentials) => {
     const client = supabase;
     if (!client) {
@@ -149,7 +208,7 @@ export default function App() {
     });
 
     if (error) {
-      setAuthError(error.message);
+      setAuthError(getFriendlyAuthError(error.message));
     }
 
     setSubmitting(false);
@@ -158,7 +217,7 @@ export default function App() {
   const handleSignup = async ({ email, password, fullName }: Credentials) => {
     const client = supabase;
     if (!client) {
-      return;
+      return false;
     }
 
     setSubmitting(true);
@@ -176,11 +235,60 @@ export default function App() {
     });
 
     if (error) {
-      setAuthError(error.message);
+      setAuthError(getFriendlyAuthError(error.message));
+      setSubmitting(false);
+      return false;
     } else if (!data.session) {
       setAuthInfo("Account created. Check your email to confirm before signing in.");
     } else {
       setAuthInfo("Account created successfully.");
+    }
+
+    setSubmitting(false);
+    return true;
+  };
+
+  const handleOAuthLogin = async (provider: OAuthProvider) => {
+    const client = supabase;
+    if (!client) {
+      return;
+    }
+
+    setSubmitting(true);
+    setAuthError(null);
+    setAuthInfo(null);
+
+    const { error } = await client.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: authRedirectTo || `${window.location.origin}/dashboard`,
+      },
+    });
+
+    if (error) {
+      setAuthError(getFriendlyAuthError(error.message));
+      setSubmitting(false);
+    }
+  };
+
+  const handlePasswordReset = async (email: string) => {
+    const client = supabase;
+    if (!client) {
+      return;
+    }
+
+    setSubmitting(true);
+    setAuthError(null);
+    setAuthInfo(null);
+
+    const { error } = await client.auth.resetPasswordForEmail(email, {
+      redirectTo: passwordResetRedirectTo || `${window.location.origin}/dashboard`,
+    });
+
+    if (error) {
+      setAuthError(getFriendlyAuthError(error.message));
+    } else {
+      setAuthInfo("Password reset email sent. Check your inbox for the reset link.");
     }
 
     setSubmitting(false);
@@ -209,20 +317,28 @@ export default function App() {
 
   if (!session || !profile) {
     return (
-      <MapaguapaAuthPage
-        authConfigured={hasSupabaseEnv}
-        authError={authError}
-        authInfo={authInfo}
-        isSubmitting={submitting}
-        onLogin={handleLogin}
-        onSignup={handleSignup}
-      />
+      <Suspense fallback={<div className="app-shell app-shell--loading">Loading MAPAGUAPA...</div>}>
+        <MapaguapaAuthPage
+          authConfigured={hasSupabaseEnv}
+          authError={authError}
+          authInfo={authInfo}
+          isSubmitting={submitting}
+          onLogin={handleLogin}
+          onOAuthLogin={handleOAuthLogin}
+          onPasswordReset={handlePasswordReset}
+          onSignup={handleSignup}
+        />
+      </Suspense>
     );
   }
 
-  return profile.role === "admin" ? (
-    <MapaguapaAdminPage onSignOut={handleSignOut} profile={profile} />
-  ) : (
-    <MapaguapaUserPage onSignOut={handleSignOut} profile={profile} />
+  return (
+    <Suspense fallback={<div className="app-shell app-shell--loading">Loading MAPAGUAPA...</div>}>
+      {profile.role === "admin" ? (
+        <MapaguapaAdminPage onSignOut={handleSignOut} profile={profile} />
+      ) : (
+        <MapaguapaUserPage onSignOut={handleSignOut} profile={profile} />
+      )}
+    </Suspense>
   );
 }
