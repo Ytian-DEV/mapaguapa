@@ -754,6 +754,14 @@
   cursor: default;
 }
 
+.mapa-admin-page__compact-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.45rem;
+  min-width: 8rem;
+}
+
 .mapa-admin-page__directory-card.is-selected {
   border-color: rgba(47, 143, 103, 0.22);
   background: linear-gradient(180deg, rgba(232, 243, 236, 0.68), rgba(244, 249, 245, 0.8));
@@ -1529,6 +1537,7 @@
   .mapa-admin-page__workspace-actions,
   .mapa-admin-page__form-actions,
   .mapa-admin-page__photo-library-actions,
+  .mapa-admin-page__compact-actions,
   .mapa-admin-page__user-meta,
   .mapa-admin-page__profile-meta {
     display: grid;
@@ -1539,7 +1548,8 @@
   .mapa-admin-page__action,
   .mapa-admin-page__logout-button,
   .mapa-admin-page__pill,
-  .mapa-admin-page__nav-badge {
+  .mapa-admin-page__nav-badge,
+  .mapa-admin-page__compact-actions {
     width: 100%;
   }
 
