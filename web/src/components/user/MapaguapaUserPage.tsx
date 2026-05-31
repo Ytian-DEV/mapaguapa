@@ -804,6 +804,13 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
             ))}
           </div>
         )}
+
+        <p className="mapa-user-page__powered-by">
+          <span>Powered by</span>
+          <a href="https://boyles-christian-portfolio.vercel.app/" rel="noreferrer" target="_blank">
+            Lily Tech Solutions Co.
+          </a>
+        </p>
       </div>
 
       {openListing && (

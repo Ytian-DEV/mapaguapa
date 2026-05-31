@@ -206,7 +206,6 @@ export function draftToListingPayload(draft: ListingDraft): Database["public"]["
     has_drying_area: draft.dryingArea,
     location_lat: Number.isFinite(latitude) ? latitude : null,
     location_lng: Number.isFinite(longitude) ? longitude : null,
-    status: "active",
   };
 }
 
@@ -236,6 +235,7 @@ export async function fetchAdminListings() {
   const { data, error } = await supabase
     .from("listings")
     .select(listingSelect)
+    .eq("status", "active")
     .order("created_at", { ascending: false });
 
   if (error) {
