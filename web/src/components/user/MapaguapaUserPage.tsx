@@ -174,6 +174,7 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
   const [activeFeatures, setActiveFeatures] = useState<FeatureFilterKey[]>([]);
   const [openListingId, setOpenListingId] = useState<string | null>(null);
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
+  const [fullViewPhotoIndex, setFullViewPhotoIndex] = useState<number | null>(null);
   const [savedListingIds, setSavedListingIds] = useState<string[]>(() => {
     try {
       const parsed = JSON.parse(window.localStorage.getItem(savedListingsStorageKey) ?? "[]");
@@ -440,6 +441,7 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
 
   useEffect(() => {
     setActivePhotoIndex(0);
+    setFullViewPhotoIndex(null);
     setContactFeedback(null);
   }, [openListingId]);
 
@@ -455,6 +457,11 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
     const previousOverflow = document.body.style.overflow;
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
+        if (fullViewPhotoIndex !== null) {
+          setFullViewPhotoIndex(null);
+          return;
+        }
+
         setOpenListingId(null);
       }
     };
@@ -466,7 +473,16 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [openListing]);
+  }, [fullViewPhotoIndex, openListing]);
+
+  const openPhotoFullView = (index: number) => {
+    if (!getPhotoUrl(openListingPhotos[index])) {
+      return;
+    }
+
+    setActivePhotoIndex(index);
+    setFullViewPhotoIndex(index);
+  };
 
   const toggleFeatureFilter = (featureKey: FeatureFilterKey) => {
     setActiveFeatures((current) =>
@@ -813,8 +829,10 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
 
             <div className="mapa-user-page__modal-layout">
               <div className="mapa-user-page__modal-media">
-                <div
+                <button
+                  aria-label={`Open ${openListing.name} cover photo in full view`}
                   className="mapa-user-page__modal-hero"
+                  onClick={() => openPhotoFullView(activePhotoIndex)}
                   style={
                     activePhotoUrl
                       ? {
@@ -822,6 +840,7 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
                         }
                       : undefined
                   }
+                  type="button"
                 >
                   <div className="mapa-user-page__modal-hero-overlay">
                     <div className="mapa-user-page__modal-hero-copy">
@@ -834,7 +853,7 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
                       <span>{openListing.accommodation_type}</span>
                     </div>
                   </div>
-                </div>
+                </button>
 
                 {openListingPhotos.length > 1 && (
                   <div className="mapa-user-page__modal-filmstrip">
@@ -844,9 +863,10 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
                         <button
                           className={`mapa-user-page__modal-thumb${index === activePhotoIndex ? " is-active" : ""}`}
                           key={photo.id}
-                          onClick={() => setActivePhotoIndex(index)}
+                          onClick={() => openPhotoFullView(index)}
                           style={thumbUrl ? { backgroundImage: `url(${thumbUrl})` } : undefined}
                           type="button"
+                          aria-label={`Open photo ${index + 1} in full view`}
                         />
                       );
                     })}
@@ -930,6 +950,57 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
               </section>
             </div>
           </div>
+
+          {fullViewPhotoIndex !== null && (
+            <div
+              aria-label={`${openListing.name} photo full view`}
+              aria-modal="true"
+              className="mapa-user-page__photo-viewer"
+              role="dialog"
+            >
+              <button
+                aria-label="Close full view photo"
+                className="mapa-user-page__photo-viewer-backdrop"
+                onClick={() => setFullViewPhotoIndex(null)}
+                type="button"
+              />
+              <div className="mapa-user-page__photo-viewer-panel">
+                <button
+                  aria-label="Close full view photo"
+                  className="mapa-user-page__photo-viewer-close"
+                  onClick={() => setFullViewPhotoIndex(null)}
+                  type="button"
+                >
+                  X
+                </button>
+                <img
+                  alt={openListingPhotos[fullViewPhotoIndex]?.alt_text || `${openListing.name} photo ${fullViewPhotoIndex + 1}`}
+                  className="mapa-user-page__photo-viewer-image"
+                  src={getPhotoUrl(openListingPhotos[fullViewPhotoIndex])}
+                />
+                {openListingPhotos.length > 1 && (
+                  <div className="mapa-user-page__photo-viewer-strip" aria-label="Choose another photo">
+                    {openListingPhotos.map((photo, index) => {
+                      const thumbUrl = getPhotoUrl(photo);
+                      return (
+                        <button
+                          aria-label={`Show photo ${index + 1}`}
+                          className={`mapa-user-page__photo-viewer-thumb${index === fullViewPhotoIndex ? " is-active" : ""}`}
+                          key={photo.id}
+                          onClick={() => {
+                            setActivePhotoIndex(index);
+                            setFullViewPhotoIndex(index);
+                          }}
+                          style={thumbUrl ? { backgroundImage: `url(${thumbUrl})` } : undefined}
+                          type="button"
+                        />
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </main>
