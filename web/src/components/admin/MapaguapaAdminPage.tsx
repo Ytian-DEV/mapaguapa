@@ -148,6 +148,7 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
   const [draggedPhotoId, setDraggedPhotoId] = useState<string | null>(null);
   const [dragOverPhotoId, setDragOverPhotoId] = useState<string | null>(null);
   const [reorderingPhotos, setReorderingPhotos] = useState(false);
+  const [restoringArchiveId, setRestoringArchiveId] = useState<string | null>(null);
   const [userActionId, setUserActionId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -570,7 +571,7 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
 
       if (section === "add") {
         const { data, error: insertError } = await ((client.from("listings") as any)
-          .insert(payload)
+          .insert({ ...payload, status: "active" })
           .select("id, name")
           .single());
 
@@ -592,8 +593,15 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
         setPendingPhotos([]);
         setSection("edit");
       } else if (section === "edit" && selectedListing) {
+        if (selectedListing.status !== "active") {
+          setError("Archived listings cannot be edited from this page. Restore it first from the archive section.");
+          await loadDashboard();
+          return;
+        }
+
         const { error: updateError } = await ((client.from("listings") as any)
           .update(payload)
+          .eq("status", "active")
           .eq("id", selectedListing.id));
 
         if (updateError) {
@@ -773,6 +781,36 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
       setError(archiveError instanceof Error ? archiveError.message : "Failed to archive listing.");
     } finally {
       setArchiving(false);
+    }
+  }
+
+  async function restoreArchivedListing(item: DeletedListingRow) {
+    const client = supabase;
+    if (!client) {
+      setError("Supabase is not configured.");
+      return;
+    }
+
+    setRestoringArchiveId(item.id);
+    setError(null);
+    setFeedback(null);
+
+    try {
+      const { error: restoreError } = await ((client.rpc as any)("restore_listing", {
+        p_listing_id: item.original_listing_id,
+      }));
+
+      if (restoreError) {
+        throw restoreError;
+      }
+
+      setFeedback(`${item.listing_name} was restored to active listings.`);
+      await loadDashboard(item.original_listing_id);
+      setSection("edit");
+    } catch (restoreError) {
+      setError(restoreError instanceof Error ? restoreError.message : "Failed to restore listing.");
+    } finally {
+      setRestoringArchiveId(null);
     }
   }
 
@@ -1375,7 +1413,17 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
                             <h4 className="mapa-admin-page__compact-title">{item.listing_name}</h4>
                             <p className="mapa-admin-page__compact-copy">{item.delete_reason || "No archive reason provided."}</p>
                           </div>
-                          <span className="mapa-admin-page__nav-badge">{new Date(item.deleted_at).toLocaleDateString()}</span>
+                          <div className="mapa-admin-page__compact-actions">
+                            <span className="mapa-admin-page__nav-badge">{new Date(item.deleted_at).toLocaleDateString()}</span>
+                            <button
+                              className="mapa-admin-page__action mapa-admin-page__action--ghost mapa-admin-page__action--small"
+                              disabled={restoringArchiveId === item.id}
+                              onClick={() => void restoreArchivedListing(item)}
+                              type="button"
+                            >
+                              {restoringArchiveId === item.id ? "Restoring..." : "Restore"}
+                            </button>
+                          </div>
                         </article>
                       ))
                     ) : (
