@@ -348,6 +348,7 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
             { label: "Address", value: openListing.address },
             { label: "Price range", value: formatPesoLabel(openListing.monthly_rental_label) },
             { label: "Property type", value: openListing.accommodation_type },
+            { label: "Specific type", value: openListing.accommodation_type_other || "Not specified" },
             { label: "Setup", value: openListing.exclusivity || "Open to students" },
           ],
         },
@@ -360,7 +361,12 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
             { label: "Wi-Fi", value: labelBoolean(openListing.has_wifi, "Available", "Not available") },
             { label: "Study area", value: labelBoolean(openListing.has_study_area, "Available", "Not available") },
             { label: "Laundry", value: labelBoolean(openListing.has_laundry_area, "Available", "Not available") },
+            { label: "Drying area", value: labelBoolean(openListing.has_drying_area, "Available", "Not available") },
             { label: "Parking", value: labelBoolean(openListing.has_parking_area, "Available", "Not available") },
+            { label: "Kitchen", value: labelBoolean(openListing.has_common_kitchen, "Available", "Not listed") },
+            { label: "Refrigerator", value: labelBoolean(openListing.has_refrigerator, "Available", "Not listed") },
+            { label: "Television", value: labelBoolean(openListing.has_television, "Available", "Not listed") },
+            { label: "Other", value: openListing.other_amenities || "No other amenities listed" },
           ],
         },
         {
@@ -370,9 +376,16 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
           tone: "rules",
           items: [
             { label: "Curfew", value: openListing.curfew || "No curfew listed" },
-            { label: "Visitors", value: labelBoolean(openListing.visitors_allowed, "Allowed", "Not listed") },
+            { label: "Visitors", value: labelBoolean(openListing.visitors_allowed, "Visitors allowed", "No visitors allowed") },
             { label: "Pets", value: labelBoolean(openListing.pets_allowed, "Allowed", "Not allowed") },
+            { label: "Smoking", value: labelBoolean(openListing.smoking_allowed, "Smoking allowed", "Smoking prohibited") },
             { label: "CCTV", value: labelBoolean(openListing.has_security_cctv, "Listed", "Not listed") },
+            { label: "Emergency exit", value: labelBoolean(openListing.has_emergency_exit, "Listed", "Not listed") },
+            { label: "Fire alarm", value: labelBoolean(openListing.has_fire_alarm, "Listed", "Not listed") },
+            { label: "Emergency lights", value: labelBoolean(openListing.has_emergency_lights, "Listed", "Not listed") },
+            { label: "Fire extinguisher", value: labelBoolean(openListing.has_fire_extinguisher, "Listed", "Not listed") },
+            { label: "Smoke detector", value: labelBoolean(openListing.has_smoke_detector, "Listed", "Not listed") },
+            { label: "Sprinkler", value: labelBoolean(openListing.has_sprinkler, "Listed", "Not listed") },
           ],
         },
         {
@@ -382,6 +395,7 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
           tone: "utilities",
           items: [
             { label: "Signals", value: formatSignals(openListing.cellular_signals, openListing.cellular_signals_raw) },
+            { label: "Included bills", value: openListing.bills_included || "No included bills listed" },
             { label: "Excluded bills", value: openListing.bills_not_included || "No excluded bills listed" },
             {
               label: "Utilities",
@@ -389,7 +403,9 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
             },
             {
               label: "Appliance fee",
-              value: labelBoolean(openListing.has_additional_appliance_fee, "May apply", "No fee listed"),
+              value: openListing.has_additional_appliance_fee
+                ? openListing.appliance_fee_label || "Extra appliance fee applies"
+                : "No extra appliance fee",
             },
           ],
         },
@@ -411,14 +427,14 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
               label: "Bathroom by floor",
               value: labelBoolean(openListing.has_bathroom_each_floor, "Available", "Not listed"),
             },
-            {
-              label: "Common kitchen",
-              value: labelBoolean(openListing.has_common_kitchen, "Available", "No common kitchen listed"),
-            },
-            {
-              label: "Drying area",
-              value: labelBoolean(openListing.has_drying_area, "Available", "Not listed"),
-            },
+            { label: "Separate CR/bath", value: labelBoolean(openListing.comfort_rooms_separate_from_bathrooms, "Yes", "Not listed") },
+            { label: "Comfort rooms", value: openListing.comfort_room_count == null ? "Not listed" : String(openListing.comfort_room_count) },
+            { label: "Bathrooms", value: openListing.bathroom_count == null ? "Not listed" : String(openListing.bathroom_count) },
+            { label: "Charging slots", value: labelBoolean(openListing.has_charging_slots_each_room, "Available", "Not listed") },
+            { label: "Charging stations", value: openListing.charging_station_count_label || (openListing.charging_station_count == null ? "Not listed" : String(openListing.charging_station_count)) },
+            { label: "Electric fans", value: labelBoolean(openListing.has_electric_fans, "Available", "Not listed") },
+            { label: "Aircon", value: labelBoolean(openListing.has_aircon, "Available", "Not listed") },
+            { label: "Aircon rooms", value: openListing.aircon_room_count == null ? "Not listed" : String(openListing.aircon_room_count) },
           ],
         },
         {
