@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ChangeEvent } from "react";
+import { useEffect, useMemo, useState, type ChangeEvent, type ReactNode } from "react";
 import {
   draftToListingPayload,
   emptyListingDraft,
@@ -66,6 +66,10 @@ const sectionCopy: Record<AdminSection, { label: string; title: string; descript
     description: "See how many accounts exist, who has admin access, and which users are active in the system.",
   },
 };
+
+const accommodationTypeOptions = ["Dormitory", "Boarding House", "Apartment", "Others"];
+const exclusivityOptions = ["Mixed", "Male", "Female"];
+const billOptions = ["Internet", "Water", "Electricity"];
 
 function slugifyPathSegment(value: string) {
   return value
@@ -297,12 +301,214 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
     setDraft((current) => ({ ...current, [key]: value }));
   }
 
+  function updateAccommodationType(value: string) {
+    setDraft((current) => ({
+      ...current,
+      accommodationType: value,
+      accommodationTypeOther: value === "Others" ? current.accommodationTypeOther : "",
+    }));
+  }
+
+  function updateBillList(key: "billsIncluded" | "billsNotIncluded", bill: string, checked: boolean) {
+    setDraft((current) => {
+      const selected = current[key]
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
+      const next = checked ? Array.from(new Set([...selected, bill])) : selected.filter((item) => item !== bill);
+
+      return { ...current, [key]: next.join(", ") };
+    });
+  }
+
   function updateDraftCoordinates(coordinates: PropertyCoordinates) {
     setDraft((current) => ({
       ...current,
       locationLat: coordinates.lat.toFixed(6),
       locationLng: coordinates.lng.toFixed(6),
     }));
+  }
+
+  function renderDraftField(
+    label: string,
+    key: keyof ListingDraft,
+    options: { wide?: boolean; rows?: number; disabled?: boolean } = {}
+  ) {
+    const value = draft[key];
+
+    return (
+      <label className={`mapa-admin-page__field${options.wide ? " mapa-admin-page__field--wide" : ""}`}>
+        <span>{label}</span>
+        {options.rows ? (
+          <textarea
+            onChange={(event) => updateDraft(key, event.target.value as ListingDraft[typeof key])}
+            disabled={options.disabled}
+            rows={options.rows}
+            value={String(value)}
+          />
+        ) : (
+          <input
+            onChange={(event) => updateDraft(key, event.target.value as ListingDraft[typeof key])}
+            disabled={options.disabled}
+            type="text"
+            value={String(value)}
+          />
+        )}
+      </label>
+    );
+  }
+
+  function renderDraftCheckbox(label: string, key: keyof ListingDraft) {
+    return (
+      <label className="mapa-admin-page__checkbox">
+        <input
+          checked={Boolean(draft[key])}
+          onChange={(event) => updateDraft(key, event.target.checked as ListingDraft[typeof key])}
+          type="checkbox"
+        />
+        <span>{label}</span>
+      </label>
+    );
+  }
+
+  function renderDraftSelect(label: string, value: string, options: string[], onChange: (value: string) => void) {
+    return (
+      <label className="mapa-admin-page__field">
+        <span>{label}</span>
+        <select onChange={(event) => onChange(event.target.value)} value={value}>
+          {options.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+      </label>
+    );
+  }
+
+  function renderBillCheckbox(label: string, key: "billsIncluded" | "billsNotIncluded") {
+    const selected = draft[key]
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+
+    return (
+      <section className="mapa-admin-page__check-cluster">
+        <p className="mapa-admin-page__check-cluster-title">{label}</p>
+        {billOptions.map((bill) => (
+          <label className="mapa-admin-page__checkbox" key={`${key}-${bill}`}>
+            <input
+              checked={selected.includes(bill)}
+              onChange={(event) => updateBillList(key, bill, event.target.checked)}
+              type="checkbox"
+            />
+            <span>{bill}</span>
+          </label>
+        ))}
+      </section>
+    );
+  }
+
+  function renderDraftGroup(
+    title: string,
+    children: ReactNode,
+    options: { kind?: "fields" | "checks" } = {}
+  ) {
+    return (
+      <section className="mapa-admin-page__form-group">
+        <h4 className="mapa-admin-page__form-group-title">{title}</h4>
+        <div className={options.kind === "checks" ? "mapa-admin-page__checkbox-grid" : "mapa-admin-page__field-grid"}>
+          {children}
+        </div>
+      </section>
+    );
+  }
+
+  function renderListingDraftFields() {
+    return (
+      <>
+        {renderDraftGroup("Listing Info", (
+          <>
+            {renderDraftField("Accommodation name", "name")}
+            {renderDraftField("Address", "address")}
+            {renderDraftSelect("Accommodation type", draft.accommodationType, accommodationTypeOptions, updateAccommodationType)}
+            {renderDraftField("Specific type", "accommodationTypeOther", { disabled: draft.accommodationType !== "Others" })}
+            {renderDraftSelect("Exclusivity", draft.exclusivity, exclusivityOptions, (value) => updateDraft("exclusivity", value))}
+            {renderDraftField("Monthly rental", "monthlyRentalLabel")}
+            {renderDraftField("Rooms available", "roomsAvailable")}
+            {renderDraftField("Floors", "floorsLabel")}
+            {renderDraftField("Occupancy", "occupancyLabel")}
+            {renderDraftField("Description", "description", { wide: true, rows: 4 })}
+          </>
+        ))}
+
+        {renderDraftGroup("Utilities", (
+          <>
+            {renderBillCheckbox("Bills included", "billsIncluded")}
+            {renderBillCheckbox("Bills not included", "billsNotIncluded")}
+            {renderDraftCheckbox("Appliance fee", "applianceFee")}
+            {draft.applianceFee && renderDraftField("How much is the fee?", "applianceAmount", { wide: true })}
+          </>
+        ))}
+
+        {renderDraftGroup("Comfort", (
+          <>
+            {renderDraftCheckbox("Fenced", "fenced")}
+            {renderDraftCheckbox("Comfort room per room", "comfortRoomPerRoom")}
+            {renderDraftCheckbox("Separate CR/bath", "separateCrBath")}
+            {renderDraftCheckbox("CR/bath per floor", "crBathPerFloor")}
+            {renderDraftCheckbox("Charging slots", "chargingSlots")}
+            {renderDraftCheckbox("Electric fans", "electricFans")}
+            {renderDraftCheckbox("Aircon", "aircon")}
+          </>
+        ))}
+
+        {renderDraftGroup("Amenities", (
+          <>
+            {renderDraftField("Other amenities", "otherAmenities", { wide: true, rows: 2 })}
+            {renderDraftCheckbox("Wi-Fi available", "wifi")}
+            {renderDraftCheckbox("Study area", "studyArea")}
+            {renderDraftCheckbox("Parking area", "parkingArea")}
+            {renderDraftCheckbox("Laundry area", "laundryArea")}
+            {renderDraftCheckbox("Drying area", "dryingArea")}
+            {renderDraftCheckbox("Common kitchen", "commonKitchen")}
+            {renderDraftCheckbox("Refrigerator", "refrigerator")}
+            {renderDraftCheckbox("Television", "television")}
+          </>
+        ))}
+
+        {renderDraftGroup("Rules", (
+          <>
+            {renderDraftCheckbox("No curfew", "noCurfew")}
+            {renderDraftCheckbox("Pets allowed", "petsAllowed")}
+            {renderDraftCheckbox("Visitors allowed", "visitorsAllowed")}
+            {renderDraftCheckbox("Smoking allowed", "smokingAllowed")}
+          </>
+        ))}
+
+        {renderDraftGroup("Safety", (
+          <>
+            {renderDraftCheckbox("Security/CCTV", "security")}
+            {renderDraftCheckbox("Emergency exit", "emergencyExit")}
+            {renderDraftCheckbox("Fire alarm", "fireAlarm")}
+            {renderDraftCheckbox("Emergency lights", "emergencyLights")}
+            {renderDraftCheckbox("Fire extinguisher", "fireExtinguisher")}
+            {renderDraftCheckbox("Smoke detector", "smokeDetector")}
+            {renderDraftCheckbox("Sprinkler", "sprinkler")}
+          </>
+        ), { kind: "checks" })}
+
+        {renderDraftGroup("Signals", renderDraftField("Cellular signals", "cellularSignalsRaw", { wide: true }))}
+
+        {renderDraftGroup("Contact", (
+          <>
+            {renderDraftField("Contact person", "contactPerson")}
+            {renderDraftField("Contact number", "contactNumber")}
+            {renderDraftField("Other contact information", "otherContactInformation", { wide: true, rows: 3 })}
+          </>
+        ))}
+      </>
+    );
   }
 
   async function searchLocation() {
@@ -1047,22 +1253,7 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
                       <h3 className="mapa-admin-page__section-title">Listing information</h3>
                     </div>
                   </div>
-                  <div className="mapa-admin-page__field-grid">
-                    <label className="mapa-admin-page__field"><span>Accommodation name</span><input onChange={(event) => updateDraft("name", event.target.value)} type="text" value={draft.name} /></label>
-                    <label className="mapa-admin-page__field"><span>Address</span><input onChange={(event) => updateDraft("address", event.target.value)} type="text" value={draft.address} /></label>
-                    <label className="mapa-admin-page__field"><span>Accommodation type</span><input onChange={(event) => updateDraft("accommodationType", event.target.value)} type="text" value={draft.accommodationType} /></label>
-                    <label className="mapa-admin-page__field"><span>Exclusivity</span><input onChange={(event) => updateDraft("exclusivity", event.target.value)} type="text" value={draft.exclusivity} /></label>
-                    <label className="mapa-admin-page__field"><span>Monthly rental</span><input onChange={(event) => updateDraft("monthlyRentalLabel", event.target.value)} type="text" value={draft.monthlyRentalLabel} /></label>
-                    <label className="mapa-admin-page__field"><span>Rooms available</span><input onChange={(event) => updateDraft("roomsAvailable", event.target.value)} type="text" value={draft.roomsAvailable} /></label>
-                    <label className="mapa-admin-page__field"><span>Floors</span><input onChange={(event) => updateDraft("floorsLabel", event.target.value)} type="text" value={draft.floorsLabel} /></label>
-                    <label className="mapa-admin-page__field"><span>Occupancy</span><input onChange={(event) => updateDraft("occupancyLabel", event.target.value)} type="text" value={draft.occupancyLabel} /></label>
-                    <label className="mapa-admin-page__field"><span>Curfew</span><input onChange={(event) => updateDraft("curfew", event.target.value)} type="text" value={draft.curfew} /></label>
-                    <label className="mapa-admin-page__field"><span>Signals</span><input onChange={(event) => updateDraft("cellularSignalsRaw", event.target.value)} type="text" value={draft.cellularSignalsRaw} /></label>
-                    <label className="mapa-admin-page__field"><span>Contact person</span><input onChange={(event) => updateDraft("contactPerson", event.target.value)} type="text" value={draft.contactPerson} /></label>
-                    <label className="mapa-admin-page__field"><span>Contact number</span><input onChange={(event) => updateDraft("contactNumber", event.target.value)} type="text" value={draft.contactNumber} /></label>
-                    <label className="mapa-admin-page__field mapa-admin-page__field--wide"><span>Other contact information</span><textarea onChange={(event) => updateDraft("otherContactInformation", event.target.value)} rows={3} value={draft.otherContactInformation} /></label>
-                    <label className="mapa-admin-page__field mapa-admin-page__field--wide"><span>Description</span><textarea onChange={(event) => updateDraft("description", event.target.value)} rows={4} value={draft.description} /></label>
-                  </div>
+                  {renderListingDraftFields()}
                   <div className="mapa-admin-page__location-picker">
                     <div className="mapa-admin-page__location-head">
                       <div>
@@ -1088,16 +1279,6 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
                       </button>
                     </div>
                     <PropertyMap coordinates={getDraftCoordinates(draft)} mode="picker" onChange={updateDraftCoordinates} />
-                  </div>
-                  <div className="mapa-admin-page__checkbox-grid">
-                    <label className="mapa-admin-page__checkbox"><input checked={draft.utilitiesIncluded} onChange={(event) => updateDraft("utilitiesIncluded", event.target.checked)} type="checkbox" /><span>Utilities included</span></label>
-                    <label className="mapa-admin-page__checkbox"><input checked={draft.wifi} onChange={(event) => updateDraft("wifi", event.target.checked)} type="checkbox" /><span>Wi-Fi available</span></label>
-                    <label className="mapa-admin-page__checkbox"><input checked={draft.studyArea} onChange={(event) => updateDraft("studyArea", event.target.checked)} type="checkbox" /><span>Study area</span></label>
-                    <label className="mapa-admin-page__checkbox"><input checked={draft.parkingArea} onChange={(event) => updateDraft("parkingArea", event.target.checked)} type="checkbox" /><span>Parking area</span></label>
-                    <label className="mapa-admin-page__checkbox"><input checked={draft.petsAllowed} onChange={(event) => updateDraft("petsAllowed", event.target.checked)} type="checkbox" /><span>Pets allowed</span></label>
-                    <label className="mapa-admin-page__checkbox"><input checked={draft.security} onChange={(event) => updateDraft("security", event.target.checked)} type="checkbox" /><span>Security/CCTV</span></label>
-                    <label className="mapa-admin-page__checkbox"><input checked={draft.laundryArea} onChange={(event) => updateDraft("laundryArea", event.target.checked)} type="checkbox" /><span>Laundry area</span></label>
-                    <label className="mapa-admin-page__checkbox"><input checked={draft.dryingArea} onChange={(event) => updateDraft("dryingArea", event.target.checked)} type="checkbox" /><span>Drying area</span></label>
                   </div>
                   <div className="mapa-admin-page__photo-upload">
                     <div>
@@ -1230,9 +1411,10 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
                           </div>
                         </div>
                         <div className="mapa-admin-page__detail-grid">
-                          <article className="mapa-admin-page__detail-card"><h4 className="mapa-admin-page__compact-title">Property</h4><p>{selectedListing.accommodation_type}</p><p>{selectedListing.exclusivity || "Open"}</p><p>{selectedListing.rooms_available ?? 0} rooms</p><p>{selectedListing.curfew || "No curfew listed"}</p></article>
-                          <article className="mapa-admin-page__detail-card"><h4 className="mapa-admin-page__compact-title">Utilities and signals</h4><p>{labelBoolean(selectedListing.utilities_included, "Utilities included", "Utilities separate")}</p><p>{formatSignals(selectedListing.cellular_signals, selectedListing.cellular_signals_raw)}</p><p>{selectedListing.bills_not_included || "No excluded bills listed"}</p></article>
-                          <article className="mapa-admin-page__detail-card"><h4 className="mapa-admin-page__compact-title">Amenities</h4><p>{labelBoolean(selectedListing.has_wifi, "Wi-Fi available")}</p><p>{labelBoolean(selectedListing.has_study_area, "Study area available")}</p><p>{labelBoolean(selectedListing.has_parking_area, "Parking available")}</p></article>
+                          <article className="mapa-admin-page__detail-card"><h4 className="mapa-admin-page__compact-title">Property</h4><p>{selectedListing.accommodation_type}{selectedListing.accommodation_type_other ? ` - ${selectedListing.accommodation_type_other}` : ""}</p><p>{selectedListing.exclusivity || "Open"}</p><p>{selectedListing.rooms_available ?? 0} rooms</p><p>{selectedListing.curfew || "No curfew listed"}</p><p>{labelBoolean(selectedListing.is_fenced, "Fenced", "Fence not listed")}</p></article>
+                          <article className="mapa-admin-page__detail-card"><h4 className="mapa-admin-page__compact-title">Utilities</h4><p>{selectedListing.bills_included || "No included bills listed"}</p><p>{selectedListing.bills_not_included || "No excluded bills listed"}</p><p>{formatSignals(selectedListing.cellular_signals, selectedListing.cellular_signals_raw)}</p><p>{selectedListing.has_additional_appliance_fee ? selectedListing.appliance_fee_label || "Extra appliance fee applies" : "No extra appliance fee"}</p></article>
+                          <article className="mapa-admin-page__detail-card"><h4 className="mapa-admin-page__compact-title">Amenities</h4><p>{labelBoolean(selectedListing.has_wifi, "Wi-Fi available")}</p><p>{labelBoolean(selectedListing.has_study_area, "Study area available")}</p><p>{labelBoolean(selectedListing.has_parking_area, "Parking available")}</p><p>{labelBoolean(selectedListing.has_common_kitchen, "Common kitchen")}</p><p>{selectedListing.other_amenities || "No other amenities listed"}</p></article>
+                          <article className="mapa-admin-page__detail-card"><h4 className="mapa-admin-page__compact-title">Safety</h4><p>{labelBoolean(selectedListing.has_security_cctv, "Security/CCTV")}</p><p>{labelBoolean(selectedListing.has_emergency_exit, "Emergency exit")}</p><p>{labelBoolean(selectedListing.has_fire_alarm, "Fire alarm")}</p><p>{labelBoolean(selectedListing.has_fire_extinguisher, "Fire extinguisher")}</p></article>
                           <article className="mapa-admin-page__detail-card"><h4 className="mapa-admin-page__compact-title">Owner contact</h4><p>{selectedListing.contact_person || "No contact person"}</p><p>{selectedListing.contact_number || "No contact number"}</p><p>{selectedListing.other_contact_information || "No extra contact info"}</p></article>
                         </div>
                       </section>
@@ -1331,22 +1513,7 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
                             <h3 className="mapa-admin-page__section-title">Update details</h3>
                           </div>
                         </div>
-                        <div className="mapa-admin-page__field-grid">
-                          <label className="mapa-admin-page__field"><span>Accommodation name</span><input onChange={(event) => updateDraft("name", event.target.value)} type="text" value={draft.name} /></label>
-                          <label className="mapa-admin-page__field"><span>Address</span><input onChange={(event) => updateDraft("address", event.target.value)} type="text" value={draft.address} /></label>
-                          <label className="mapa-admin-page__field"><span>Accommodation type</span><input onChange={(event) => updateDraft("accommodationType", event.target.value)} type="text" value={draft.accommodationType} /></label>
-                          <label className="mapa-admin-page__field"><span>Exclusivity</span><input onChange={(event) => updateDraft("exclusivity", event.target.value)} type="text" value={draft.exclusivity} /></label>
-                          <label className="mapa-admin-page__field"><span>Monthly rental</span><input onChange={(event) => updateDraft("monthlyRentalLabel", event.target.value)} type="text" value={draft.monthlyRentalLabel} /></label>
-                          <label className="mapa-admin-page__field"><span>Rooms available</span><input onChange={(event) => updateDraft("roomsAvailable", event.target.value)} type="text" value={draft.roomsAvailable} /></label>
-                          <label className="mapa-admin-page__field"><span>Floors</span><input onChange={(event) => updateDraft("floorsLabel", event.target.value)} type="text" value={draft.floorsLabel} /></label>
-                          <label className="mapa-admin-page__field"><span>Occupancy</span><input onChange={(event) => updateDraft("occupancyLabel", event.target.value)} type="text" value={draft.occupancyLabel} /></label>
-                          <label className="mapa-admin-page__field"><span>Curfew</span><input onChange={(event) => updateDraft("curfew", event.target.value)} type="text" value={draft.curfew} /></label>
-                          <label className="mapa-admin-page__field"><span>Signals</span><input onChange={(event) => updateDraft("cellularSignalsRaw", event.target.value)} type="text" value={draft.cellularSignalsRaw} /></label>
-                          <label className="mapa-admin-page__field"><span>Contact person</span><input onChange={(event) => updateDraft("contactPerson", event.target.value)} type="text" value={draft.contactPerson} /></label>
-                          <label className="mapa-admin-page__field"><span>Contact number</span><input onChange={(event) => updateDraft("contactNumber", event.target.value)} type="text" value={draft.contactNumber} /></label>
-                          <label className="mapa-admin-page__field mapa-admin-page__field--wide"><span>Other contact information</span><textarea onChange={(event) => updateDraft("otherContactInformation", event.target.value)} rows={3} value={draft.otherContactInformation} /></label>
-                          <label className="mapa-admin-page__field mapa-admin-page__field--wide"><span>Description</span><textarea onChange={(event) => updateDraft("description", event.target.value)} rows={4} value={draft.description} /></label>
-                        </div>
+                        {renderListingDraftFields()}
                         <div className="mapa-admin-page__location-picker">
                           <div className="mapa-admin-page__location-head">
                             <div>
@@ -1372,16 +1539,6 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
                             </button>
                           </div>
                           <PropertyMap coordinates={getDraftCoordinates(draft)} mode="picker" onChange={updateDraftCoordinates} />
-                        </div>
-                        <div className="mapa-admin-page__checkbox-grid">
-                          <label className="mapa-admin-page__checkbox"><input checked={draft.utilitiesIncluded} onChange={(event) => updateDraft("utilitiesIncluded", event.target.checked)} type="checkbox" /><span>Utilities included</span></label>
-                          <label className="mapa-admin-page__checkbox"><input checked={draft.wifi} onChange={(event) => updateDraft("wifi", event.target.checked)} type="checkbox" /><span>Wi-Fi available</span></label>
-                          <label className="mapa-admin-page__checkbox"><input checked={draft.studyArea} onChange={(event) => updateDraft("studyArea", event.target.checked)} type="checkbox" /><span>Study area</span></label>
-                          <label className="mapa-admin-page__checkbox"><input checked={draft.parkingArea} onChange={(event) => updateDraft("parkingArea", event.target.checked)} type="checkbox" /><span>Parking area</span></label>
-                          <label className="mapa-admin-page__checkbox"><input checked={draft.petsAllowed} onChange={(event) => updateDraft("petsAllowed", event.target.checked)} type="checkbox" /><span>Pets allowed</span></label>
-                          <label className="mapa-admin-page__checkbox"><input checked={draft.security} onChange={(event) => updateDraft("security", event.target.checked)} type="checkbox" /><span>Security/CCTV</span></label>
-                          <label className="mapa-admin-page__checkbox"><input checked={draft.laundryArea} onChange={(event) => updateDraft("laundryArea", event.target.checked)} type="checkbox" /><span>Laundry area</span></label>
-                          <label className="mapa-admin-page__checkbox"><input checked={draft.dryingArea} onChange={(event) => updateDraft("dryingArea", event.target.checked)} type="checkbox" /><span>Drying area</span></label>
                         </div>
                         <div className="mapa-admin-page__form-actions">
                           <button className="mapa-admin-page__action mapa-admin-page__action--ghost" onClick={() => { setDraft(listingToDraft(selectedListing)); setEditPendingPhotos([]); }} type="button">Reset</button>

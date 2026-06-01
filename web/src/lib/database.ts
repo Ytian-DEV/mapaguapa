@@ -36,6 +36,7 @@ export type Database = {
           monthly_rent_min: number | null;
           monthly_rent_max: number | null;
           utilities_included: boolean | null;
+          bills_included: string | null;
           bills_not_included: string | null;
           has_additional_appliance_fee: boolean | null;
           appliance_fee_label: string | null;
@@ -54,6 +55,9 @@ export type Database = {
           has_aircon: boolean | null;
           aircon_room_count: number | null;
           has_common_kitchen: boolean | null;
+          has_refrigerator: boolean | null;
+          has_television: boolean | null;
+          other_amenities: string | null;
           has_study_area: boolean | null;
           has_wifi: boolean | null;
           cellular_signals_raw: string | null;
@@ -62,7 +66,15 @@ export type Database = {
           pets_allowed: boolean | null;
           curfew: string | null;
           visitors_allowed: boolean | null;
+          visitor_time: string | null;
+          smoking_allowed: boolean | null;
           has_security_cctv: boolean | null;
+          has_emergency_exit: boolean | null;
+          has_fire_alarm: boolean | null;
+          has_emergency_lights: boolean | null;
+          has_fire_extinguisher: boolean | null;
+          has_smoke_detector: boolean | null;
+          has_sprinkler: boolean | null;
           contact_person: string | null;
           contact_number: string | null;
           other_contact_information: string | null;

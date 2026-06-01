@@ -41,6 +41,7 @@
 
 .mapa-admin-page button,
 .mapa-admin-page input,
+.mapa-admin-page select,
 .mapa-admin-page textarea {
   font: inherit;
 }
@@ -811,6 +812,26 @@
   gap: 0.95rem 0.85rem;
 }
 
+.mapa-admin-page__form-group {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.mapa-admin-page__form-group + .mapa-admin-page__form-group,
+.mapa-admin-page__form-group + .mapa-admin-page__location-picker,
+.mapa-admin-page__location-picker + .mapa-admin-page__photo-upload {
+  margin-top: 1.25rem;
+}
+
+.mapa-admin-page__form-group-title {
+  margin: 0;
+  color: #17694e;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
 .mapa-admin-page__field {
   display: grid;
   gap: 0.45rem;
@@ -822,6 +843,7 @@
 }
 
 .mapa-admin-page__field input,
+.mapa-admin-page__field select,
 .mapa-admin-page__field textarea {
   width: 100%;
   border: 1px solid rgba(22, 74, 53, 0.12);
@@ -838,6 +860,7 @@
 }
 
 .mapa-admin-page__field input:focus,
+.mapa-admin-page__field select:focus,
 .mapa-admin-page__field textarea:focus {
   border-color: rgba(0, 215, 160, 0.58);
   box-shadow:
@@ -846,6 +869,13 @@
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(241, 255, 249, 0.96));
   transform: translateY(-1px);
+}
+
+.mapa-admin-page__field input:disabled,
+.mapa-admin-page__field textarea:disabled {
+  color: #7b8d84;
+  cursor: not-allowed;
+  background: rgba(232, 239, 235, 0.78);
 }
 
 .mapa-admin-page__field textarea {
@@ -861,6 +891,18 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.7rem;
+}
+
+.mapa-admin-page__check-cluster {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.mapa-admin-page__check-cluster-title {
+  margin: 0;
+  color: #31453c;
+  font-size: 0.92rem;
+  font-weight: 800;
 }
 
 .mapa-admin-page__checkbox {
