@@ -298,26 +298,42 @@ export default function MapaguapaAuthPage({
 
           <div className="mapa-auth-page__tabs" role="tablist" aria-label="Authentication mode">
             <button
+              aria-controls="mapa-auth-panel"
+              aria-selected={!isSignup}
               className={`mapa-auth-page__tab${!isSignup ? " is-active" : ""}`}
+              id="mapa-auth-login-tab"
               onClick={() => {
                 setMode("login");
                 setLocalError(null);
               }}
+              role="tab"
               type="button"
             >
               Log in
             </button>
             <button
+              aria-controls="mapa-auth-panel"
+              aria-selected={isSignup}
               className={`mapa-auth-page__tab${isSignup ? " is-active" : ""}`}
+              id="mapa-auth-signup-tab"
               onClick={() => {
                 setMode("signup");
                 setLocalError(null);
               }}
+              role="tab"
               type="button"
             >
               Sign up
             </button>
-          </div>          <form className="mapa-auth-page__form" onSubmit={handleSubmit}>
+          </div>
+
+          <form
+            aria-labelledby={isSignup ? "mapa-auth-signup-tab" : "mapa-auth-login-tab"}
+            className="mapa-auth-page__form"
+            id="mapa-auth-panel"
+            onSubmit={handleSubmit}
+            role="tabpanel"
+          >
             {isSignup && (
               <label className="mapa-auth-page__field">
                 <span className="mapa-auth-page__field-label">Full name</span>
