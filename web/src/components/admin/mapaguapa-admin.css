@@ -8,10 +8,10 @@
   --admin-shadow: 0 22px 52px rgba(4, 17, 12, 0.18);
   --admin-shadow-soft: 0 16px 34px rgba(7, 21, 15, 0.11);
   --admin-ink: #20332a;
-  --admin-ink-soft: #5f7469;
+  --admin-ink-soft: #40564b;
   --admin-accent: #00d7a0;
   --admin-accent-strong: #072117;
-  --admin-accent-soft: #49c69c;
+  --admin-accent-soft: #17694e;
   --admin-pill: rgba(0, 215, 160, 0.08);
   --admin-danger: #a25555;
   --admin-danger-bg: #f8eded;
@@ -258,7 +258,7 @@
 .mapa-admin-page__panel-kicker,
 .mapa-admin-page__workspace-kicker,
 .mapa-admin-page__brand-wordmark {
-  color: #38b88d;
+  color: #17694e;
 }
 
 .mapa-admin-page__brand-wordmark {
