@@ -39,6 +39,18 @@ type ModalDetailSection = {
   items: ModalDetailItem[];
 };
 
+const hiddenDetailValues = new Set([
+  "",
+  "not listed",
+  "not specified",
+  "no included bills listed",
+  "no excluded bills listed",
+  "no other amenities listed",
+  "no contact person listed",
+  "no contact number listed",
+  "no extra contact information",
+]);
+
 type FeatureFilterKey = "wifi" | "study" | "laundry" | "parking" | "pets" | "visitors";
 
 type FeatureFilterOption = {
@@ -137,6 +149,15 @@ function formatPesoLabel(label: string | null | undefined) {
   }
 
   return value;
+}
+
+function shouldShowDetailItem(item: ModalDetailItem) {
+  return !hiddenDetailValues.has(item.value.trim().toLowerCase());
+}
+
+function visibleDetailSection(section: ModalDetailSection) {
+  const items = section.items.filter(shouldShowDetailItem);
+  return items.length > 0 ? { ...section, items } : null;
 }
 
 function sortPhotos(listing: ListingWithPhotos | null) {
@@ -336,7 +357,7 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
       ]
     : [];
   const modalSections: ModalDetailSection[] = openListing
-    ? [
+    ? ([
         {
           id: "overview",
           eyebrow: "Stay snapshot",
@@ -450,7 +471,7 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
             { label: "Property fenced", value: labelBoolean(openListing.is_fenced, "Yes", "Not listed") },
           ],
         },
-      ]
+      ] as ModalDetailSection[]).map(visibleDetailSection).filter((section): section is ModalDetailSection => Boolean(section))
     : [];
 
   useEffect(() => {
