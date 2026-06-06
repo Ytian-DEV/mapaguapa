@@ -198,6 +198,45 @@
   backdrop-filter: blur(16px);
 }
 
+.mapa-admin-page__mobile-sidebar-bar,
+.mapa-admin-page__mobile-menu-backdrop {
+  display: none;
+}
+
+.mapa-admin-page__sidebar-drawer {
+  display: contents;
+}
+
+.mapa-admin-page__mobile-menu-button {
+  width: 2.75rem;
+  height: 2.75rem;
+  display: inline-grid;
+  place-content: center;
+  gap: 0.24rem;
+  flex-shrink: 0;
+  border: 1px solid rgba(127, 238, 198, 0.18);
+  border-radius: 0.95rem;
+  background: rgba(247, 255, 251, 0.1);
+  color: #f4fff8;
+  cursor: pointer;
+}
+
+.mapa-admin-page__mobile-menu-button span {
+  display: block;
+  width: 1.1rem;
+  height: 2px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.mapa-admin-page__mobile-section-label {
+  display: block;
+  margin-top: 0.18rem;
+  color: rgba(210, 239, 223, 0.68);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
 .mapa-admin-page__sidebar-top {
   display: grid;
   gap: 1rem;
@@ -700,6 +739,17 @@
   display: grid;
   gap: 0.8rem;
   align-content: start;
+}
+
+.mapa-admin-page__directory-filter {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: end;
+}
+
+.mapa-admin-page__directory-filter .mapa-admin-page__field {
+  margin: 0;
 }
 
 .mapa-admin-page__compact-card,
@@ -1524,8 +1574,8 @@
   }
 
   .mapa-admin-page__shell {
-    padding: 0.75rem;
-    gap: 0.85rem;
+    padding: 0.55rem;
+    gap: 0.65rem;
   }
 
   .mapa-admin-page__sidebar,
@@ -1537,7 +1587,76 @@
   }
 
   .mapa-admin-page__sidebar {
+    position: sticky;
+    top: 0.65rem;
+    z-index: 40;
+    padding: 0.55rem;
+    border-radius: 18px;
+    overflow: visible;
+    box-shadow: 0 16px 34px rgba(4, 17, 12, 0.22);
+  }
+
+  .mapa-admin-page__mobile-sidebar-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    min-width: 0;
+  }
+
+  .mapa-admin-page__mobile-menu-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    display: block;
+    border: 0;
+    background: rgba(4, 17, 12, 0.42);
+    backdrop-filter: blur(7px);
+    -webkit-backdrop-filter: blur(7px);
+  }
+
+  .mapa-admin-page__sidebar-drawer {
+    position: absolute;
+    z-index: 45;
+    top: calc(100% + 0.7rem);
+    left: 0;
+    right: 0;
+    max-height: calc(100dvh - 6.4rem);
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
     padding: 0.85rem;
+    overflow-y: auto;
+    border: 1px solid rgba(127, 238, 198, 0.16);
+    border-radius: 22px;
+    background: linear-gradient(180deg, rgba(7, 21, 15, 0.98), rgba(8, 31, 21, 0.96));
+    box-shadow: 0 28px 56px rgba(4, 17, 12, 0.36);
+    transform: translateY(-0.5rem) scale(0.98);
+    transform-origin: top center;
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 220ms ease, opacity 180ms ease;
+  }
+
+  .mapa-admin-page__sidebar.is-open .mapa-admin-page__sidebar-drawer {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .mapa-admin-page__sidebar-drawer .mapa-admin-page__brand-box {
+    display: none;
+  }
+
+  .mapa-admin-page__profile-card {
+    gap: 0.45rem;
+    padding: 0.8rem;
+    border-radius: 18px;
+  }
+
+  .mapa-admin-page__profile-meta {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .mapa-admin-page__brand-row {
@@ -1555,9 +1674,38 @@
     font-size: clamp(1.65rem, 9vw, 2.15rem);
   }
 
-  .mapa-admin-page__nav-item,
+  .mapa-admin-page__nav-item {
+    display: flex;
+    grid-template-columns: none;
+    align-items: center;
+    min-height: 3.75rem;
+    gap: 0.65rem;
+    padding: 0.72rem 0.78rem;
+    border-radius: 16px;
+  }
+
+  .mapa-admin-page__nav-label {
+    margin-bottom: 0.12rem;
+    font-size: 0.92rem;
+  }
+
+  .mapa-admin-page__nav-caption {
+    font-size: 0.76rem;
+    line-height: 1.22;
+  }
+
+  .mapa-admin-page__sidebar-footer {
+    margin-top: 0;
+  }
+
+  .mapa-admin-page__logout-button {
+    min-height: 2.8rem;
+    border-radius: 16px;
+  }
+
   .mapa-admin-page__compact-card,
   .mapa-admin-page__directory-card,
+  .mapa-admin-page__directory-filter,
   .mapa-admin-page__user-row,
   .mapa-admin-page__photo-upload-item,
   .mapa-admin-page__location-head,
@@ -1568,11 +1716,11 @@
   }
 
   .mapa-admin-page__workspace-header {
-    padding: 1rem;
+    padding: 0.72rem 0.78rem;
   }
 
   .mapa-admin-page__workspace-title {
-    font-size: clamp(1.85rem, 10vw, 2.45rem);
+    font-size: clamp(1.35rem, 7vw, 1.75rem);
     line-height: 1;
   }
 
@@ -1587,6 +1735,22 @@
     width: 100%;
   }
 
+  .mapa-admin-page__form-grid,
+  .mapa-admin-page__checkbox-grid,
+  .mapa-admin-page__list-stack,
+  .mapa-admin-page__directory-list,
+  .mapa-admin-page__rule-stack,
+  .mapa-admin-page__user-list,
+  .mapa-admin-page__overview-grid,
+  .mapa-admin-page__users-layout,
+  .mapa-admin-page__overview-panels,
+  .mapa-admin-page__form-layout,
+  .mapa-admin-page__two-column-layout,
+  .mapa-admin-page__editor-layout,
+  .mapa-admin-page__editor-stack {
+    gap: 0.62rem;
+  }
+
   .mapa-admin-page__action,
   .mapa-admin-page__logout-button,
   .mapa-admin-page__pill,
@@ -1596,27 +1760,27 @@
   }
 
   .mapa-admin-page__section-card > :not(.mapa-admin-page__section-head) {
-    margin: 0.85rem;
+    margin: 0.62rem;
   }
 
   .mapa-admin-page__section-head {
-    gap: 0.65rem;
-    padding: 0.9rem;
+    gap: 0.45rem;
+    padding: 0.68rem 0.72rem;
   }
 
   .mapa-admin-page__section-title {
-    font-size: clamp(1.45rem, 8vw, 2rem);
+    font-size: clamp(1.15rem, 6.2vw, 1.55rem);
     line-height: 1;
     overflow-wrap: anywhere;
   }
 
   .mapa-admin-page__stat-card {
     min-height: 0;
-    padding: 1rem;
+    padding: 0.72rem;
   }
 
   .mapa-admin-page__stat-value {
-    font-size: clamp(2rem, 13vw, 3rem);
+    font-size: clamp(1.55rem, 8vw, 2.15rem);
   }
 
   .mapa-admin-page__field input,
@@ -1692,20 +1856,24 @@
   .mapa-admin-page__user-row,
   .mapa-admin-page__photo-upload-item,
   .mapa-admin-page__photo-library-card {
-    padding: 0.8rem;
+    padding: 0.62rem;
+  }
+
+  .mapa-admin-page__sidebar-drawer .mapa-admin-page__profile-meta {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .mapa-admin-page__workspace-header,
   .mapa-admin-page__section-head {
-    padding: 0.85rem;
+    padding: 0.68rem 0.72rem;
   }
 
   .mapa-admin-page__workspace-title {
-    font-size: clamp(1.65rem, 8.5vw, 2.15rem);
+    font-size: clamp(1.28rem, 6.8vw, 1.7rem);
   }
 
   .mapa-admin-page__section-title {
-    font-size: clamp(1.35rem, 7.2vw, 1.82rem);
+    font-size: clamp(1.12rem, 5.9vw, 1.48rem);
   }
 
   .mapa-admin-page__section-kicker,
@@ -1721,8 +1889,8 @@
   .mapa-admin-page__profile-email,
   .mapa-admin-page__user-email,
   .mapa-admin-page__photo-upload-meta {
-    font-size: 0.82rem;
-    line-height: 1.35;
+    font-size: 0.76rem;
+    line-height: 1.3;
   }
 
   .mapa-admin-page__profile-name,
@@ -1751,13 +1919,13 @@
   }
 
   .mapa-admin-page__stat-card {
-    min-height: 7.2rem;
-    padding: 0.85rem;
-    gap: 0.45rem;
+    min-height: 5.3rem;
+    padding: 0.65rem;
+    gap: 0.32rem;
   }
 
   .mapa-admin-page__stat-value {
-    font-size: clamp(1.7rem, 9.5vw, 2.35rem);
+    font-size: clamp(1.45rem, 7.8vw, 1.95rem);
     line-height: 0.95;
   }
 
@@ -1785,7 +1953,7 @@
 
   .mapa-admin-page__photo-library-image,
   .mapa-admin-page__hero-photo {
-    min-height: clamp(8.5rem, 46vw, 12rem);
+    min-height: clamp(7.2rem, 38vw, 10rem);
   }
 
   .mapa-admin-page .mapa-property-map {
