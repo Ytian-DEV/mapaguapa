@@ -172,6 +172,8 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
   const [activePrice, setActivePrice] = useState(allPricesLabel);
   const [activeExclusivity, setActiveExclusivity] = useState(allExclusivityLabel);
   const [activeFeatures, setActiveFeatures] = useState<FeatureFilterKey[]>([]);
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [openListingId, setOpenListingId] = useState<string | null>(null);
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
   const [fullViewPhotoIndex, setFullViewPhotoIndex] = useState<number | null>(null);
@@ -313,10 +315,6 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
     : "";
   const firstName = getFirstName(profile);
   const initials = getInitials(profile);
-  const savedListings = useMemo(
-    () => listings.filter((listing) => savedListingIds.includes(listing.id)),
-    [listings, savedListingIds]
-  );
   const isOpenListingSaved = openListing ? savedListingIds.includes(openListing.id) : false;
   const filteredCount = filteredListings.length.toString().padStart(2, "0");
   const totalCount = listings.length.toString().padStart(2, "0");
@@ -589,51 +587,39 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
               Sign out
             </button>
           </div>
-        </header>
 
-        <section className="mapa-user-page__hero">
-          <div className="mapa-user-page__hero-main">
-            <p className="mapa-user-page__eyebrow">Browse student-friendly accommodations</p>
-            <h2 className="mapa-user-page__hero-title">
-              <span className="mapa-user-page__hero-title-line">Find student stays</span>
-              <span className="mapa-user-page__hero-title-line">that fit your budget and routine.</span>
-            </h2>
-          </div>
-
-          <div className="mapa-user-page__hero-side">
-            <p className="mapa-user-page__hero-note">
-              Filter by area, setup, and essentials like Wi-Fi, study area, laundry, parking, pets, and visitors.
-            </p>
-            <div className="mapa-user-page__hero-summary">
-              <div className="mapa-user-page__hero-summary-item">
-                <strong>{filteredCount}</strong>
-                <span>shown now</span>
+          <div className="mapa-user-page__mobile-account">
+            <button
+              aria-expanded={isAccountMenuOpen}
+              aria-haspopup="menu"
+              aria-label="Open account menu"
+              className="mapa-user-page__menu-button"
+              onClick={() => setIsAccountMenuOpen((current) => !current)}
+              type="button"
+            >
+              <span />
+              <span />
+              <span />
+            </button>
+            <div className={`mapa-user-page__account-menu${isAccountMenuOpen ? " is-open" : ""}`} role="menu">
+              <div className="mapa-user-page__account-menu-row">
+                <div className="mapa-user-page__avatar">{initials}</div>
+                <div>
+                  <p className="mapa-user-page__account-label">Signed in</p>
+                  <strong>{firstName}</strong>
+                </div>
               </div>
-              <div className="mapa-user-page__hero-summary-item">
-                <strong>{typeOptions.length - 1}</strong>
-                <span>stay types</span>
-              </div>
-              <div className="mapa-user-page__hero-summary-item">
-                <strong>{priceOptions.length - 1}</strong>
-                <span>budget bands</span>
-              </div>
-              <div className="mapa-user-page__hero-summary-item">
-                <strong>{activeFilterCount}</strong>
-                <span>filters active</span>
-              </div>
-              <div className="mapa-user-page__hero-summary-item">
-                <strong>{savedListings.length.toString().padStart(2, "0")}</strong>
-                <span>saved places</span>
-              </div>
+              <button className="mapa-user-page__account-menu-signout" onClick={() => void onSignOut()} role="menuitem" type="button">
+                Sign out
+              </button>
             </div>
           </div>
-        </section>
+        </header>
 
         <section className="mapa-user-page__filters-panel">
           <div className="mapa-user-page__filters-head">
             <div>
-              <p className="mapa-user-page__eyebrow">Filters</p>
-              <h3 className="mapa-user-page__filters-title">Narrow the listings before you open a property.</h3>
+              <h3 className="mapa-user-page__filters-title">Filters</h3>
             </div>
             <div className="mapa-user-page__filters-actions">
               <div className="mapa-user-page__filters-status">
@@ -646,105 +632,118 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
                   Clear all
                 </button>
               )}
+              <button
+                aria-controls="mapa-user-filters"
+                aria-expanded={isFiltersOpen}
+                className="mapa-user-page__filters-toggle"
+                onClick={() => setIsFiltersOpen((current) => !current)}
+                type="button"
+              >
+                {isFiltersOpen ? "Hide filters" : "Show filters"}
+              </button>
             </div>
           </div>
 
-          <div className="mapa-user-page__filters-grid">
-            <div className="mapa-user-page__filters-group">
-              <div className="mapa-user-page__filters-group-head">
-                <p className="mapa-user-page__filter-title">Area</p>
-                <span className="mapa-user-page__filters-meta">{areaOptions.length - 1} zones</span>
+          {isFiltersOpen && (
+          <div className="mapa-user-page__filters-body is-open" id="mapa-user-filters">
+            <div className="mapa-user-page__filters-grid">
+              <div className="mapa-user-page__filters-group">
+                <div className="mapa-user-page__filters-group-head">
+                  <p className="mapa-user-page__filter-title">Area</p>
+                  <span className="mapa-user-page__filters-meta">{areaOptions.length - 1} zones</span>
+                </div>
+                <div className="mapa-user-page__chip-row">
+                  {areaOptions.map((option) => (
+                    <button
+                      className={`mapa-user-page__filter-chip${activeArea === option ? " is-active" : ""}`}
+                      key={option}
+                      onClick={() => setActiveArea(option)}
+                      type="button"
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <div className="mapa-user-page__chip-row">
-                {areaOptions.map((option) => (
-                  <button
-                    className={`mapa-user-page__filter-chip${activeArea === option ? " is-active" : ""}`}
-                    key={option}
-                    onClick={() => setActiveArea(option)}
-                    type="button"
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
-            </div>
 
-            <div className="mapa-user-page__filters-group">
-              <div className="mapa-user-page__filters-group-head">
-                <p className="mapa-user-page__filter-title">Stay type</p>
-                <span className="mapa-user-page__filters-meta">{typeOptions.length - 1} options</span>
+              <div className="mapa-user-page__filters-group">
+                <div className="mapa-user-page__filters-group-head">
+                  <p className="mapa-user-page__filter-title">Stay type</p>
+                  <span className="mapa-user-page__filters-meta">{typeOptions.length - 1} options</span>
+                </div>
+                <div className="mapa-user-page__chip-row">
+                  {typeOptions.map((option) => (
+                    <button
+                      className={`mapa-user-page__filter-chip${activeType === option ? " is-active" : ""}`}
+                      key={option}
+                      onClick={() => setActiveType(option)}
+                      type="button"
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <div className="mapa-user-page__chip-row">
-                {typeOptions.map((option) => (
-                  <button
-                    className={`mapa-user-page__filter-chip${activeType === option ? " is-active" : ""}`}
-                    key={option}
-                    onClick={() => setActiveType(option)}
-                    type="button"
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
-            </div>
 
-            <div className="mapa-user-page__filters-group">
-              <div className="mapa-user-page__filters-group-head">
-                <p className="mapa-user-page__filter-title">Budget</p>
-                <span className="mapa-user-page__filters-meta">{priceOptions.length - 1} ranges</span>
+              <div className="mapa-user-page__filters-group">
+                <div className="mapa-user-page__filters-group-head">
+                  <p className="mapa-user-page__filter-title">Budget</p>
+                  <span className="mapa-user-page__filters-meta">{priceOptions.length - 1} ranges</span>
+                </div>
+                <div className="mapa-user-page__chip-row">
+                  {priceOptions.map((option) => (
+                    <button
+                      className={`mapa-user-page__filter-chip${activePrice === option ? " is-active" : ""}`}
+                      key={option}
+                      onClick={() => setActivePrice(option)}
+                      type="button"
+                    >
+                      {formatPesoLabel(option)}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <div className="mapa-user-page__chip-row">
-                {priceOptions.map((option) => (
-                  <button
-                    className={`mapa-user-page__filter-chip${activePrice === option ? " is-active" : ""}`}
-                    key={option}
-                    onClick={() => setActivePrice(option)}
-                    type="button"
-                  >
-                    {formatPesoLabel(option)}
-                  </button>
-                ))}
-              </div>
-            </div>
 
-            <div className="mapa-user-page__filters-group">
-              <div className="mapa-user-page__filters-group-head">
-                <p className="mapa-user-page__filter-title">Setup</p>
-                <span className="mapa-user-page__filters-meta">{exclusivityOptions.length - 1} setups</span>
+              <div className="mapa-user-page__filters-group">
+                <div className="mapa-user-page__filters-group-head">
+                  <p className="mapa-user-page__filter-title">Setup</p>
+                  <span className="mapa-user-page__filters-meta">{exclusivityOptions.length - 1} setups</span>
+                </div>
+                <div className="mapa-user-page__chip-row">
+                  {exclusivityOptions.map((option) => (
+                    <button
+                      className={`mapa-user-page__filter-chip${activeExclusivity === option ? " is-active" : ""}`}
+                      key={option}
+                      onClick={() => setActiveExclusivity(option)}
+                      type="button"
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <div className="mapa-user-page__chip-row">
-                {exclusivityOptions.map((option) => (
-                  <button
-                    className={`mapa-user-page__filter-chip${activeExclusivity === option ? " is-active" : ""}`}
-                    key={option}
-                    onClick={() => setActiveExclusivity(option)}
-                    type="button"
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
-            </div>
 
-            <div className="mapa-user-page__filters-group mapa-user-page__filters-group--wide">
-              <div className="mapa-user-page__filters-group-head">
-                <p className="mapa-user-page__filter-title">Amenities and rules</p>
-                <span className="mapa-user-page__filters-meta">{featureFilterOptions.length} essentials</span>
-              </div>
-              <div className="mapa-user-page__chip-row">
-                {featureFilterOptions.map((option) => (
-                  <button
-                    className={`mapa-user-page__filter-chip${activeFeatures.includes(option.key) ? " is-active" : ""}`}
-                    key={option.key}
-                    onClick={() => toggleFeatureFilter(option.key)}
-                    type="button"
-                  >
-                    {option.label}
-                  </button>
-                ))}
+              <div className="mapa-user-page__filters-group mapa-user-page__filters-group--wide">
+                <div className="mapa-user-page__filters-group-head">
+                  <p className="mapa-user-page__filter-title">Amenities and rules</p>
+                  <span className="mapa-user-page__filters-meta">{featureFilterOptions.length} essentials</span>
+                </div>
+                <div className="mapa-user-page__chip-row">
+                  {featureFilterOptions.map((option) => (
+                    <button
+                      className={`mapa-user-page__filter-chip${activeFeatures.includes(option.key) ? " is-active" : ""}`}
+                      key={option.key}
+                      onClick={() => toggleFeatureFilter(option.key)}
+                      type="button"
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
+          )}
         </section>
 
         {loading && <p className="mapa-user-page__feedback">Loading listings from Supabase...</p>}
