@@ -38,6 +38,7 @@ const checklist = [
 ];
 
 const profileSelect = "id, email, full_name, phone, avatar_url, role, is_active, created_at, updated_at";
+const allAdminAreasLabel = "All areas";
 
 const sectionCopy: Record<AdminSection, { label: string; title: string; description: string }> = {
   overview: {
@@ -131,12 +132,35 @@ function getDraftCoordinates(draft: ListingDraft): PropertyCoordinates | null {
   return { lat, lng };
 }
 
+function getAdminAreaLabel(address: string | null | undefined) {
+  const value = address?.trim();
+  if (!value) {
+    return "Unlisted area";
+  }
+
+  const lowered = value.toLowerCase();
+  if (lowered.includes("pangasugan")) {
+    return "Pangasugan";
+  }
+
+  if (lowered.includes("utod")) {
+    return "Utod";
+  }
+
+  if (lowered.includes("guadalupe")) {
+    return "Guadalupe";
+  }
+
+  return value.split(",")[0]?.trim() || "Unlisted area";
+}
+
 export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdminPageProps) {
   const [section, setSection] = useState<AdminSection>("overview");
   const [listings, setListings] = useState<ListingWithPhotos[]>([]);
   const [deletedListings, setDeletedListings] = useState<DeletedListingRow[]>([]);
   const [users, setUsers] = useState<Profile[]>([]);
   const [selectedListingId, setSelectedListingId] = useState("");
+  const [activeEditArea, setActiveEditArea] = useState(allAdminAreasLabel);
   const [draft, setDraft] = useState<ListingDraft>({ ...emptyListingDraft });
   const [pendingPhotos, setPendingPhotos] = useState<File[]>([]);
   const [editPendingPhotos, setEditPendingPhotos] = useState<File[]>([]);
@@ -154,6 +178,7 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
   const [reorderingPhotos, setReorderingPhotos] = useState(false);
   const [restoringArchiveId, setRestoringArchiveId] = useState<string | null>(null);
   const [userActionId, setUserActionId] = useState<string | null>(null);
+  const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [locationSearch, setLocationSearch] = useState("");
@@ -163,9 +188,39 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
     centerYRatio: 0.42,
   });
 
+  const editAreaOptions = useMemo(
+    () => [allAdminAreasLabel, ...Array.from(new Set(listings.map((listing) => getAdminAreaLabel(listing.address))))],
+    [listings]
+  );
+
+  const filteredEditListings = useMemo(
+    () => {
+      const visibleListings =
+        activeEditArea === allAdminAreasLabel
+          ? listings
+          : listings.filter((listing) => getAdminAreaLabel(listing.address) === activeEditArea);
+
+      return [...visibleListings].sort((left, right) => {
+        const leftArea = getAdminAreaLabel(left.address);
+        const rightArea = getAdminAreaLabel(right.address);
+        const areaOrder = leftArea.localeCompare(rightArea);
+
+        if (areaOrder !== 0) {
+          return areaOrder;
+        }
+
+        return left.name.localeCompare(right.name);
+      });
+    },
+    [activeEditArea, listings]
+  );
+
   const selectedListing = useMemo(
-    () => listings.find((listing) => listing.id === selectedListingId) ?? listings[0] ?? null,
-    [listings, selectedListingId]
+    () =>
+      listings.find((listing) => listing.id === selectedListingId) ??
+      (section === "edit" ? filteredEditListings[0] : listings[0]) ??
+      null,
+    [filteredEditListings, listings, section, selectedListingId]
   );
 
   const selectedListingPhotos = useMemo(
@@ -217,6 +272,26 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
       setEditPendingPhotos([]);
     }
   }, [section, selectedListing]);
+
+  useEffect(() => {
+    if (section !== "edit") {
+      return;
+    }
+
+    if (activeEditArea !== allAdminAreasLabel && !editAreaOptions.includes(activeEditArea)) {
+      setActiveEditArea(allAdminAreasLabel);
+      return;
+    }
+
+    if (filteredEditListings.length === 0) {
+      setSelectedListingId("");
+      return;
+    }
+
+    if (!filteredEditListings.some((listing) => listing.id === selectedListingId)) {
+      setSelectedListingId(filteredEditListings[0].id);
+    }
+  }, [activeEditArea, editAreaOptions, filteredEditListings, section, selectedListingId]);
 
   useEffect(() => {
     if (!photoDeleteTarget && !archiveConfirmOpen) {
@@ -277,6 +352,7 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
 
   function openSection(nextSection: AdminSection) {
     setSection(nextSection);
+    setIsAdminMenuOpen(false);
     setFeedback(null);
     setError(null);
   }
@@ -1107,9 +1183,42 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
       <div className="mapa-admin-page__mouse-warp" />
 
       <div className="mapa-admin-page__shell">
-        <aside className="mapa-admin-page__sidebar mapa-admin-page__fade-up">
-          <div className="mapa-admin-page__sidebar-top">
-            <div className="mapa-admin-page__brand-box">
+        {isAdminMenuOpen && (
+          <button
+            aria-label="Close admin menu"
+            className="mapa-admin-page__mobile-menu-backdrop"
+            onClick={() => setIsAdminMenuOpen(false)}
+            type="button"
+          />
+        )}
+
+        <aside className={`mapa-admin-page__sidebar mapa-admin-page__fade-up${isAdminMenuOpen ? " is-open" : ""}`}>
+          <div className="mapa-admin-page__mobile-sidebar-bar">
+            <div className="mapa-admin-page__brand-row">
+              <div className="mapa-admin-page__brand-icon">
+                <HouseMark className="mapa-admin-page__house-icon" />
+              </div>
+              <div>
+                <p className="mapa-admin-page__eyebrow mapa-admin-page__brand-wordmark">MAPAGUAPA</p>
+                <span className="mapa-admin-page__mobile-section-label">{activeSectionCopy.label}</span>
+              </div>
+            </div>
+            <button
+              aria-expanded={isAdminMenuOpen}
+              aria-label="Open admin menu"
+              className="mapa-admin-page__mobile-menu-button"
+              onClick={() => setIsAdminMenuOpen((current) => !current)}
+              type="button"
+            >
+              <span />
+              <span />
+              <span />
+            </button>
+          </div>
+
+          <div className="mapa-admin-page__sidebar-drawer">
+            <div className="mapa-admin-page__sidebar-top">
+              <div className="mapa-admin-page__brand-box">
               <div className="mapa-admin-page__brand-row">
                 <div className="mapa-admin-page__brand-icon">
                   <HouseMark className="mapa-admin-page__house-icon" />
@@ -1128,29 +1237,30 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
                 <span className="mapa-admin-page__pill">{profile.is_active ? "Active" : "Inactive"}</span>
               </div>
             </div>
-          </div>
+            </div>
 
-          <nav className="mapa-admin-page__nav">
-            {sidebarItems.map((item) => (
-              <button
-                className={`mapa-admin-page__nav-item${section === item.id ? " is-active" : ""}`}
-                key={item.id}
-                onClick={() => openSection(item.id)}
-                type="button"
-              >
-                <div>
-                  <span className="mapa-admin-page__nav-label">{item.label}</span>
-                  <span className="mapa-admin-page__nav-caption">{item.caption}</span>
-                </div>
-                {item.badge && <span className="mapa-admin-page__nav-badge">{item.badge}</span>}
+            <nav className="mapa-admin-page__nav">
+              {sidebarItems.map((item) => (
+                <button
+                  className={`mapa-admin-page__nav-item${section === item.id ? " is-active" : ""}`}
+                  key={item.id}
+                  onClick={() => openSection(item.id)}
+                  type="button"
+                >
+                  <div>
+                    <span className="mapa-admin-page__nav-label">{item.label}</span>
+                    <span className="mapa-admin-page__nav-caption">{item.caption}</span>
+                  </div>
+                  {item.badge && <span className="mapa-admin-page__nav-badge">{item.badge}</span>}
+                </button>
+              ))}
+            </nav>
+
+            <div className="mapa-admin-page__sidebar-footer">
+              <button className="mapa-admin-page__logout-button" onClick={() => void onSignOut()} type="button">
+                Log out
               </button>
-            ))}
-          </nav>
-
-          <div className="mapa-admin-page__sidebar-footer">
-            <button className="mapa-admin-page__logout-button" onClick={() => void onSignOut()} type="button">
-              Log out
-            </button>
+            </div>
           </div>
         </aside>
 
@@ -1364,16 +1474,35 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
                       <h3 className="mapa-admin-page__section-title">Choose a record to manage</h3>
                     </div>
                   </div>
+                  <div className="mapa-admin-page__directory-filter">
+                    <label className="mapa-admin-page__field">
+                      <span>Display area</span>
+                      <select onChange={(event) => setActiveEditArea(event.target.value)} value={activeEditArea}>
+                        {editAreaOptions.map((area) => (
+                          <option key={area} value={area}>
+                            {area}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <span className="mapa-admin-page__nav-badge">
+                      {filteredEditListings.length.toString().padStart(2, "0")} shown
+                    </span>
+                  </div>
                   <div className="mapa-admin-page__directory-list">
-                    {listings.map((listing) => (
-                      <button className={`mapa-admin-page__directory-card${selectedListing?.id === listing.id ? " is-selected" : ""}`} key={listing.id} onClick={() => selectListing(listing.id)} type="button">
-                        <div>
-                          <h4 className="mapa-admin-page__compact-title">{listing.name}</h4>
-                          <p className="mapa-admin-page__compact-copy">{listing.address}</p>
-                        </div>
-                        <span className="mapa-admin-page__nav-badge">{formatPesoLabel(listing.monthly_rental_label)}</span>
-                      </button>
-                    ))}
+                    {filteredEditListings.length > 0 ? (
+                      filteredEditListings.map((listing) => (
+                        <button className={`mapa-admin-page__directory-card${selectedListing?.id === listing.id ? " is-selected" : ""}`} key={listing.id} onClick={() => selectListing(listing.id)} type="button">
+                          <div>
+                            <h4 className="mapa-admin-page__compact-title">{listing.name}</h4>
+                            <p className="mapa-admin-page__compact-copy">{listing.address}</p>
+                          </div>
+                          <span className="mapa-admin-page__nav-badge">{formatPesoLabel(listing.monthly_rental_label)}</span>
+                        </button>
+                      ))
+                    ) : (
+                      <p className="mapa-admin-page__feedback">No listings found in {activeEditArea}.</p>
+                    )}
                   </div>
                 </section>
 
