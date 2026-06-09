@@ -860,6 +860,80 @@
   transform: translateY(-1px);
 }
 
+.mapa-user-page__budget-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.64rem;
+}
+
+.mapa-user-page__budget-field {
+  display: grid;
+  gap: 0.34rem;
+  min-width: 0;
+}
+
+.mapa-user-page__budget-field span {
+  color: rgba(23, 58, 44, 0.82);
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.mapa-user-page__budget-field input {
+  width: 100%;
+  min-width: 0;
+  height: 2.45rem;
+  padding: 0 0.68rem;
+  border: 1px solid rgba(14, 77, 53, 0.18);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.78);
+  color: #173a2c;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 750;
+  outline: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.78);
+  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.mapa-user-page__budget-field input:focus {
+  border-color: rgba(17, 121, 80, 0.58);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 0 0 3px rgba(17, 121, 80, 0.12);
+}
+
+.mapa-user-page__budget-field input::placeholder {
+  color: rgba(42, 83, 62, 0.44);
+}
+
+.mapa-user-page__budget-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.65rem;
+  align-items: center;
+}
+
+.mapa-user-page__budget-message {
+  color: rgba(32, 75, 54, 0.68);
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.mapa-user-page__budget-message.is-error {
+  color: #a6402f;
+}
+
+.mapa-user-page__budget-clear {
+  flex: 0 0 auto;
+  cursor: pointer;
+  padding: 0.36rem 0.58rem;
+  border-color: rgba(14, 77, 53, 0.16);
+  background: rgba(255, 255, 255, 0.62);
+  color: #1d6043;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
 .mapa-user-page__sections {
   display: grid;
   gap: 1.85rem;
@@ -2234,6 +2308,17 @@
     min-height: 2.05rem;
     padding: 0.42rem 0.65rem;
     font-size: 0.72rem;
+  }
+
+  .mapa-user-page__budget-fields,
+  .mapa-user-page__budget-footer {
+    grid-template-columns: 1fr;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .mapa-user-page__budget-clear {
+    width: 100%;
   }
 
   .mapa-user-page__listing-card {
