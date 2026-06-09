@@ -70,9 +70,13 @@ const featureFilterOptions: FeatureFilterOption[] = [
 
 const allAreasLabel = "All areas";
 const allTypesLabel = "All stay types";
-const allPricesLabel = "All budgets";
 const allExclusivityLabel = "All setups";
 const savedListingsStorageKey = "mapaguapa:saved-listings";
+
+type PriceInterval = {
+  min: number;
+  max: number;
+};
 
 function getFirstName(profile: Profile) {
   if (profile.full_name?.trim()) {
@@ -124,10 +128,6 @@ function formatPesoLabel(label: string | null | undefined) {
     return value || "Not listed";
   }
 
-  if (value === allPricesLabel) {
-    return value;
-  }
-
   const rangeMatch = value.match(/^(\d[\d,]*)(?:\s*-\s*)(\d[\d,]*)$/);
   if (rangeMatch) {
     return `₱${rangeMatch[1]}-${rangeMatch[2]}`;
@@ -149,6 +149,79 @@ function formatPesoLabel(label: string | null | undefined) {
   }
 
   return value;
+}
+
+function parseBudgetValue(value: string) {
+  const parsed = Number(value.replace(/[^\d.]/g, ""));
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function parsePriceIntervals(label: string | null | undefined): PriceInterval[] {
+  const normalized = label
+    ?.replace(/[₱â‚±]/g, "")
+    .replace(/[–—]/g, "-")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+
+  if (!normalized) {
+    return [];
+  }
+
+  const intervals: PriceInterval[] = [];
+  const rangePattern = /(\d[\d,]*)\s*-\s*(\d[\d,]*)/g;
+  let rangeMatch: RegExpExecArray | null;
+
+  while ((rangeMatch = rangePattern.exec(normalized))) {
+    const first = parseBudgetValue(rangeMatch[1]);
+    const second = parseBudgetValue(rangeMatch[2]);
+
+    if (first !== null && second !== null) {
+      intervals.push({ min: Math.min(first, second), max: Math.max(first, second) });
+    }
+  }
+
+  const lessThanMatch = normalized.match(/(?:less than|<)\s*(\d[\d,]*)/);
+  if (lessThanMatch) {
+    const max = parseBudgetValue(lessThanMatch[1]);
+    if (max !== null) {
+      intervals.push({ min: 0, max });
+    }
+  }
+
+  const orMoreMatch = normalized.match(/(\d[\d,]*)\s*(?:or more|\+)/);
+  if (orMoreMatch) {
+    const min = parseBudgetValue(orMoreMatch[1]);
+    if (min !== null) {
+      intervals.push({ min, max: Number.POSITIVE_INFINITY });
+    }
+  }
+
+  if (intervals.length === 0) {
+    const exactMatch = normalized.match(/\d[\d,]*/);
+    const exact = exactMatch ? parseBudgetValue(exactMatch[0]) : null;
+
+    if (exact !== null) {
+      intervals.push({ min: exact, max: exact });
+    }
+  }
+
+  return intervals;
+}
+
+function doesPriceMatchBudget(label: string | null | undefined, minBudget: number | null, maxBudget: number | null) {
+  if (minBudget === null && maxBudget === null) {
+    return true;
+  }
+
+  const intervals = parsePriceIntervals(label);
+  if (intervals.length === 0) {
+    return false;
+  }
+
+  const selectedMin = minBudget ?? 0;
+  const selectedMax = maxBudget ?? Number.POSITIVE_INFINITY;
+  return intervals.some((interval) => interval.max >= selectedMin && interval.min <= selectedMax);
 }
 
 function shouldShowDetailItem(item: ModalDetailItem) {
@@ -190,7 +263,8 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
   const [searchQuery, setSearchQuery] = useState("");
   const [activeArea, setActiveArea] = useState(allAreasLabel);
   const [activeType, setActiveType] = useState(allTypesLabel);
-  const [activePrice, setActivePrice] = useState(allPricesLabel);
+  const [minBudget, setMinBudget] = useState("");
+  const [maxBudget, setMaxBudget] = useState("");
   const [activeExclusivity, setActiveExclusivity] = useState(allExclusivityLabel);
   const [activeFeatures, setActiveFeatures] = useState<FeatureFilterKey[]>([]);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
@@ -260,14 +334,6 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
     [listings]
   );
 
-  const priceOptions = useMemo(
-    () => [
-      allPricesLabel,
-      ...Array.from(new Set(listings.map((listing) => listing.monthly_rental_label).filter(Boolean))),
-    ],
-    [listings]
-  );
-
   const exclusivityOptions = useMemo(
     () => [
       allExclusivityLabel,
@@ -279,6 +345,11 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
   );
 
   const filteredListings = useMemo(() => {
+    const parsedMinBudget = minBudget.trim() ? parseBudgetValue(minBudget) : null;
+    const parsedMaxBudget = maxBudget.trim() ? parseBudgetValue(maxBudget) : null;
+    const hasInvalidBudgetRange =
+      parsedMinBudget !== null && parsedMaxBudget !== null && parsedMinBudget > parsedMaxBudget;
+
     return listings.filter((listing) => {
       const haystack = [
         listing.name,
@@ -295,7 +366,8 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
       const matchesSearch = !deferredSearch || haystack.includes(deferredSearch);
       const matchesArea = activeArea === allAreasLabel || getAreaLabel(listing.address) === activeArea;
       const matchesType = activeType === allTypesLabel || listing.accommodation_type === activeType;
-      const matchesPrice = activePrice === allPricesLabel || listing.monthly_rental_label === activePrice;
+      const matchesPrice =
+        hasInvalidBudgetRange || doesPriceMatchBudget(listing.monthly_rental_label, parsedMinBudget, parsedMaxBudget);
       const matchesExclusivity = activeExclusivity === allExclusivityLabel || (listing.exclusivity ?? "") === activeExclusivity;
       const matchesFeatures = activeFeatures.every((featureKey) => {
         const option = featureFilterOptions.find((item) => item.key === featureKey);
@@ -304,7 +376,7 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
 
       return matchesSearch && matchesArea && matchesType && matchesPrice && matchesExclusivity && matchesFeatures;
     });
-  }, [activeArea, activeExclusivity, activeFeatures, activePrice, activeType, deferredSearch, listings]);
+  }, [activeArea, activeExclusivity, activeFeatures, activeType, deferredSearch, listings, maxBudget, minBudget]);
 
   const sections = useMemo<ListingSection[]>(() => {
     const grouped = new Map<string, ListingWithPhotos[]>();
@@ -339,10 +411,15 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
   const isOpenListingSaved = openListing ? savedListingIds.includes(openListing.id) : false;
   const filteredCount = filteredListings.length.toString().padStart(2, "0");
   const totalCount = listings.length.toString().padStart(2, "0");
+  const minBudgetValue = minBudget.trim() ? parseBudgetValue(minBudget) : null;
+  const maxBudgetValue = maxBudget.trim() ? parseBudgetValue(maxBudget) : null;
+  const hasBudgetFilter = minBudget.trim() !== "" || maxBudget.trim() !== "";
+  const hasInvalidBudgetRange =
+    minBudgetValue !== null && maxBudgetValue !== null && minBudgetValue > maxBudgetValue;
   const activeFilterCount =
     Number(activeArea !== allAreasLabel) +
     Number(activeType !== allTypesLabel) +
-    Number(activePrice !== allPricesLabel) +
+    Number(hasBudgetFilter) +
     Number(activeExclusivity !== allExclusivityLabel) +
     activeFeatures.length;
   const modalHighlights = openListing
@@ -529,9 +606,15 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
     setSearchQuery("");
     setActiveArea(allAreasLabel);
     setActiveType(allTypesLabel);
-    setActivePrice(allPricesLabel);
+    setMinBudget("");
+    setMaxBudget("");
     setActiveExclusivity(allExclusivityLabel);
     setActiveFeatures([]);
+  };
+
+  const clearBudgetFilter = () => {
+    setMinBudget("");
+    setMaxBudget("");
   };
 
   const toggleSavedListing = (listingId: string) => {
@@ -709,19 +792,49 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
               <div className="mapa-user-page__filters-group">
                 <div className="mapa-user-page__filters-group-head">
                   <p className="mapa-user-page__filter-title">Budget</p>
-                  <span className="mapa-user-page__filters-meta">{priceOptions.length - 1} ranges</span>
+                  <span className="mapa-user-page__filters-meta">Monthly</span>
                 </div>
-                <div className="mapa-user-page__chip-row">
-                  {priceOptions.map((option) => (
+                <div className="mapa-user-page__budget-fields">
+                  <label className="mapa-user-page__budget-field">
+                    <span>Minimum Budget</span>
+                    <input
+                      inputMode="numeric"
+                      min="0"
+                      onChange={(event) => setMinBudget(event.target.value)}
+                      placeholder="₱0"
+                      type="number"
+                      value={minBudget}
+                    />
+                  </label>
+                  <label className="mapa-user-page__budget-field">
+                    <span>Maximum Budget</span>
+                    <input
+                      inputMode="numeric"
+                      min="0"
+                      onChange={(event) => setMaxBudget(event.target.value)}
+                      placeholder="₱5000"
+                      type="number"
+                      value={maxBudget}
+                    />
+                  </label>
+                </div>
+                <div className="mapa-user-page__budget-footer">
+                  <span className={`mapa-user-page__budget-message${hasInvalidBudgetRange ? " is-error" : ""}`}>
+                    {hasInvalidBudgetRange
+                      ? "Minimum budget must be lower than maximum budget."
+                      : hasBudgetFilter
+                        ? `Showing ${minBudget ? `₱${minBudget}` : "₱0"} to ${maxBudget ? `₱${maxBudget}` : "any price"}`
+                        : "Leave both fields empty to include every budget."}
+                  </span>
+                  {hasBudgetFilter && (
                     <button
-                      className={`mapa-user-page__filter-chip${activePrice === option ? " is-active" : ""}`}
-                      key={option}
-                      onClick={() => setActivePrice(option)}
+                      className="mapa-user-page__budget-clear"
+                      onClick={clearBudgetFilter}
                       type="button"
                     >
-                      {formatPesoLabel(option)}
+                      Clear budget
                     </button>
-                  ))}
+                  )}
                 </div>
               </div>
 
