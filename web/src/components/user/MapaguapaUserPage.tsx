@@ -4,6 +4,7 @@ import { PropertyMap, type PropertyCoordinates } from "../shared/PropertyMap";
 import { usePointerGlow } from "../shared/usePointerGlow";
 import {
   fetchListingCards,
+  fetchListingAreasForFilters,
   fetchListingDetail,
   fetchListingFilterOptions,
   fetchSavedListingCards,
@@ -87,6 +88,7 @@ type UserView = "listings" | "saved";
 type AreaListingState = Record<string, ListingCardSummary[]>;
 type AreaPageState = Record<string, number>;
 type AreaBooleanState = Record<string, boolean>;
+const INITIAL_AREA_CONCURRENCY = 2;
 
 type PriceInterval = {
   min: number;
@@ -278,6 +280,7 @@ export default function MapaguapaUserPage({ onNavigateAbout, onSignOut, profile 
   const [areaPages, setAreaPages] = useState<AreaPageState>({});
   const [areaHasMore, setAreaHasMore] = useState<AreaBooleanState>({});
   const [areaLoading, setAreaLoading] = useState<AreaBooleanState>({});
+  const [filteredAreas, setFilteredAreas] = useState<string[] | null>(null);
   const [availableAreas, setAvailableAreas] = useState<string[]>([]);
   const [availableTypes, setAvailableTypes] = useState<string[]>([]);
   const [availableExclusivities, setAvailableExclusivities] = useState<string[]>([]);
@@ -349,7 +352,8 @@ export default function MapaguapaUserPage({ onNavigateAbout, onSignOut, profile 
       setAreaPages((current) => ({ ...current, [area]: page }));
       setAreaHasMore((current) => ({ ...current, [area]: result.hasMore }));
     } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : "Failed to load listings.");
+      console.error("Listing query failed", loadError);
+      setError("Listings could not be loaded. Please check your connection and try again.");
     } finally {
       setAreaLoading((current) => ({ ...current, [area]: false }));
     }
@@ -360,7 +364,7 @@ export default function MapaguapaUserPage({ onNavigateAbout, onSignOut, profile 
       return [activeArea];
     }
 
-    return availableAreas;
+    return filteredAreas ?? availableAreas;
   };
 
   useEffect(() => {
@@ -376,7 +380,8 @@ export default function MapaguapaUserPage({ onNavigateAbout, onSignOut, profile 
         }
       } catch (loadError) {
         if (!cancelled) {
-          setError(loadError instanceof Error ? loadError.message : "Failed to load filter options.");
+          console.error("Listing filter options query failed", loadError);
+          setError("Filter options could not be loaded. Please refresh and try again.");
         }
       }
     };
@@ -397,7 +402,6 @@ export default function MapaguapaUserPage({ onNavigateAbout, onSignOut, profile 
   }, [searchQuery]);
 
   useEffect(() => {
-    const visibleAreas = getVisibleAreas();
     const parsedMinBudget = minBudget.trim() ? parseBudgetValue(minBudget) : null;
     const parsedMaxBudget = maxBudget.trim() ? parseBudgetValue(maxBudget) : null;
     const hasInvalidRange =
@@ -407,31 +411,61 @@ export default function MapaguapaUserPage({ onNavigateAbout, onSignOut, profile 
       setAreaListings({});
       setAreaPages({});
       setAreaHasMore({});
-      setLoading(false);
-      return;
-    }
-
-    if (visibleAreas.length === 0) {
-      setAreaListings({});
-      setAreaPages({});
-      setAreaHasMore({});
+      setFilteredAreas(null);
       setLoading(false);
       return;
     }
 
     let cancelled = false;
     setLoading(true);
+    setError(null);
     setAreaListings({});
     setAreaPages({});
     setAreaHasMore({});
 
-    Promise.all(visibleAreas.map((area) => loadAreaPage(area, 0, "replace")))
-      .catch(() => undefined)
-      .finally(() => {
+    const loadInitialAreas = async () => {
+      const baseFilters = buildListingFilters(activeArea === allAreasLabel ? undefined : activeArea);
+      const hasScopedFilters =
+        Boolean(baseFilters.search?.trim()) ||
+        Boolean(baseFilters.accommodationType?.trim()) ||
+        Boolean(baseFilters.exclusivity?.trim()) ||
+        typeof baseFilters.minBudget === "number" ||
+        typeof baseFilters.maxBudget === "number" ||
+        (baseFilters.features?.length ?? 0) > 0;
+      const visibleAreas =
+        activeArea !== allAreasLabel
+          ? [activeArea]
+          : hasScopedFilters
+            ? await fetchListingAreasForFilters(baseFilters)
+            : availableAreas;
+
+      if (cancelled) {
+        return;
+      }
+
+      setFilteredAreas(activeArea === allAreasLabel && hasScopedFilters ? visibleAreas : null);
+
+      if (visibleAreas.length === 0) {
+        setLoading(false);
+        return;
+      }
+
+      for (let index = 0; index < visibleAreas.length; index += INITIAL_AREA_CONCURRENCY) {
+        const areaBatch = visibleAreas.slice(index, index + INITIAL_AREA_CONCURRENCY);
+        await Promise.all(areaBatch.map((area) => loadAreaPage(area, 0, "replace")));
         if (!cancelled) {
           setLoading(false);
         }
-      });
+      }
+    };
+
+    void loadInitialAreas().catch((loadError) => {
+      if (!cancelled) {
+        console.error("Initial listing load failed", loadError);
+        setError("Listings could not be loaded. Please check your connection and try again.");
+        setLoading(false);
+      }
+    });
 
     return () => {
       cancelled = true;
@@ -459,7 +493,8 @@ export default function MapaguapaUserPage({ onNavigateAbout, onSignOut, profile 
         }
       } catch (loadError) {
         if (!cancelled) {
-          setSaveFeedback(loadError instanceof Error ? loadError.message : "Saved listings could not be loaded.");
+          console.error("Saved listings query failed", loadError);
+          setSaveFeedback("Saved listings could not be loaded.");
         }
       }
     };
@@ -498,7 +533,7 @@ export default function MapaguapaUserPage({ onNavigateAbout, onSignOut, profile 
       items,
     };
     });
-  }, [activeArea, areaListings, availableAreas]);
+  }, [activeArea, areaListings, availableAreas, filteredAreas]);
   const visibleSections = useMemo(
     () => sections.filter((section) => section.items.length > 0),
     [sections]
@@ -686,8 +721,9 @@ export default function MapaguapaUserPage({ onNavigateAbout, onSignOut, profile 
       })
       .catch((detailLoadError) => {
         if (!cancelled) {
+          console.error("Listing detail query failed", detailLoadError);
           setOpenListing(null);
-          setDetailError(detailLoadError instanceof Error ? detailLoadError.message : "Failed to load listing details.");
+          setDetailError("Listing details could not be loaded. Please try again.");
         }
       })
       .finally(() => {
@@ -1412,6 +1448,8 @@ export default function MapaguapaUserPage({ onNavigateAbout, onSignOut, profile 
                 <img
                   alt={openListingPhotos[fullViewPhotoIndex]?.alt_text || `${openListing.name} photo ${fullViewPhotoIndex + 1}`}
                   className="mapa-user-page__photo-viewer-image"
+                  decoding="async"
+                  loading="lazy"
                   src={getPhotoUrl(openListingPhotos[fullViewPhotoIndex])}
                 />
                 {openListingPhotos.length > 1 && (

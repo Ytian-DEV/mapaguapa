@@ -431,15 +431,17 @@ function applyListingFilters(query: any, filters: ListingFilters) {
   }
 
   if (filters.accommodationType?.trim()) {
-    nextQuery = nextQuery.eq("accommodation_type", filters.accommodationType.trim());
+    nextQuery = nextQuery.ilike("accommodation_type", filters.accommodationType.trim());
   }
 
   if (filters.exclusivity?.trim()) {
-    nextQuery = nextQuery.eq("exclusivity", filters.exclusivity.trim());
+    nextQuery = nextQuery.ilike("exclusivity", filters.exclusivity.trim());
   }
 
   if (typeof filters.minBudget === "number" && typeof filters.maxBudget === "number") {
-    nextQuery = nextQuery.gte("monthly_rent_min", filters.minBudget).lte("monthly_rent_max", filters.maxBudget);
+    nextQuery = nextQuery
+      .or(`monthly_rent_max.gte.${filters.minBudget},monthly_rent_max.is.null`)
+      .or(`monthly_rent_min.lte.${filters.maxBudget},monthly_rent_min.is.null`);
   } else if (typeof filters.minBudget === "number") {
     nextQuery = nextQuery.or(`monthly_rent_max.gte.${filters.minBudget},monthly_rent_max.is.null`);
   } else if (typeof filters.maxBudget === "number") {
@@ -505,6 +507,29 @@ export async function fetchListingFilterOptions(): Promise<ListingFilterOptions>
     accommodationTypes: Array.from(new Set(rows.map((row) => row.accommodation_type).filter((value): value is string => Boolean(value)))).sort(),
     exclusivities: Array.from(new Set(rows.map((row) => row.exclusivity).filter((value): value is string => Boolean(value)))).sort(),
   };
+}
+
+export async function fetchListingAreasForFilters(filters: ListingFilters = {}): Promise<string[]> {
+  if (!supabase) {
+    throw new Error("Supabase is not configured.");
+  }
+
+  const { data, error } = await applyListingFilters(
+    supabase.from("listings").select("address").order("created_at", { ascending: false }),
+    filters
+  );
+
+  if (error) {
+    throw error;
+  }
+
+  return Array.from(
+    new Set(
+      ((data ?? []) as Array<{ address: string | null }>)
+        .map((row) => getAreaLabelFromAddress(row.address))
+        .filter(Boolean)
+    )
+  ).sort();
 }
 
 function chooseCoverPhotos(photos: ListingPhotoRow[]) {
