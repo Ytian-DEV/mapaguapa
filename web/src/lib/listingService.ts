@@ -1,6 +1,6 @@
 import { supabase } from "./supabase";
 import type { Database } from "./database";
-import type { DeletedListingRow, ListingRow, ListingWithPhotos } from "./models";
+import type { DeletedListingRow, ListingCardSummary, ListingPhotoRow, ListingRow, ListingWithPhotos } from "./models";
 
 export const listingSelect = `
   id,
@@ -88,6 +88,60 @@ export const listingSelect = `
     updated_at
   )
 `;
+
+const listingCardSelect = `
+  id,
+  name,
+  address,
+  accommodation_type,
+  exclusivity,
+  monthly_rental_label,
+  monthly_rent_min,
+  monthly_rent_max,
+  rooms_available,
+  has_wifi,
+  has_study_area,
+  has_laundry_area,
+  has_parking_area,
+  pets_allowed,
+  visitors_allowed,
+  created_at
+`;
+
+const listingPhotoSelect = `
+  id,
+  listing_id,
+  storage_bucket,
+  storage_path,
+  caption,
+  alt_text,
+  sort_order,
+  is_cover,
+  uploaded_by,
+  created_at,
+  updated_at
+`;
+
+export type ListingFilters = {
+  search?: string;
+  area?: string;
+  accommodationType?: string;
+  minBudget?: number | null;
+  maxBudget?: number | null;
+  exclusivity?: string;
+  features?: Array<"wifi" | "study" | "laundry" | "parking" | "pets" | "visitors">;
+};
+
+export type PaginatedListingsResult = {
+  listings: ListingCardSummary[];
+  hasMore: boolean;
+};
+
+export type ListingFilterOptions = {
+  areas: string[];
+  accommodationTypes: string[];
+  exclusivities: string[];
+};
 
 export type ListingDraft = {
   name: string;
@@ -361,6 +415,200 @@ export async function fetchActiveListings() {
   return (data ?? []) as ListingWithPhotos[];
 }
 
+function applyListingFilters(query: any, filters: ListingFilters) {
+  let nextQuery = query.eq("status", "active");
+  const search = filters.search?.trim();
+
+  if (search) {
+    const escapedSearch = search.replace(/[%_]/g, "\\$&");
+    nextQuery = nextQuery.or(
+      `name.ilike.%${escapedSearch}%,address.ilike.%${escapedSearch}%,accommodation_type.ilike.%${escapedSearch}%,exclusivity.ilike.%${escapedSearch}%`
+    );
+  }
+
+  if (filters.area?.trim()) {
+    nextQuery = nextQuery.ilike("address", `%${filters.area.trim()}%`);
+  }
+
+  if (filters.accommodationType?.trim()) {
+    nextQuery = nextQuery.eq("accommodation_type", filters.accommodationType.trim());
+  }
+
+  if (filters.exclusivity?.trim()) {
+    nextQuery = nextQuery.eq("exclusivity", filters.exclusivity.trim());
+  }
+
+  if (typeof filters.minBudget === "number" && typeof filters.maxBudget === "number") {
+    nextQuery = nextQuery.gte("monthly_rent_min", filters.minBudget).lte("monthly_rent_max", filters.maxBudget);
+  } else if (typeof filters.minBudget === "number") {
+    nextQuery = nextQuery.or(`monthly_rent_max.gte.${filters.minBudget},monthly_rent_max.is.null`);
+  } else if (typeof filters.maxBudget === "number") {
+    nextQuery = nextQuery.or(`monthly_rent_min.lte.${filters.maxBudget},monthly_rent_min.is.null`);
+  }
+
+  filters.features?.forEach((feature) => {
+    const columnByFeature = {
+      wifi: "has_wifi",
+      study: "has_study_area",
+      laundry: "has_laundry_area",
+      parking: "has_parking_area",
+      pets: "pets_allowed",
+      visitors: "visitors_allowed",
+    } as const;
+
+    nextQuery = nextQuery.eq(columnByFeature[feature], true);
+  });
+
+  return nextQuery;
+}
+
+function getAreaLabelFromAddress(address: string | null | undefined) {
+  const value = address?.trim();
+  if (!value) {
+    return "Baybay City";
+  }
+
+  const lowered = value.toLowerCase();
+  if (lowered.includes("pangasugan")) {
+    return "Pangasugan";
+  }
+
+  if (lowered.includes("guadalupe")) {
+    return "Guadalupe";
+  }
+
+  return value.split(",")[0]?.trim() || "Baybay City";
+}
+
+export async function fetchListingFilterOptions(): Promise<ListingFilterOptions> {
+  if (!supabase) {
+    throw new Error("Supabase is not configured.");
+  }
+
+  const { data, error } = await supabase
+    .from("listings")
+    .select("address, accommodation_type, exclusivity")
+    .eq("status", "active");
+
+  if (error) {
+    throw error;
+  }
+
+  const rows = (data ?? []) as Array<{
+    address: string | null;
+    accommodation_type: string | null;
+    exclusivity: string | null;
+  }>;
+
+  return {
+    areas: Array.from(new Set(rows.map((row) => getAreaLabelFromAddress(row.address)).filter(Boolean))).sort(),
+    accommodationTypes: Array.from(new Set(rows.map((row) => row.accommodation_type).filter((value): value is string => Boolean(value)))).sort(),
+    exclusivities: Array.from(new Set(rows.map((row) => row.exclusivity).filter((value): value is string => Boolean(value)))).sort(),
+  };
+}
+
+function chooseCoverPhotos(photos: ListingPhotoRow[]) {
+  const coverByListingId = new Map<string, ListingPhotoRow>();
+
+  photos.forEach((photo) => {
+    const current = coverByListingId.get(photo.listing_id);
+    if (!current) {
+      coverByListingId.set(photo.listing_id, photo);
+      return;
+    }
+
+    if (photo.is_cover && !current.is_cover) {
+      coverByListingId.set(photo.listing_id, photo);
+      return;
+    }
+
+    if (photo.is_cover === current.is_cover && photo.sort_order < current.sort_order) {
+      coverByListingId.set(photo.listing_id, photo);
+    }
+  });
+
+  return coverByListingId;
+}
+
+async function attachCoverPhotos(listings: ListingCardSummary[]) {
+  if (!supabase || listings.length === 0) {
+    return listings;
+  }
+
+  const listingIds = listings.map((listing) => listing.id);
+  const { data, error } = await supabase
+    .from("listing_photos")
+    .select(listingPhotoSelect)
+    .in("listing_id", listingIds)
+    .order("is_cover", { ascending: false })
+    .order("sort_order", { ascending: true });
+
+  if (error) {
+    throw error;
+  }
+
+  const coverByListingId = chooseCoverPhotos((data ?? []) as ListingPhotoRow[]);
+  return listings.map((listing) => ({
+    ...listing,
+    cover_photo: coverByListingId.get(listing.id) ?? null,
+  }));
+}
+
+export async function fetchListingCards({
+  page,
+  pageSize,
+  filters = {},
+}: {
+  page: number;
+  pageSize: number;
+  filters?: ListingFilters;
+}): Promise<PaginatedListingsResult> {
+  if (!supabase) {
+    throw new Error("Supabase is not configured.");
+  }
+
+  const from = page * pageSize;
+  // Supabase ranges are inclusive, so this fetches one extra row to detect whether another page exists.
+  const to = from + pageSize;
+  const query = applyListingFilters(supabase.from("listings").select(listingCardSelect), filters)
+    .order("created_at", { ascending: false })
+    .range(from, to);
+
+  const { data, error } = await query;
+
+  if (error) {
+    throw error;
+  }
+
+  const rows = (data ?? []) as ListingCardSummary[];
+  const pageRows = rows.slice(0, pageSize);
+  const withCoverPhotos = await attachCoverPhotos(pageRows);
+
+  return {
+    listings: withCoverPhotos,
+    hasMore: rows.length > pageSize,
+  };
+}
+
+export async function fetchListingDetail(listingId: string) {
+  if (!supabase) {
+    throw new Error("Supabase is not configured.");
+  }
+
+  const { data, error } = await supabase
+    .from("listings")
+    .select(listingSelect)
+    .eq("id", listingId)
+    .eq("status", "active")
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  return data as ListingWithPhotos | null;
+}
+
 export async function fetchAdminListings() {
   if (!supabase) {
     throw new Error("Supabase is not configured.");
@@ -394,4 +642,78 @@ export async function fetchDeletedListings() {
   }
 
   return (data ?? []) as DeletedListingRow[];
+}
+
+export async function fetchSavedListingIds(userId: string) {
+  if (!supabase) {
+    throw new Error("Supabase is not configured.");
+  }
+
+  const { data, error } = await (supabase.from("saved_listings") as any)
+    .select("accommodation_id")
+    .eq("user_id", userId);
+
+  if (error) {
+    throw error;
+  }
+
+  return ((data ?? []) as Array<{ accommodation_id: string }>).map((item) => item.accommodation_id);
+}
+
+export async function fetchSavedListingCards(userId: string) {
+  const savedIds = await fetchSavedListingIds(userId);
+  if (!supabase || savedIds.length === 0) {
+    return { ids: savedIds, listings: [] as ListingCardSummary[] };
+  }
+
+  const { data, error } = await supabase
+    .from("listings")
+    .select(listingCardSelect)
+    .eq("status", "active")
+    .in("id", savedIds);
+
+  if (error) {
+    throw error;
+  }
+
+  const order = new Map(savedIds.map((id, index) => [id, index]));
+  const rows = ((data ?? []) as ListingCardSummary[]).sort(
+    (left, right) => (order.get(left.id) ?? 0) - (order.get(right.id) ?? 0)
+  );
+
+  return {
+    ids: savedIds,
+    listings: await attachCoverPhotos(rows),
+  };
+}
+
+export async function saveListingForUser(userId: string, listingId: string) {
+  if (!supabase) {
+    throw new Error("Supabase is not configured.");
+  }
+
+  const { error } = await (supabase.from("saved_listings") as any)
+    .upsert(
+      { user_id: userId, accommodation_id: listingId },
+      { onConflict: "user_id,accommodation_id", ignoreDuplicates: true }
+    );
+
+  if (error) {
+    throw error;
+  }
+}
+
+export async function unsaveListingForUser(userId: string, listingId: string) {
+  if (!supabase) {
+    throw new Error("Supabase is not configured.");
+  }
+
+  const { error } = await (supabase.from("saved_listings") as any)
+    .delete()
+    .eq("user_id", userId)
+    .eq("accommodation_id", listingId);
+
+  if (error) {
+    throw error;
+  }
 }

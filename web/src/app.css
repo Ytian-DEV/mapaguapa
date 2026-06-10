@@ -12,3 +12,162 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
+
+.mapa-about-page {
+  min-height: 100dvh;
+  background:
+    radial-gradient(circle at top left, rgba(0, 215, 160, 0.11), transparent 30%),
+    linear-gradient(135deg, #07150f 0%, #072117 48%, #04110c 100%);
+  color: #f6fff8;
+}
+
+.mapa-about-page__shell {
+  width: min(980px, calc(100% - 2rem));
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: clamp(1rem, 3vw, 2rem) 0 1.2rem;
+  display: grid;
+  gap: clamp(1rem, 3vw, 1.6rem);
+  align-content: start;
+}
+
+.mapa-about-page__topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mapa-about-page__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+}
+
+.mapa-about-page__brand-icon,
+.mapa-about-page__photo-mark {
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(127, 238, 198, 0.2);
+  background: rgba(0, 215, 160, 0.08);
+  color: #00d7a0;
+}
+
+.mapa-about-page__brand-icon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 1rem;
+}
+
+.mapa-about-page__house-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.mapa-about-page__brand-wordmark {
+  font-family: var(--font-display);
+  font-size: clamp(1.7rem, 5vw, 2.4rem);
+  letter-spacing: -0.05em;
+  color: #00d7a0;
+}
+
+.mapa-about-page__content {
+  display: grid;
+  gap: 1rem;
+  padding: clamp(1rem, 4vw, 1.5rem);
+  border: 1px solid rgba(109, 244, 196, 0.12);
+  border-radius: 1.25rem;
+  background: rgba(20, 45, 35, 0.72);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.34);
+}
+
+.mapa-about-page__eyebrow,
+.mapa-about-page__powered-by {
+  margin: 0;
+  color: rgba(226, 247, 237, 0.6);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.mapa-about-page h1 {
+  margin: 0.35rem 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 8vw, 4.6rem);
+  font-weight: 400;
+  letter-spacing: -0.05em;
+  line-height: 0.95;
+}
+
+.mapa-about-page__photo-frame {
+  min-height: clamp(13rem, 38vw, 22rem);
+  display: grid;
+  place-items: center;
+  gap: 0.7rem;
+  border: 1px dashed rgba(127, 238, 198, 0.28);
+  border-radius: 1rem;
+  background:
+    linear-gradient(135deg, rgba(0, 215, 160, 0.1), rgba(255, 255, 255, 0.03)),
+    rgba(7, 23, 17, 0.68);
+  text-align: center;
+}
+
+.mapa-about-page__photo-image {
+  width: 100%;
+  max-height: clamp(16rem, 42vw, 28rem);
+  border: 1px solid rgba(127, 238, 198, 0.18);
+  border-radius: 1rem;
+  object-fit: cover;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.24);
+}
+
+.mapa-about-page__photo-mark {
+  width: 4.4rem;
+  height: 4.4rem;
+  border-radius: 1.2rem;
+}
+
+.mapa-about-page__photo-icon {
+  width: 2.1rem;
+  height: 2.1rem;
+}
+
+.mapa-about-page__photo-frame p,
+.mapa-about-page__copy {
+  margin: 0;
+  color: rgba(235, 249, 242, 0.78);
+  line-height: 1.68;
+}
+
+.mapa-about-page__copy {
+  width: 100%;
+  max-width: none;
+  font-size: 1rem;
+}
+
+.mapa-about-page__footer {
+  display: grid;
+  justify-items: center;
+  gap: 0.55rem;
+}
+
+.mapa-about-page__powered-by {
+  text-align: center;
+}
+
+.mapa-about-page__powered-by span,
+.mapa-about-page__powered-by a {
+  display: block;
+}
+
+.mapa-about-page__powered-by a {
+  margin-top: 0.12rem;
+  color: #72f0bd;
+  text-decoration: none;
+}
