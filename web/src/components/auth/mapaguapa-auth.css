@@ -16,6 +16,7 @@
     linear-gradient(135deg, #07150f 0%, #072117 46%, #04110c 100%);
   color: #ffffff;
   isolation: isolate;
+  touch-action: pan-y;
 }
 
 .mapa-auth-page__orb,
@@ -126,10 +127,16 @@
   align-items: center;
 }
 
-.mapa-auth-page__powered-by {
+.mapa-auth-page__footer {
   grid-column: 1 / -1;
-  align-self: end;
   justify-self: center;
+  align-self: end;
+  display: grid;
+  justify-items: center;
+  gap: 0.55rem;
+}
+
+.mapa-auth-page__powered-by {
   margin: -0.35rem 0 0;
   color: rgba(226, 247, 237, 0.56);
   font-size: 0.76rem;
@@ -138,6 +145,20 @@
   text-align: center;
   text-transform: uppercase;
   letter-spacing: 0.12em;
+}
+
+.mapa-auth-page__about-link {
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #72f0bd;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .mapa-auth-page__powered-by span,
@@ -551,6 +572,8 @@
   .mapa-auth-page {
     height: auto;
     min-height: 100dvh;
+    overflow-x: hidden;
+    overflow-y: visible;
   }
 
   .mapa-auth-page__shell {
@@ -780,13 +803,13 @@
     height: auto;
     min-height: 100dvh;
     overflow-x: hidden;
-    overflow-y: auto;
+    overflow-y: visible;
   }
 
   .mapa-auth-page__shell {
     width: min(100%, calc(100% - 1rem));
-    min-height: 100dvh;
-    padding: max(0.9rem, env(safe-area-inset-top)) 0 max(1.2rem, env(safe-area-inset-bottom));
+    min-height: auto;
+    padding: max(0.9rem, env(safe-area-inset-top)) 0 max(2rem, env(safe-area-inset-bottom));
     gap: 1rem;
   }
 
@@ -935,5 +958,26 @@
 
   .mapa-auth-page__form-group {
     gap: 0.3rem;
+  }
+}
+
+@media (hover: none), (pointer: coarse), (max-width: 720px) {
+  .mapa-auth-page__grid {
+    transform: none;
+    transition: none;
+  }
+
+  .mapa-auth-page__mouse-glow,
+  .mapa-auth-page__mouse-warp {
+    display: none;
+  }
+
+  .mapa-auth-page__orb {
+    filter: blur(42px);
+  }
+
+  .mapa-auth-page__info-panel,
+  .mapa-auth-page__panel {
+    backdrop-filter: none;
   }
 }

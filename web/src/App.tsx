@@ -8,6 +8,7 @@ import "./app.css";
 const MapaguapaAdminPage = lazy(() => import("./components/admin/MapaguapaAdminPage"));
 const MapaguapaAuthPage = lazy(() => import("./components/auth/MapaguapaAuthPage"));
 const MapaguapaUserPage = lazy(() => import("./components/user/MapaguapaUserPage"));
+const AboutPage = lazy(() => import("./components/shared/AboutPage"));
 
 type Credentials = {
   email: string;
@@ -85,6 +86,20 @@ export default function App() {
   const [submitting, setSubmitting] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [authInfo, setAuthInfo] = useState<string | null>(null);
+  const [pathname, setPathname] = useState(window.location.pathname);
+
+  useEffect(() => {
+    const handlePopState = () => setPathname(window.location.pathname);
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  const navigate = (path: string) => {
+    if (window.location.pathname !== path) {
+      window.history.pushState(null, "", path);
+    }
+    setPathname(path);
+  };
 
   useEffect(() => {
     const client = supabase;
@@ -315,6 +330,24 @@ export default function App() {
     return <div className="app-shell app-shell--loading">Loading MAPAGUAPA...</div>;
   }
 
+  if (pathname === "/about") {
+    return (
+      <Suspense fallback={<div className="app-shell app-shell--loading">Loading MAPAGUAPA...</div>}>
+        <AboutPage
+          onLogoClick={() => {
+            if (profile?.role === "admin") {
+              navigate("/admin");
+            } else if (profile) {
+              navigate("/dashboard");
+            } else {
+              navigate("/");
+            }
+          }}
+        />
+      </Suspense>
+    );
+  }
+
   if (!session || !profile) {
     return (
       <Suspense fallback={<div className="app-shell app-shell--loading">Loading MAPAGUAPA...</div>}>
@@ -325,6 +358,7 @@ export default function App() {
           isSubmitting={submitting}
           onLogin={handleLogin}
           onOAuthLogin={handleOAuthLogin}
+          onNavigateAbout={() => navigate("/about")}
           onPasswordReset={handlePasswordReset}
           onSignup={handleSignup}
         />
@@ -335,9 +369,9 @@ export default function App() {
   return (
     <Suspense fallback={<div className="app-shell app-shell--loading">Loading MAPAGUAPA...</div>}>
       {profile.role === "admin" ? (
-        <MapaguapaAdminPage onSignOut={handleSignOut} profile={profile} />
+        <MapaguapaAdminPage onNavigateAbout={() => navigate("/about")} onSignOut={handleSignOut} profile={profile} />
       ) : (
-        <MapaguapaUserPage onSignOut={handleSignOut} profile={profile} />
+        <MapaguapaUserPage onNavigateAbout={() => navigate("/about")} onSignOut={handleSignOut} profile={profile} />
       )}
     </Suspense>
   );

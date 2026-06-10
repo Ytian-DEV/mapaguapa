@@ -19,6 +19,7 @@ type MapaguapaAuthPageProps = {
   authInfo: string | null;
   isSubmitting: boolean;
   onLogin: (credentials: Credentials) => Promise<void>;
+  onNavigateAbout: () => void;
   onOAuthLogin: (provider: OAuthProvider) => Promise<void>;
   onPasswordReset: (email: string) => Promise<void>;
   onSignup: (credentials: Credentials) => Promise<boolean>;
@@ -69,6 +70,7 @@ export default function MapaguapaAuthPage({
   authInfo,
   isSubmitting,
   onLogin,
+  onNavigateAbout,
   onOAuthLogin,
   onPasswordReset,
   onSignup,
@@ -445,12 +447,17 @@ export default function MapaguapaAuthPage({
           </p>
         </section>
 
-        <p className="mapa-auth-page__powered-by">
-          <span>Powered by</span>
-          <a href="https://boyles-christian-portfolio.vercel.app/" rel="noreferrer" target="_blank">
-            Lily Tech Solutions Co.
-          </a>
-        </p>
+        <footer className="mapa-auth-page__footer">
+          <button className="mapa-auth-page__about-link" onClick={onNavigateAbout} type="button">
+            About MaPaGuaPa
+          </button>
+          <p className="mapa-auth-page__powered-by">
+            <span>Powered by</span>
+            <a href="https://boyles-christian-portfolio.vercel.app/" rel="noreferrer" target="_blank">
+              Lily Tech Solutions Co.
+            </a>
+          </p>
+        </footer>
       </div>
     </main>
   );

@@ -27,6 +27,7 @@ import "./mapaguapa-admin.css";
 type AdminSection = "overview" | "add" | "edit" | "archive" | "users";
 
 type MapaguapaAdminPageProps = {
+  onNavigateAbout: () => void;
   onSignOut: () => Promise<void>;
   profile: Profile;
 };
@@ -154,7 +155,7 @@ function getAdminAreaLabel(address: string | null | undefined) {
   return value.split(",")[0]?.trim() || "Unlisted area";
 }
 
-export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdminPageProps) {
+export default function MapaguapaAdminPage({ onNavigateAbout, onSignOut, profile }: MapaguapaAdminPageProps) {
   const [section, setSection] = useState<AdminSection>("overview");
   const [listings, setListings] = useState<ListingWithPhotos[]>([]);
   const [deletedListings, setDeletedListings] = useState<DeletedListingRow[]>([]);
@@ -355,6 +356,13 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
     setIsAdminMenuOpen(false);
     setFeedback(null);
     setError(null);
+  }
+
+  function handleLogoClick() {
+    if (window.location.pathname !== "/admin") {
+      window.history.pushState(null, "", "/admin");
+    }
+    openSection("overview");
   }
 
   function selectListing(listingId: string) {
@@ -1194,7 +1202,7 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
 
         <aside className={`mapa-admin-page__sidebar mapa-admin-page__fade-up${isAdminMenuOpen ? " is-open" : ""}`}>
           <div className="mapa-admin-page__mobile-sidebar-bar">
-            <div className="mapa-admin-page__brand-row">
+            <button className="mapa-admin-page__brand-row mapa-admin-page__brand-row--button" onClick={handleLogoClick} type="button">
               <div className="mapa-admin-page__brand-icon">
                 <HouseMark className="mapa-admin-page__house-icon" />
               </div>
@@ -1202,7 +1210,7 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
                 <p className="mapa-admin-page__eyebrow mapa-admin-page__brand-wordmark">MAPAGUAPA</p>
                 <span className="mapa-admin-page__mobile-section-label">{activeSectionCopy.label}</span>
               </div>
-            </div>
+            </button>
             <button
               aria-expanded={isAdminMenuOpen}
               aria-label="Open admin menu"
@@ -1219,12 +1227,12 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
           <div className="mapa-admin-page__sidebar-drawer">
             <div className="mapa-admin-page__sidebar-top">
               <div className="mapa-admin-page__brand-box">
-              <div className="mapa-admin-page__brand-row">
+              <button className="mapa-admin-page__brand-row mapa-admin-page__brand-row--button" onClick={handleLogoClick} type="button">
                 <div className="mapa-admin-page__brand-icon">
                   <HouseMark className="mapa-admin-page__house-icon" />
                 </div>
                 <p className="mapa-admin-page__eyebrow mapa-admin-page__brand-wordmark">MAPAGUAPA</p>
-              </div>
+              </button>
               <h1 className="mapa-admin-page__brand-title">Admin dashboard</h1>
             </div>
 
@@ -1796,6 +1804,18 @@ export default function MapaguapaAdminPage({ onSignOut, profile }: MapaguapaAdmi
             )}
           </div>
         </section>
+
+        <footer className="mapa-admin-page__footer">
+          <button className="mapa-admin-page__about-link" onClick={onNavigateAbout} type="button">
+            About MaPaGuaPa
+          </button>
+          <p className="mapa-admin-page__powered-by">
+            <span>Powered by</span>
+            <a href="https://boyles-christian-portfolio.vercel.app/" rel="noreferrer" target="_blank">
+              Lily Tech Solutions Co.
+            </a>
+          </p>
+        </footer>
       </div>
 
       {archiveConfirmOpen && selectedListing ? (
