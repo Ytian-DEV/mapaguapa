@@ -10,6 +10,28 @@ export type ListingWithPhotos = ListingRow & {
   listing_photos?: ListingPhotoRow[] | null;
 };
 
+export type ListingCardSummary = Pick<
+  ListingRow,
+  | "id"
+  | "name"
+  | "address"
+  | "accommodation_type"
+  | "exclusivity"
+  | "monthly_rental_label"
+  | "monthly_rent_min"
+  | "monthly_rent_max"
+  | "rooms_available"
+  | "has_wifi"
+  | "has_study_area"
+  | "has_laundry_area"
+  | "has_parking_area"
+  | "pets_allowed"
+  | "visitors_allowed"
+  | "created_at"
+> & {
+  cover_photo?: ListingPhotoRow | null;
+};
+
 export function toPublicPhotoUrl(photo: Pick<ListingPhotoRow, "storage_bucket" | "storage_path">) {
   if (!supabase || !photo.storage_path) {
     return "";
@@ -32,6 +54,10 @@ export function getListingCover(listing: ListingWithPhotos) {
   return cover ? toPublicPhotoUrl(cover) : "";
 }
 
+export function getListingCardCover(listing: ListingCardSummary) {
+  return listing.cover_photo ? toPublicPhotoUrl(listing.cover_photo) : "";
+}
+
 export function formatSignals(signals: string[] | null | undefined, raw: string | null | undefined) {
   if (signals && signals.length > 0) {
     return signals.join(", ");
@@ -40,7 +66,11 @@ export function formatSignals(signals: string[] | null | undefined, raw: string 
   return raw || "Not specified";
 }
 
-export function fallbackDescription(listing: ListingRow) {
+export function fallbackDescription(
+  listing: Pick<ListingRow, "accommodation_type" | "address" | "exclusivity" | "monthly_rental_label"> & {
+    description?: string | null;
+  }
+) {
   if (listing.description?.trim()) {
     return listing.description;
   }

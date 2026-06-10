@@ -119,6 +119,21 @@ export type Database = {
           deleted_at: string;
         };
       };
+      saved_listings: {
+        Row: {
+          id: string;
+          user_id: string;
+          accommodation_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          accommodation_id: string;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["saved_listings"]["Row"]>;
+      };
     };
     Functions: {
       archive_listing: {

@@ -1,14 +1,23 @@
-import { useDeferredValue, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import HouseMark from "../shared/HouseMark";
 import { PropertyMap, type PropertyCoordinates } from "../shared/PropertyMap";
 import { usePointerGlow } from "../shared/usePointerGlow";
-import { fetchActiveListings } from "../../lib/listingService";
+import {
+  fetchListingCards,
+  fetchListingDetail,
+  fetchListingFilterOptions,
+  fetchSavedListingCards,
+  saveListingForUser,
+  unsaveListingForUser,
+  type ListingFilters,
+} from "../../lib/listingService";
 import {
   fallbackDescription,
   formatSignals,
-  getListingCover,
+  getListingCardCover,
   labelBoolean,
   toPublicPhotoUrl,
+  type ListingCardSummary,
   type ListingPhotoRow,
   type ListingWithPhotos,
   type Profile,
@@ -16,14 +25,16 @@ import {
 import "./mapaguapa-user.css";
 
 type MapaguapaUserPageProps = {
+  onNavigateAbout: () => void;
   onSignOut: () => Promise<void>;
   profile: Profile;
 };
 
 type ListingSection = {
+  area: string;
   title: string;
   subtitle: string;
-  items: ListingWithPhotos[];
+  items: ListingCardSummary[];
 };
 
 type ModalDetailItem = {
@@ -56,7 +67,7 @@ type FeatureFilterKey = "wifi" | "study" | "laundry" | "parking" | "pets" | "vis
 type FeatureFilterOption = {
   key: FeatureFilterKey;
   label: string;
-  matches: (listing: ListingWithPhotos) => boolean;
+  matches: (listing: ListingCardSummary) => boolean;
 };
 
 const featureFilterOptions: FeatureFilterOption[] = [
@@ -71,7 +82,11 @@ const featureFilterOptions: FeatureFilterOption[] = [
 const allAreasLabel = "All areas";
 const allTypesLabel = "All stay types";
 const allExclusivityLabel = "All setups";
-const savedListingsStorageKey = "mapaguapa:saved-listings";
+const AREA_PAGE_SIZE = 4;
+type UserView = "listings" | "saved";
+type AreaListingState = Record<string, ListingCardSummary[]>;
+type AreaPageState = Record<string, number>;
+type AreaBooleanState = Record<string, boolean>;
 
 type PriceInterval = {
   min: number;
@@ -258,9 +273,17 @@ function getListingCoordinates(listing: ListingWithPhotos | null): PropertyCoord
   return { lat, lng };
 }
 
-export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserPageProps) {
-  const [listings, setListings] = useState<ListingWithPhotos[]>([]);
+export default function MapaguapaUserPage({ onNavigateAbout, onSignOut, profile }: MapaguapaUserPageProps) {
+  const [areaListings, setAreaListings] = useState<AreaListingState>({});
+  const [areaPages, setAreaPages] = useState<AreaPageState>({});
+  const [areaHasMore, setAreaHasMore] = useState<AreaBooleanState>({});
+  const [areaLoading, setAreaLoading] = useState<AreaBooleanState>({});
+  const [availableAreas, setAvailableAreas] = useState<string[]>([]);
+  const [availableTypes, setAvailableTypes] = useState<string[]>([]);
+  const [availableExclusivities, setAvailableExclusivities] = useState<string[]>([]);
+  const [view, setView] = useState<UserView>(() => (window.location.pathname === "/dashboard/saved" ? "saved" : "listings"));
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [activeArea, setActiveArea] = useState(allAreasLabel);
   const [activeType, setActiveType] = useState(allTypesLabel);
   const [minBudget, setMinBudget] = useState("");
@@ -270,20 +293,18 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [openListingId, setOpenListingId] = useState<string | null>(null);
+  const [openListing, setOpenListing] = useState<ListingWithPhotos | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState<string | null>(null);
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
   const [fullViewPhotoIndex, setFullViewPhotoIndex] = useState<number | null>(null);
-  const [savedListingIds, setSavedListingIds] = useState<string[]>(() => {
-    try {
-      const parsed = JSON.parse(window.localStorage.getItem(savedListingsStorageKey) ?? "[]");
-      return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === "string") : [];
-    } catch {
-      return [];
-    }
-  });
+  const [savedListingIds, setSavedListingIds] = useState<string[]>([]);
+  const [savedListings, setSavedListings] = useState<ListingCardSummary[]>([]);
+  const [savingListingId, setSavingListingId] = useState<string | null>(null);
+  const [saveFeedback, setSaveFeedback] = useState<string | null>(null);
   const [contactFeedback, setContactFeedback] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const deferredSearch = useDeferredValue(searchQuery.trim().toLowerCase());
   const {
     pageRef,
     handlePointerEnter,
@@ -291,113 +312,196 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
     handlePointerMove,
   } = usePointerGlow({ centerXRatio: 0.5, centerYRatio: 0.22 });
 
+  const buildListingFilters = (areaOverride?: string): ListingFilters => {
+    const parsedMinBudget = minBudget.trim() ? parseBudgetValue(minBudget) : null;
+    const parsedMaxBudget = maxBudget.trim() ? parseBudgetValue(maxBudget) : null;
+
+    return {
+      search: debouncedSearchQuery,
+      area: areaOverride ?? (activeArea === allAreasLabel ? undefined : activeArea),
+      accommodationType: activeType === allTypesLabel ? undefined : activeType,
+      minBudget: parsedMinBudget,
+      maxBudget: parsedMaxBudget,
+      exclusivity: activeExclusivity === allExclusivityLabel ? undefined : activeExclusivity,
+      features: activeFeatures,
+    };
+  };
+
+  const loadAreaPage = async (area: string, page: number, mode: "replace" | "append") => {
+    setAreaLoading((current) => ({ ...current, [area]: true }));
+    setError(null);
+
+    try {
+      const result = await fetchListingCards({
+        page,
+        pageSize: AREA_PAGE_SIZE,
+        filters: buildListingFilters(area),
+      });
+
+      setAreaListings((current) => {
+        const existing = mode === "replace" ? [] : current[area] ?? [];
+        const existingIds = new Set(existing.map((listing) => listing.id));
+        return {
+          ...current,
+          [area]: [...existing, ...result.listings.filter((listing) => !existingIds.has(listing.id))],
+        };
+      });
+      setAreaPages((current) => ({ ...current, [area]: page }));
+      setAreaHasMore((current) => ({ ...current, [area]: result.hasMore }));
+    } catch (loadError) {
+      setError(loadError instanceof Error ? loadError.message : "Failed to load listings.");
+    } finally {
+      setAreaLoading((current) => ({ ...current, [area]: false }));
+    }
+  };
+
+  const getVisibleAreas = () => {
+    if (activeArea !== allAreasLabel) {
+      return [activeArea];
+    }
+
+    return availableAreas;
+  };
+
   useEffect(() => {
     let cancelled = false;
 
-    const loadListings = async () => {
-      setLoading(true);
-      setError(null);
-
+    const loadFilterOptions = async () => {
       try {
-        const data = await fetchActiveListings();
+        const options = await fetchListingFilterOptions();
         if (!cancelled) {
-          setListings(data);
+          setAvailableAreas(options.areas);
+          setAvailableTypes(options.accommodationTypes);
+          setAvailableExclusivities(options.exclusivities);
         }
       } catch (loadError) {
         if (!cancelled) {
-          setError(loadError instanceof Error ? loadError.message : "Failed to load listings.");
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
+          setError(loadError instanceof Error ? loadError.message : "Failed to load filter options.");
         }
       }
     };
 
-    void loadListings();
+    void loadFilterOptions();
 
     return () => {
       cancelled = true;
     };
   }, []);
 
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 400);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    const visibleAreas = getVisibleAreas();
+    const parsedMinBudget = minBudget.trim() ? parseBudgetValue(minBudget) : null;
+    const parsedMaxBudget = maxBudget.trim() ? parseBudgetValue(maxBudget) : null;
+    const hasInvalidRange =
+      parsedMinBudget !== null && parsedMaxBudget !== null && parsedMinBudget > parsedMaxBudget;
+
+    if (hasInvalidRange) {
+      setAreaListings({});
+      setAreaPages({});
+      setAreaHasMore({});
+      setLoading(false);
+      return;
+    }
+
+    if (visibleAreas.length === 0) {
+      setAreaListings({});
+      setAreaPages({});
+      setAreaHasMore({});
+      setLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setLoading(true);
+    setAreaListings({});
+    setAreaPages({});
+    setAreaHasMore({});
+
+    Promise.all(visibleAreas.map((area) => loadAreaPage(area, 0, "replace")))
+      .catch(() => undefined)
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeArea, activeExclusivity, activeFeatures, activeType, availableAreas, debouncedSearchQuery, maxBudget, minBudget]);
+
+  useEffect(() => {
+    const syncViewFromPath = () => {
+      setView(window.location.pathname === "/dashboard/saved" ? "saved" : "listings");
+    };
+
+    window.addEventListener("popstate", syncViewFromPath);
+    return () => window.removeEventListener("popstate", syncViewFromPath);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadSavedListings = async () => {
+      try {
+        const result = await fetchSavedListingCards(profile.id);
+        if (!cancelled) {
+          setSavedListingIds(result.ids);
+          setSavedListings(result.listings);
+        }
+      } catch (loadError) {
+        if (!cancelled) {
+          setSaveFeedback(loadError instanceof Error ? loadError.message : "Saved listings could not be loaded.");
+        }
+      }
+    };
+
+    void loadSavedListings();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [profile.id]);
+
   const typeOptions = useMemo(
-    () => [
-      allTypesLabel,
-      ...Array.from(new Set(listings.map((listing) => listing.accommodation_type).filter(Boolean))),
-    ],
-    [listings]
+    () => [allTypesLabel, ...availableTypes],
+    [availableTypes]
   );
 
   const areaOptions = useMemo(
-    () => [allAreasLabel, ...Array.from(new Set(listings.map((listing) => getAreaLabel(listing.address)).filter(Boolean)))],
-    [listings]
+    () => [allAreasLabel, ...availableAreas],
+    [availableAreas]
   );
 
   const exclusivityOptions = useMemo(
-    () => [
-      allExclusivityLabel,
-      ...Array.from(
-        new Set(listings.map((listing) => listing.exclusivity).filter((value): value is string => Boolean(value)))
-      ),
-    ],
-    [listings]
+    () => [allExclusivityLabel, ...availableExclusivities],
+    [availableExclusivities]
   );
 
-  const filteredListings = useMemo(() => {
-    const parsedMinBudget = minBudget.trim() ? parseBudgetValue(minBudget) : null;
-    const parsedMaxBudget = maxBudget.trim() ? parseBudgetValue(maxBudget) : null;
-    const hasInvalidBudgetRange =
-      parsedMinBudget !== null && parsedMaxBudget !== null && parsedMinBudget > parsedMaxBudget;
-
-    return listings.filter((listing) => {
-      const haystack = [
-        listing.name,
-        listing.address,
-        listing.accommodation_type,
-        listing.exclusivity,
-        listing.monthly_rental_label,
-        listing.contact_person,
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-
-      const matchesSearch = !deferredSearch || haystack.includes(deferredSearch);
-      const matchesArea = activeArea === allAreasLabel || getAreaLabel(listing.address) === activeArea;
-      const matchesType = activeType === allTypesLabel || listing.accommodation_type === activeType;
-      const matchesPrice =
-        hasInvalidBudgetRange || doesPriceMatchBudget(listing.monthly_rental_label, parsedMinBudget, parsedMaxBudget);
-      const matchesExclusivity = activeExclusivity === allExclusivityLabel || (listing.exclusivity ?? "") === activeExclusivity;
-      const matchesFeatures = activeFeatures.every((featureKey) => {
-        const option = featureFilterOptions.find((item) => item.key === featureKey);
-        return option ? option.matches(listing) : true;
-      });
-
-      return matchesSearch && matchesArea && matchesType && matchesPrice && matchesExclusivity && matchesFeatures;
-    });
-  }, [activeArea, activeExclusivity, activeFeatures, activeType, deferredSearch, listings, maxBudget, minBudget]);
+  const listings = useMemo(() => Object.values(areaListings).flat(), [areaListings]);
 
   const sections = useMemo<ListingSection[]>(() => {
-    const grouped = new Map<string, ListingWithPhotos[]>();
-
-    filteredListings.forEach((listing) => {
-      const area = getAreaLabel(listing.address);
-      const existing = grouped.get(area) ?? [];
-      existing.push(listing);
-      grouped.set(area, existing);
-    });
-
-    return Array.from(grouped.entries()).map(([area, items]) => ({
+    return getVisibleAreas().map((area) => {
+      const items = areaListings[area] ?? [];
+      return {
       title: createSectionTitle(area),
       subtitle: `${items.length} listing${items.length > 1 ? "s" : ""} available`,
+      area,
       items,
-    }));
-  }, [filteredListings]);
-
-  const openListing = useMemo(
-    () => listings.find((listing) => listing.id === openListingId) ?? null,
-    [listings, openListingId]
+    };
+    });
+  }, [activeArea, areaListings, availableAreas]);
+  const visibleSections = useMemo(
+    () => sections.filter((section) => section.items.length > 0),
+    [sections]
   );
   const openListingPhotos = useMemo(() => sortPhotos(openListing), [openListing]);
   const activePhoto = openListingPhotos[activePhotoIndex] ?? openListingPhotos[0];
@@ -409,7 +513,7 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
   const firstName = getFirstName(profile);
   const initials = getInitials(profile);
   const isOpenListingSaved = openListing ? savedListingIds.includes(openListing.id) : false;
-  const filteredCount = filteredListings.length.toString().padStart(2, "0");
+  const filteredCount = listings.length.toString().padStart(2, "0");
   const totalCount = listings.length.toString().padStart(2, "0");
   const minBudgetValue = minBudget.trim() ? parseBudgetValue(minBudget) : null;
   const maxBudgetValue = maxBudget.trim() ? parseBudgetValue(maxBudget) : null;
@@ -422,6 +526,8 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
     Number(hasBudgetFilter) +
     Number(activeExclusivity !== allExclusivityLabel) +
     activeFeatures.length;
+  const hasSearchFilter = debouncedSearchQuery.trim() !== "";
+  const hasAnyListingFilter = activeFilterCount > 0 || hasSearchFilter;
   const modalHighlights = openListing
     ? [
         { label: "Budget", value: formatPesoLabel(openListing.monthly_rental_label) },
@@ -558,8 +664,42 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
   }, [openListingId]);
 
   useEffect(() => {
-    window.localStorage.setItem(savedListingsStorageKey, JSON.stringify(savedListingIds));
-  }, [savedListingIds]);
+    if (!openListingId) {
+      setOpenListing(null);
+      setDetailError(null);
+      setDetailLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setDetailLoading(true);
+    setDetailError(null);
+
+    void fetchListingDetail(openListingId)
+      .then((listing) => {
+        if (!cancelled) {
+          setOpenListing(listing);
+          if (!listing) {
+            setDetailError("This listing is no longer available.");
+          }
+        }
+      })
+      .catch((detailLoadError) => {
+        if (!cancelled) {
+          setOpenListing(null);
+          setDetailError(detailLoadError instanceof Error ? detailLoadError.message : "Failed to load listing details.");
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setDetailLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [openListingId]);
 
   useEffect(() => {
     if (!openListing) {
@@ -617,10 +757,63 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
     setMaxBudget("");
   };
 
-  const toggleSavedListing = (listingId: string) => {
-    setSavedListingIds((current) =>
-      current.includes(listingId) ? current.filter((id) => id !== listingId) : [...current, listingId]
-    );
+  const loadMoreListings = (area: string) => {
+    if (areaLoading[area] || loading || !areaHasMore[area]) {
+      return;
+    }
+
+    void loadAreaPage(area, (areaPages[area] ?? 0) + 1, "append");
+  };
+
+  const navigateUserView = (nextView: UserView) => {
+    const path = nextView === "saved" ? "/dashboard/saved" : "/dashboard";
+    if (window.location.pathname !== path) {
+      window.history.pushState(null, "", path);
+    }
+    setView(nextView);
+    setIsAccountMenuOpen(false);
+  };
+
+  const handleLogoClick = () => {
+    navigateUserView("listings");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const toggleSavedListing = async (listingId: string) => {
+    const wasSaved = savedListingIds.includes(listingId);
+    const nextIds = wasSaved ? savedListingIds.filter((id) => id !== listingId) : [...savedListingIds, listingId];
+
+    setSavingListingId(listingId);
+    setSaveFeedback(null);
+    setSavedListingIds(nextIds);
+    setSavedListings((current) => {
+      if (wasSaved) {
+        return current.filter((listing) => listing.id !== listingId);
+      }
+
+      const existing = current.find((listing) => listing.id === listingId);
+      const listingToAdd = existing ?? listings.find((listing) => listing.id === listingId);
+      return listingToAdd ? [...current, listingToAdd] : current;
+    });
+
+    try {
+      if (wasSaved) {
+        await unsaveListingForUser(profile.id, listingId);
+      } else {
+        await saveListingForUser(profile.id, listingId);
+      }
+    } catch (saveError) {
+      setSavedListingIds(savedListingIds);
+      void fetchSavedListingCards(profile.id)
+        .then((result) => {
+          setSavedListingIds(result.ids);
+          setSavedListings(result.listings);
+        })
+        .catch(() => undefined);
+      setSaveFeedback(saveError instanceof Error ? saveError.message : "Save failed. Please try again.");
+    } finally {
+      setSavingListingId(null);
+    }
   };
 
   const copyContactNumber = async () => {
@@ -635,6 +828,60 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
     } catch {
       setContactFeedback(openListing.contact_number);
     }
+  };
+
+  const renderListingCard = (listing: ListingCardSummary) => {
+    const cover = getListingCardCover(listing);
+    const isSaved = savedListingIds.includes(listing.id);
+
+    return (
+      <article className="mapa-user-page__listing-card" key={listing.id}>
+        <button
+          className="mapa-user-page__listing-card-main"
+          onClick={() => setOpenListingId(listing.id)}
+          type="button"
+        >
+          <div className="mapa-user-page__listing-image">
+            {cover && (
+              <img
+                alt={listing.cover_photo?.alt_text || `${listing.name} cover photo`}
+                className="mapa-user-page__listing-cover"
+                decoding="async"
+                loading="lazy"
+                src={cover}
+              />
+            )}
+            <span className="mapa-user-page__listing-badge">{listing.accommodation_type}</span>
+          </div>
+
+          <div className="mapa-user-page__listing-body">
+            <div className="mapa-user-page__listing-head">
+              <div>
+                <h3 className="mapa-user-page__listing-title">{listing.name}</h3>
+                <p className="mapa-user-page__listing-address">{listing.address}</p>
+              </div>
+              <span className="mapa-user-page__listing-price">{formatPesoLabel(listing.monthly_rental_label)}</span>
+            </div>
+
+            <p className="mapa-user-page__listing-summary">{fallbackDescription(listing)}</p>
+
+            <div className="mapa-user-page__tag-row">
+              <span>{listing.exclusivity || "Open"}</span>
+              <span>{listing.rooms_available ?? 0} rooms</span>
+              <span>{labelBoolean(listing.has_wifi, "Wi-Fi", "No Wi-Fi")}</span>
+            </div>
+          </div>
+        </button>
+        <button
+          className={`mapa-user-page__save-button${isSaved ? " is-saved" : ""}`}
+          disabled={savingListingId === listing.id}
+          onClick={() => void toggleSavedListing(listing.id)}
+          type="button"
+        >
+          {isSaved ? "Saved" : "Save"}
+        </button>
+      </article>
+    );
   };
 
   return (
@@ -653,14 +900,14 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
 
       <div className="mapa-user-page__shell">
         <header className="mapa-user-page__topbar">
-          <div className="mapa-user-page__brand">
+          <button className="mapa-user-page__brand mapa-user-page__brand--button" onClick={handleLogoClick} type="button">
             <div className="mapa-user-page__brand-icon">
               <HouseMark className="mapa-user-page__house-icon" />
             </div>
             <div>
               <p className="mapa-user-page__brand-wordmark">MAPAGUAPA</p>
             </div>
-          </div>
+          </button>
 
           <div className="mapa-user-page__searchbar">
             <label className="mapa-user-page__search-field">
@@ -716,11 +963,26 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
               <button className="mapa-user-page__account-menu-signout" onClick={() => void onSignOut()} role="menuitem" type="button">
                 Sign out
               </button>
+              <button className="mapa-user-page__account-menu-link" onClick={() => navigateUserView("saved")} role="menuitem" type="button">
+                Saved Listings
+              </button>
+              <button className="mapa-user-page__account-menu-link" onClick={onNavigateAbout} role="menuitem" type="button">
+                About MaPaGuaPa
+              </button>
             </div>
           </div>
         </header>
 
-        <section className="mapa-user-page__filters-panel">
+        <nav className="mapa-user-page__view-nav" aria-label="Student pages">
+          <button className={view === "listings" ? "is-active" : ""} onClick={() => navigateUserView("listings")} type="button">
+            Listings
+          </button>
+          <button className={view === "saved" ? "is-active" : ""} onClick={() => navigateUserView("saved")} type="button">
+            Saved Listings
+          </button>
+        </nav>
+
+        {view === "listings" && <section className="mapa-user-page__filters-panel">
           <div className="mapa-user-page__filters-head">
             <div>
               <h3 className="mapa-user-page__filters-title">Filters</h3>
@@ -878,16 +1140,15 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
             </div>
           </div>
           )}
-        </section>
+        </section>}
 
+        {saveFeedback && <p className="mapa-user-page__feedback mapa-user-page__feedback--error">{saveFeedback}</p>}
+        {detailLoading && <p className="mapa-user-page__feedback">Loading listing details...</p>}
+        {detailError && <p className="mapa-user-page__feedback mapa-user-page__feedback--error">{detailError}</p>}
         {loading && <p className="mapa-user-page__feedback">Loading listings from Supabase...</p>}
         {error && <p className="mapa-user-page__feedback mapa-user-page__feedback--error">{error}</p>}
 
-        {!loading && !error && listings.length === 0 && (
-          <p className="mapa-user-page__feedback">No active listings are available yet.</p>
-        )}
-
-        {!loading && !error && listings.length > 0 && filteredListings.length === 0 && (
+        {!loading && !error && view === "listings" && listings.length === 0 && hasAnyListingFilter && (
           <article className="mapa-user-page__empty-state">
             <p className="mapa-user-page__eyebrow">No matching stays</p>
             <h3>Try another search or switch filters.</h3>
@@ -895,9 +1156,46 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
           </article>
         )}
 
-        {!loading && !error && sections.length > 0 && (
+        {!loading && !error && view === "listings" && listings.length === 0 && !hasAnyListingFilter && (
+          <p className="mapa-user-page__feedback">No active listings are available yet.</p>
+        )}
+
+        {!loading && !error && view === "listings" && listings.length > 0 && visibleSections.length === 0 && (
+          <article className="mapa-user-page__empty-state">
+            <p className="mapa-user-page__eyebrow">No matching stays</p>
+            <h3>Try another search or switch filters.</h3>
+            <p>Once the filters loosen up, the available properties will appear here again.</p>
+          </article>
+        )}
+
+        {!loading && !error && view === "saved" && savedListings.length === 0 && (
+          <article className="mapa-user-page__empty-state">
+            <p className="mapa-user-page__eyebrow">Saved listings</p>
+            <h3>You haven't saved any places yet.</h3>
+            <p>Tap Save on a listing to keep it here for later.</p>
+          </article>
+        )}
+
+        {!loading && !error && view === "saved" && savedListings.length > 0 && (
+          <section className="mapa-user-page__listing-section">
+            <div className="mapa-user-page__section-head">
+              <div>
+                <p className="mapa-user-page__eyebrow">Saved Listings</p>
+                <h2 className="mapa-user-page__section-title">Places you saved for later</h2>
+              </div>
+              <div className="mapa-user-page__section-status" aria-label={`${savedListings.length} saved listings`}>
+                <span className="mapa-user-page__section-status-dot" />
+                <strong>{savedListings.length.toString().padStart(2, "0")}</strong>
+                <span>{savedListings.length === 1 ? "saved listing" : "saved listings"}</span>
+              </div>
+            </div>
+            <div className="mapa-user-page__listing-grid">{savedListings.map(renderListingCard)}</div>
+          </section>
+        )}
+
+        {!loading && !error && view === "listings" && visibleSections.length > 0 && (
           <div className="mapa-user-page__sections">
-            {sections.map((section) => (
+            {visibleSections.map((section) => (
               <section className="mapa-user-page__listing-section" key={section.title}>
                 <div className="mapa-user-page__section-head">
                   <div>
@@ -912,54 +1210,36 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
                 </div>
 
                 <div className="mapa-user-page__listing-grid">
-                  {section.items.map((listing) => {
-                    const cover = getListingCover(listing);
-                    return (
-                      <button
-                        className="mapa-user-page__listing-card"
-                        key={listing.id}
-                        onClick={() => setOpenListingId(listing.id)}
-                        type="button"
-                      >
-                        <div
-                          className="mapa-user-page__listing-image"
-                          style={cover ? { backgroundImage: `linear-gradient(180deg, rgba(17, 39, 29, 0.05), rgba(17, 39, 29, 0.34)), url(${cover})` } : undefined}
-                        >
-                          <span className="mapa-user-page__listing-badge">{listing.accommodation_type}</span>
-                        </div>
-
-                        <div className="mapa-user-page__listing-body">
-                          <div className="mapa-user-page__listing-head">
-                            <div>
-                              <h3 className="mapa-user-page__listing-title">{listing.name}</h3>
-                              <p className="mapa-user-page__listing-address">{listing.address}</p>
-                            </div>
-                            <span className="mapa-user-page__listing-price">{formatPesoLabel(listing.monthly_rental_label)}</span>
-                          </div>
-
-                          <p className="mapa-user-page__listing-summary">{fallbackDescription(listing)}</p>
-
-                          <div className="mapa-user-page__tag-row">
-                            <span>{listing.exclusivity || "Open"}</span>
-                            <span>{listing.rooms_available ?? 0} rooms</span>
-                            <span>{labelBoolean(listing.has_wifi, "Wi-Fi", "No Wi-Fi")}</span>
-                          </div>
-                        </div>
-                      </button>
-                    );
-                  })}
+                  {section.items.map(renderListingCard)}
                 </div>
+                {areaHasMore[section.area] && (
+                  <div className="mapa-user-page__load-more-wrap">
+                    <button
+                      className="mapa-user-page__load-more"
+                      disabled={Boolean(areaLoading[section.area])}
+                      onClick={() => loadMoreListings(section.area)}
+                      type="button"
+                    >
+                      {areaLoading[section.area] ? "Loading more..." : `Load More in ${section.area}`}
+                    </button>
+                  </div>
+                )}
               </section>
             ))}
           </div>
         )}
 
-        <p className="mapa-user-page__powered-by">
-          <span>Powered by</span>
-          <a href="https://boyles-christian-portfolio.vercel.app/" rel="noreferrer" target="_blank">
-            Lily Tech Solutions Co.
-          </a>
-        </p>
+        <footer className="mapa-user-page__footer">
+          <button className="mapa-user-page__about-link" onClick={onNavigateAbout} type="button">
+            About MaPaGuaPa
+          </button>
+          <p className="mapa-user-page__powered-by">
+            <span>Powered by</span>
+            <a href="https://boyles-christian-portfolio.vercel.app/" rel="noreferrer" target="_blank">
+              Lily Tech Solutions Co.
+            </a>
+          </p>
+        </footer>
       </div>
 
       {openListing && (
@@ -974,7 +1254,7 @@ export default function MapaguapaUserPage({ onSignOut, profile }: MapaguapaUserP
               </div>
               <div className="mapa-user-page__modal-actions">
                 <span className="mapa-user-page__modal-price">{formatPesoLabel(openListing.monthly_rental_label)}</span>
-                <button className="mapa-user-page__modal-close" onClick={() => toggleSavedListing(openListing.id)} type="button">
+                <button className="mapa-user-page__modal-close" onClick={() => void toggleSavedListing(openListing.id)} type="button">
                   {isOpenListingSaved ? "Saved" : "Save"}
                 </button>
                 <button className="mapa-user-page__modal-close" onClick={() => setOpenListingId(null)} type="button">
