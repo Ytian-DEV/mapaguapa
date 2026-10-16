@@ -2,7 +2,7 @@
 
 **Current branch:** `feature/messaging`
 **Status:** Features 1–6 merged into develop. Migrations tested locally, NOT applied to Supabase (see docs/v2/DB.md). Student pages verified with dev fixtures (/dev/browse, /dev/listing). Maps use OSM tiles until VITE_MAPTILER_KEY is set.
-**Next step:** Build shared thread UI (bubbles, visit cards, composer, conversation list).
+**Next step:** Build student Messages page (frame 04) + nav unread badge.
 
 Resume protocol: read this file → `git status` → check out the branch above → finish uncommitted work → continue from the first unchecked item.
 
