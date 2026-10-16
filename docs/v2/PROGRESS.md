@@ -1,6 +1,6 @@
 # MAPAGUAPA v2 — Progress
 
-**Current branch:** `fix/db-v2-prod-alignment`
+**Current branch:** `develop`
 **Status:** Features 1–2 merged into develop. Migrations written and tested locally, NOT applied to Supabase (see docs/v2/DB.md).
 **Next step:** Start feature/auth-v2 from develop (PKCE + /auth/callback, sign-in frame 01, student/owner sign-up, role routing).
 
