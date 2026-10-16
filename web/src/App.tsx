@@ -13,7 +13,6 @@ import { OwnerShell } from "./features/owner/OwnerShell";
 import { ToastProvider } from "./ui";
 import "./app.css";
 
-const MapaguapaAdminPage = lazy(() => import("./components/admin/MapaguapaAdminPage"));
 const AboutPage = lazy(() => import("./components/shared/AboutPage"));
 const BrowsePage = lazy(() => import("./features/browse/BrowsePage"));
 const SavedPage = lazy(() => import("./features/browse/SavedPage"));
@@ -37,6 +36,7 @@ const AdminOverviewPage = lazy(() => import("./features/admin/AdminOverviewPage"
 const AdminSettingsPage = lazy(() => import("./features/admin/AdminSettingsPage"));
 const AdminComingSoon = lazy(() => import("./features/admin/AdminComingSoon"));
 const AdminReviewPage = lazy(() => import("./features/admin/AdminReviewPage"));
+const AdminUsersPage = lazy(() => import("./features/admin/AdminUsersPage"));
 const AdminListingsPage = lazy(() => import("./features/admin/AdminListingsPage"));
 const NotFoundPage = lazy(() => import("./app/NotFoundPage"));
 const ComponentsPreview = import.meta.env.DEV ? lazy(() => import("./dev/ComponentsPreview")) : null;
@@ -48,18 +48,12 @@ const WizardPreview = import.meta.env.DEV ? lazy(() => import("./dev/WizardPrevi
 const AdminPreview = import.meta.env.DEV ? lazy(() => import("./dev/AdminPreview")) : null;
 const AdminListingsPreview = import.meta.env.DEV ? lazy(() => import("./dev/AdminListingsPreview")) : null;
 const AdminReviewPreview = import.meta.env.DEV ? lazy(() => import("./dev/AdminReviewPreview")) : null;
+const AdminUsersPreview = import.meta.env.DEV ? lazy(() => import("./dev/AdminUsersPreview")) : null;
 
 function AboutRoute() {
   const { profile } = useAuth();
   const navigate = useNavigate();
   return <AboutPage onLogoClick={() => navigate(profile ? homeFor(profile.role) : "/sign-in")} />;
-}
-
-function AdminRoute() {
-  const { profile, signOut } = useAuth();
-  const navigate = useNavigate();
-  if (!profile) return null;
-  return <MapaguapaAdminPage onNavigateAbout={() => navigate("/about")} onSignOut={signOut} profile={profile} />;
 }
 
 /** Student area: shared nav, footer and saved state. */
@@ -162,7 +156,6 @@ export default function App() {
                 <Route element={<OwnerComingSoon />} path="*" />
               </Route>
               {/* The v1 console stays reachable until features 11–13 replace it. */}
-              <Route element={<RequireRole roles={["admin"]}><AdminRoute /></RequireRole>} path="/admin/legacy" />
               <Route element={<AdminLayout />} path="/admin">
                 <Route element={<AdminOverviewPage />} index />
                 <Route element={<Navigate replace to="/admin/listings/new/edit/basics" />} path="listings/new" />
@@ -172,7 +165,7 @@ export default function App() {
                 <Route element={<AdminListingsPage />} path="listings" />
                 <Route element={<OwnerListingPreviewPage base="/admin" />} path="listings/:listingId/preview" />
                 <Route element={<AdminListingsPage initialTab="archived" />} path="archive" />
-                <Route element={<AdminComingSoon title="Users" />} path="users" />
+                <Route element={<AdminUsersPage />} path="users" />
                 <Route element={<AdminComingSoon title="Reports" />} path="reports" />
                 <Route element={<AdminSettingsPage />} path="settings" />
                 <Route element={<AdminComingSoon title="Page" />} path="*" />
@@ -187,6 +180,7 @@ export default function App() {
               {AdminPreview && <Route element={<AdminPreview />} path="/dev/admin" />}
               {AdminListingsPreview && <Route element={<AdminListingsPreview />} path="/dev/admin-listings" />}
               {AdminReviewPreview && <Route element={<AdminReviewPreview />} path="/dev/admin-review" />}
+              {AdminUsersPreview && <Route element={<AdminUsersPreview />} path="/dev/admin-users" />}
               <Route element={<NotFoundPage />} path="*" />
             </Routes>
           </Suspense>

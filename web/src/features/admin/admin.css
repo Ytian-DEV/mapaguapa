@@ -358,3 +358,63 @@
     flex: 1 1 calc(50% - 4px);
   }
 }
+
+/* Users (A4) */
+.admin-cell-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.admin-cell-user__you {
+  color: var(--color-muted);
+  font-weight: 400;
+}
+
+.user-dialog {
+  display: grid;
+  gap: 16px;
+}
+
+.user-dialog__muted {
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+}
+
+.user-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-summary p {
+  font-weight: 600;
+}
+
+.user-summary span {
+  color: var(--color-muted);
+  font-size: var(--text-xs);
+}
+
+.user-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 24px;
+  margin: 0;
+}
+
+.user-facts dt {
+  margin-bottom: 4px;
+  color: var(--color-muted);
+  font-size: var(--text-2xs);
+}
+
+.user-facts dd {
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+.admin-nowrap {
+  white-space: nowrap;
+}
