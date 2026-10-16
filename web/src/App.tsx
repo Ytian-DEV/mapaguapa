@@ -6,6 +6,8 @@ import { homeFor, PublicOnly, RequireRole } from "./app/guards";
 import { SavedProvider } from "./features/browse/SavedContext";
 import { StudentShell } from "./features/browse/StudentShell";
 import { InboxProvider } from "./features/messaging/InboxContext";
+import { AdminDataProvider, useAdminData } from "./features/admin/AdminDataContext";
+import { AdminShell } from "./features/admin/AdminShell";
 import { OwnerDataProvider } from "./features/owner/OwnerDataContext";
 import { OwnerShell } from "./features/owner/OwnerShell";
 import { ToastProvider } from "./ui";
@@ -31,6 +33,9 @@ const OwnerListingPreviewPage = lazy(() => import("./features/owner/OwnerListing
 const VerificationPage = lazy(() => import("./features/owner/VerificationPage"));
 const OwnerProfilePage = lazy(() => import("./features/owner/OwnerProfilePage"));
 const WizardPage = lazy(() => import("./features/wizard/WizardPage"));
+const AdminOverviewPage = lazy(() => import("./features/admin/AdminOverviewPage"));
+const AdminSettingsPage = lazy(() => import("./features/admin/AdminSettingsPage"));
+const AdminComingSoon = lazy(() => import("./features/admin/AdminComingSoon"));
 const NotFoundPage = lazy(() => import("./app/NotFoundPage"));
 const ComponentsPreview = import.meta.env.DEV ? lazy(() => import("./dev/ComponentsPreview")) : null;
 const BrowsePreview = import.meta.env.DEV ? lazy(() => import("./dev/BrowsePreview")) : null;
@@ -38,6 +43,7 @@ const ListingPreview = import.meta.env.DEV ? lazy(() => import("./dev/ListingPre
 const MessagesPreview = import.meta.env.DEV ? lazy(() => import("./dev/MessagesPreview")) : null;
 const OwnerPreview = import.meta.env.DEV ? lazy(() => import("./dev/OwnerPreview")) : null;
 const WizardPreview = import.meta.env.DEV ? lazy(() => import("./dev/WizardPreview")) : null;
+const AdminPreview = import.meta.env.DEV ? lazy(() => import("./dev/AdminPreview")) : null;
 
 function AboutRoute() {
   const { profile } = useAuth();
@@ -86,6 +92,28 @@ function OwnerLayout() {
   );
 }
 
+function AdminFrame() {
+  const { overview } = useAdminData();
+  return (
+    <AdminShell overview={overview}>
+      <Suspense fallback={null}>
+        <Outlet />
+      </Suspense>
+    </AdminShell>
+  );
+}
+
+/** Admin console: sidebar with live counts. */
+function AdminLayout() {
+  return (
+    <RequireRole roles={["admin"]}>
+      <AdminDataProvider>
+        <AdminFrame />
+      </AdminDataProvider>
+    </RequireRole>
+  );
+}
+
 /** v1 sent OAuth and reset links to /dashboard; send any that still arrive with a code to the callback. */
 function LegacyDashboardRedirect() {
   const location = useLocation();
@@ -129,7 +157,20 @@ export default function App() {
                 <Route element={<OwnerInquiriesPage />} path="inquiries/:conversationId" />
                 <Route element={<OwnerComingSoon />} path="*" />
               </Route>
-              <Route element={<RequireRole roles={["admin"]}><AdminRoute /></RequireRole>} path="/admin/*" />
+              {/* The v1 console stays reachable until features 11–13 replace it. */}
+              <Route element={<RequireRole roles={["admin"]}><AdminRoute /></RequireRole>} path="/admin/legacy" />
+              <Route element={<AdminLayout />} path="/admin">
+                <Route element={<AdminOverviewPage />} index />
+                <Route element={<Navigate replace to="/admin/listings/new/edit/basics" />} path="listings/new" />
+                <Route element={<WizardPage mode="admin" />} path="listings/:listingId/edit/:step?" />
+                <Route element={<AdminComingSoon title="Review queue" />} path="review" />
+                <Route element={<AdminComingSoon title="Listings" />} path="listings" />
+                <Route element={<AdminComingSoon title="Archive" />} path="archive" />
+                <Route element={<AdminComingSoon title="Users" />} path="users" />
+                <Route element={<AdminComingSoon title="Reports" />} path="reports" />
+                <Route element={<AdminSettingsPage />} path="settings" />
+                <Route element={<AdminComingSoon title="Page" />} path="*" />
+              </Route>
 
               {ComponentsPreview && <Route element={<ComponentsPreview />} path="/dev/components" />}
               {BrowsePreview && <Route element={<BrowsePreview />} path="/dev/browse" />}
@@ -137,6 +178,7 @@ export default function App() {
               {MessagesPreview && <Route element={<MessagesPreview />} path="/dev/messages/*" />}
               {OwnerPreview && <Route element={<OwnerPreview />} path="/dev/owner" />}
               {WizardPreview && <Route element={<WizardPreview />} path="/dev/wizard/:step?" />}
+              {AdminPreview && <Route element={<AdminPreview />} path="/dev/admin" />}
               <Route element={<NotFoundPage />} path="*" />
             </Routes>
           </Suspense>
