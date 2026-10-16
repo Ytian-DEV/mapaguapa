@@ -178,7 +178,7 @@
 
 @media (max-width: 767px) {
   .ui-app-shell {
-    grid-template-columns: minmax(0, 1fr);
+    display: block;
   }
 
   .ui-app-shell__main {

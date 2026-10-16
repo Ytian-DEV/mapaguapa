@@ -33,7 +33,7 @@
 }
 
 .ui-empty__title {
-  font-family: var(--font-display);
+  font-family: var(--font-heading);
   font-size: 1.375rem;
   font-weight: 400;
 }

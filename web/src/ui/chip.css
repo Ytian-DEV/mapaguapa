@@ -53,14 +53,17 @@
 
 .ui-chip-group {
   display: flex;
+  flex: 1 1 100%;
   flex-wrap: wrap;
   gap: var(--space-2);
+  min-width: 0;
 }
 
 @media (max-width: 767px) {
   .ui-chip-group {
     flex-wrap: nowrap;
     overflow-x: auto;
+    max-width: calc(100% + 2 * var(--gutter));
     margin-inline: calc(-1 * var(--gutter));
     padding-inline: var(--gutter);
     scrollbar-width: none;

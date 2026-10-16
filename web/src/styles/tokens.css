@@ -54,7 +54,7 @@
   --map-water: #bfd9cf;
 
   /* Typography */
-  --font-display: "Fraunces Variable", "Fraunces", Georgia, serif;
+  --font-heading: "Fraunces Variable", "Fraunces", Georgia, serif;
   --font-ui: "Geist Variable", "Geist", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
 
