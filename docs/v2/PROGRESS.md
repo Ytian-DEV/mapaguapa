@@ -1,8 +1,8 @@
 # MAPAGUAPA v2 — Progress
 
-**Current branch:** `feature/admin-review-queue`
+**Current branch:** `develop`
 **Status:** Features 1–11 merged into develop. 6 migrations tested locally, NOT applied to Supabase (deploy day; no staging). v1 admin console at /admin/legacy (users only) until feature 13. UI verified with dev fixtures under /dev/*.
-**Next step:** Owner verification approvals, then merge
+**Next step:** Start feature/admin-users from develop (frame A4)
 
 Resume protocol: read this file → `git status` → check out the branch above → finish uncommitted work → continue from the first unchecked item.
 
@@ -111,7 +111,7 @@ Gates before the last commit of each feature (from `web/`): `npm run lint`, `npm
 - [x] feat(admin): submission details, photo strip, checklist
 - [x] feat(admin): similar-listing auto-check
 - [x] feat(admin): approve & publish / request changes with templates
-- [ ] feat(admin): owner verification approvals; merge
+- [x] feat(admin): owner verification approvals; merge
 
 ## 13. `feature/admin-users`
 - [ ] feat(admin): users table, search, role tabs, server pagination

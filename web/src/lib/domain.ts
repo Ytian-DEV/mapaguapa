@@ -49,6 +49,15 @@ export const VERIFICATION_DOCUMENT_TYPES = [
 ] as const;
 export type VerificationDocumentType = (typeof VERIFICATION_DOCUMENT_TYPES)[number];
 
+export const DOC_LABELS: Record<VerificationDocumentType, string> = {
+  land_title: "Land title",
+  tax_declaration: "Tax declaration",
+  business_permit: "Business / mayor’s permit",
+  barangay_certificate: "Barangay certificate",
+  lease_contract: "Lease contract (if you rent and sublet)",
+  other: "Other proof of ownership",
+};
+
 /** Storage layout used by the v2 policies. */
 export const STORAGE = {
   listingPhotos: "listing-photos",

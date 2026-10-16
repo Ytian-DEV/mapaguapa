@@ -1,19 +1,10 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { BadgeCheck, Clock, FileUp, ShieldAlert, X } from "lucide-react";
 import { useAuth } from "../../app/AuthProvider";
-import { VERIFICATION_DOCUMENT_TYPES, type VerificationDocumentType } from "../../lib/domain";
+import { DOC_LABELS, VERIFICATION_DOCUMENT_TYPES, type VerificationDocumentType } from "../../lib/domain";
 import { Button, Card, Field, PageHeader, Select, Skeleton, Textarea, useToast } from "../../ui";
 import { ACCEPTED_DOC_TYPES, fetchMyVerifications, submitVerification, type Verification } from "./ownerApi";
 import "./owner.css";
-
-const DOC_LABELS: Record<VerificationDocumentType, string> = {
-  land_title: "Land title",
-  tax_declaration: "Tax declaration",
-  business_permit: "Business / mayor’s permit",
-  barangay_certificate: "Barangay certificate",
-  lease_contract: "Lease contract (if you rent and sublet)",
-  other: "Other proof of ownership",
-};
 
 const dateFmt = new Intl.DateTimeFormat("en-PH", { month: "long", day: "numeric", year: "numeric" });
 
