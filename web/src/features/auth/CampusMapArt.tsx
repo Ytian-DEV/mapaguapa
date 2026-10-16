@@ -26,8 +26,8 @@ export function CampusMapArt() {
         [240, 240],
         [690, 182],
         [538, 352],
-        [136, 412],
-        [364, 450],
+        [120, 330],
+        [410, 300],
       ].map(([cx, cy]) => (
         <g className="auth-art__pin" key={`${cx}-${cy}`}>
           <circle cx={cx} cy={cy} r={16} />

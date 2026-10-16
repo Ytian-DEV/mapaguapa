@@ -1,7 +1,15 @@
 .auth {
   display: grid;
-  grid-template-columns: minmax(0, 540fr) minmax(0, 900fr);
+  /* 5:7 on laptops (close to the 540:900 frame), 1:1 on wide screens so a
+     narrow form never floats in a huge empty column. */
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
   min-height: 100dvh;
+}
+
+@media (min-width: 1440px) {
+  .auth {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
 }
 
 /* ---------- Brand panel ---------- */
@@ -11,7 +19,7 @@
   flex-direction: column;
   justify-content: space-between;
   overflow: hidden;
-  padding: 40px;
+  padding: clamp(32px, 3vw, 64px);
   background: var(--art-bg);
   color: var(--color-on-dark);
 }
@@ -27,8 +35,8 @@
 .auth__panel::after {
   content: "";
   position: absolute;
-  inset: 45% 0 0;
-  background: linear-gradient(to bottom, transparent, var(--art-bg) 55%);
+  inset: 32% 0 0;
+  background: linear-gradient(to bottom, transparent, var(--art-bg) 45%);
   pointer-events: none;
 }
 
@@ -120,7 +128,7 @@
 
 .auth__headline {
   font-family: var(--font-heading);
-  font-size: clamp(2.25rem, 1.2rem + 2.2vw, 3.5rem);
+  font-size: clamp(2.25rem, 1.2rem + 2.4vw, 4rem);
   font-weight: 400;
   line-height: 1.08;
   letter-spacing: var(--tracking-display);
@@ -131,7 +139,7 @@
 }
 
 .auth__panel-copy p {
-  max-width: 46ch;
+  max-width: 52ch;
   color: var(--color-on-dark-muted);
   font-size: var(--text-base);
 }
@@ -154,7 +162,7 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
-  padding: 32px 56px 32px;
+  padding: clamp(24px, 2.4vw, 48px) clamp(32px, 4vw, 80px);
   background: var(--color-paper);
 }
 
@@ -199,7 +207,7 @@
   flex-direction: column;
   justify-content: center;
   width: 100%;
-  max-width: 400px;
+  max-width: clamp(400px, 26vw, 460px);
   margin: 0 auto;
   padding-block: 40px;
 }
