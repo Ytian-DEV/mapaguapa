@@ -5,6 +5,8 @@ import { FullPageLoader } from "./app/FullPageLoader";
 import { homeFor, PublicOnly, RequireRole } from "./app/guards";
 import { SavedProvider } from "./features/browse/SavedContext";
 import { StudentShell } from "./features/browse/StudentShell";
+import { InboxProvider } from "./features/messaging/InboxContext";
+import { OwnerShell } from "./features/owner/OwnerShell";
 import { ToastProvider } from "./ui";
 import "./app.css";
 
@@ -13,6 +15,7 @@ const AboutPage = lazy(() => import("./components/shared/AboutPage"));
 const BrowsePage = lazy(() => import("./features/browse/BrowsePage"));
 const SavedPage = lazy(() => import("./features/browse/SavedPage"));
 const MapPage = lazy(() => import("./features/map/MapPage"));
+const StudentMessagesPage = lazy(() => import("./features/messaging/StudentMessagesPage"));
 const ListingDetailPage = lazy(() => import("./features/listing/ListingDetailPage"));
 const SignInPage = lazy(() => import("./features/auth/SignInPage"));
 const SignUpPage = lazy(() => import("./features/auth/SignUpPage"));
@@ -20,10 +23,12 @@ const ForgotPasswordPage = lazy(() => import("./features/auth/ForgotPasswordPage
 const ResetPasswordPage = lazy(() => import("./features/auth/ResetPasswordPage"));
 const AuthCallbackPage = lazy(() => import("./features/auth/AuthCallbackPage"));
 const OwnerComingSoon = lazy(() => import("./features/owner/OwnerComingSoon"));
+const OwnerInquiriesPage = lazy(() => import("./features/messaging/OwnerInquiriesPage"));
 const NotFoundPage = lazy(() => import("./app/NotFoundPage"));
 const ComponentsPreview = import.meta.env.DEV ? lazy(() => import("./dev/ComponentsPreview")) : null;
 const BrowsePreview = import.meta.env.DEV ? lazy(() => import("./dev/BrowsePreview")) : null;
 const ListingPreview = import.meta.env.DEV ? lazy(() => import("./dev/ListingPreview")) : null;
+const MessagesPreview = import.meta.env.DEV ? lazy(() => import("./dev/MessagesPreview")) : null;
 
 function AboutRoute() {
   const { profile } = useAuth();
@@ -43,12 +48,29 @@ function StudentLayout() {
   return (
     <RequireRole roles={["student"]}>
       <SavedProvider>
-        <StudentShell>
+        <InboxProvider>
+          <StudentShell>
+            <Suspense fallback={null}>
+              <Outlet />
+            </Suspense>
+          </StudentShell>
+        </InboxProvider>
+      </SavedProvider>
+    </RequireRole>
+  );
+}
+
+/** Owner area: sidebar with unread inquiries. */
+function OwnerLayout() {
+  return (
+    <RequireRole roles={["owner"]}>
+      <InboxProvider>
+        <OwnerShell>
           <Suspense fallback={null}>
             <Outlet />
           </Suspense>
-        </StudentShell>
-      </SavedProvider>
+        </OwnerShell>
+      </InboxProvider>
     </RequireRole>
   );
 }
@@ -78,16 +100,24 @@ export default function App() {
                 <Route element={<BrowsePage />} path="/" />
                 <Route element={<SavedPage />} path="/saved" />
                 <Route element={<MapPage />} path="/map" />
+                <Route element={<StudentMessagesPage />} path="/messages" />
+                <Route element={<StudentMessagesPage />} path="/messages/:conversationId" />
                 <Route element={<ListingDetailPage />} path="/listing/:listingId" />
               </Route>
               <Route element={<Navigate replace to="/saved" />} path="/dashboard/saved" />
               <Route element={<LegacyDashboardRedirect />} path="/dashboard" />
-              <Route element={<RequireRole roles={["owner"]}><OwnerComingSoon /></RequireRole>} path="/owner/*" />
+              <Route element={<OwnerLayout />} path="/owner">
+                <Route element={<OwnerComingSoon />} index />
+                <Route element={<OwnerInquiriesPage />} path="inquiries" />
+                <Route element={<OwnerInquiriesPage />} path="inquiries/:conversationId" />
+                <Route element={<OwnerComingSoon />} path="*" />
+              </Route>
               <Route element={<RequireRole roles={["admin"]}><AdminRoute /></RequireRole>} path="/admin/*" />
 
               {ComponentsPreview && <Route element={<ComponentsPreview />} path="/dev/components" />}
               {BrowsePreview && <Route element={<BrowsePreview />} path="/dev/browse" />}
               {ListingPreview && <Route element={<ListingPreview />} path="/dev/listing" />}
+              {MessagesPreview && <Route element={<MessagesPreview />} path="/dev/messages/*" />}
               <Route element={<NotFoundPage />} path="*" />
             </Routes>
           </Suspense>

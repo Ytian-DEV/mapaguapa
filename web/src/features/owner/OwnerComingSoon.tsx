@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { Construction } from "lucide-react";
 import { useAuth } from "../../app/AuthProvider";
 import { Card, EmptyState, PageHeader } from "../../ui";
-import { OwnerShell } from "./OwnerShell";
 
 /** Placeholder for the owner area until the owner portal ships (feature 8). */
 export default function OwnerComingSoon() {
@@ -14,7 +13,7 @@ export default function OwnerComingSoon() {
   }, []);
 
   return (
-    <OwnerShell>
+    <>
       <PageHeader
         eyebrow="Owner portal"
         subtitle="Your account is ready. Listing tools are on the way."
@@ -27,6 +26,6 @@ export default function OwnerComingSoon() {
           title="The owner portal is being built"
         />
       </Card>
-    </OwnerShell>
+    </>
   );
 }

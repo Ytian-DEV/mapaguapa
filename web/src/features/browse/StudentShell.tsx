@@ -1,21 +1,23 @@
 import type { ReactNode } from "react";
-import { Heart, Home, Map } from "lucide-react";
+import { Heart, Home, Map, MessageSquare } from "lucide-react";
+import { useInbox } from "../messaging/InboxContext";
 import { useAuth } from "../../app/AuthProvider";
 import { Logo, TopNav, type TopNavLink } from "../../ui";
 import { useSaved } from "./SavedContext";
 import "./student-shell.css";
 
-// Messages (feature 7) joins this list when it ships.
-const studentLinks: TopNavLink[] = [
-  { to: "/", label: "Browse", icon: <Home />, end: true },
-  { to: "/map", label: "Map view", icon: <Map /> },
-  { to: "/saved", label: "Saved", icon: <Heart /> },
-];
 
 /** Student frame from frame 02: top nav, page content, footer. */
 export function StudentShell({ children }: { children: ReactNode }) {
   const { profile, signOut } = useAuth();
   const { savedIds } = useSaved();
+  const { unreadTotal } = useInbox();
+  const studentLinks: TopNavLink[] = [
+    { to: "/", label: "Browse", icon: <Home />, end: true },
+    { to: "/map", label: "Map view", icon: <Map /> },
+    { to: "/saved", label: "Saved", icon: <Heart /> },
+    { to: "/messages", label: "Messages", icon: <MessageSquare />, badge: unreadTotal },
+  ];
 
   return (
     <div className="v2 student-shell">
