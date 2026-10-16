@@ -1,0 +1,289 @@
+.browse {
+  padding-block: 44px 72px;
+}
+
+.browse__header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 28px;
+  padding-bottom: 28px;
+}
+
+.browse__title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.browse__title {
+  display: grid;
+  gap: 12px;
+}
+
+.browse__h1 {
+  font-family: var(--font-heading);
+  font-size: clamp(2.25rem, 1.6rem + 2vw, 3.25rem);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.025em;
+}
+
+.browse__sort {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-muted);
+  font-size: var(--text-base);
+}
+
+.browse__sort-control {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-ink);
+}
+
+.browse__sort-control svg {
+  width: 16px;
+  height: 16px;
+}
+
+.browse__sort-control select {
+  padding: 4px 2px;
+  border: 0;
+  border-radius: var(--radius-xs);
+  background: transparent;
+  color: var(--color-ink);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.browse__sort-control select:focus-visible {
+  outline: var(--focus-outline);
+}
+
+/* Search row: 56px controls with 12px radius (frame 02). */
+.browse__search-row {
+  display: flex;
+  gap: 10px;
+}
+
+.browse__search {
+  flex: 1;
+  min-width: 0;
+}
+
+.browse__search-row .ui-input--lg,
+.browse__search-row .ui-filter-select--stacked,
+.browse__search-row .browse__filters-btn {
+  height: 56px;
+  border-radius: var(--radius-panel);
+}
+
+.browse__search input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.browse__clear {
+  display: inline-flex;
+  padding: 4px;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.browse__clear:hover {
+  background: var(--color-paper-2);
+}
+
+.browse__clear svg {
+  width: 16px;
+  height: 16px;
+}
+
+.browse__select {
+  min-width: 128px;
+}
+
+.browse__filters-btn {
+  padding-inline: 20px;
+  font-size: var(--text-base);
+}
+
+.browse__filters-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  margin-left: 4px;
+  padding-inline: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--color-on-dark);
+  color: var(--color-ink);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* Results */
+.browse__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+  padding-top: 8px;
+}
+
+.browse__body--with-aside {
+  grid-template-columns: minmax(0, 836fr) minmax(0, 484fr);
+}
+
+.browse__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 36px 28px;
+}
+
+.browse__body--with-aside .browse__grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.browse__aside {
+  position: sticky;
+  top: calc(var(--topnav-h) + 16px);
+  height: calc(100dvh - var(--topnav-h) - 32px);
+  min-height: 480px;
+}
+
+/* Drawer */
+.browse-drawer {
+  width: min(92vw, 400px);
+}
+
+.browse-drawer .ui-drawer__body {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 0;
+}
+
+.browse-drawer__body {
+  display: grid;
+  gap: var(--space-6);
+  padding-bottom: var(--space-6);
+}
+
+.browse-drawer__section {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.browse-drawer__heading {
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-eyebrow);
+  font-weight: 500;
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+}
+
+.browse-drawer__selects .ui-filter-select {
+  width: 100%;
+}
+
+.browse-drawer__checks {
+  display: grid;
+  gap: 14px;
+}
+
+.browse-drawer__footer {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin: auto calc(-1 * var(--space-4)) 0;
+  padding: var(--space-4);
+  border-top: 1px solid var(--color-line);
+  background: var(--color-paper);
+}
+
+/* Desktop shows the main selects inline, so the drawer only needs the rest. */
+@media (min-width: 1024px) {
+  .browse-drawer__selects {
+    display: none;
+  }
+}
+
+@media (max-width: 1279px) {
+  .browse__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .browse__body--with-aside {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .browse__body--with-aside .browse__aside {
+    display: none;
+  }
+}
+
+@media (max-width: 1023px) {
+  .browse__select {
+    display: none !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .browse {
+    padding-block: 24px 48px;
+  }
+
+  .browse__header {
+    gap: 20px;
+  }
+
+  .browse__search-row .ui-input--lg,
+  .browse__search-row .browse__filters-btn {
+    height: 48px;
+  }
+
+  .browse__filters-btn {
+    width: 48px;
+    padding: 0;
+  }
+
+  .browse__filters-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+  }
+
+  .browse__filters-count {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    margin: 0;
+    background: var(--color-clay);
+    color: var(--color-surface);
+  }
+
+  .browse__filters-btn {
+    position: relative;
+  }
+
+  .browse__grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+  }
+
+  .browse-drawer {
+    width: 100%;
+  }
+}
