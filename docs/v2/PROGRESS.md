@@ -1,8 +1,8 @@
 # MAPAGUAPA v2 — Progress
 
-**Current branch:** `develop`
+**Current branch:** `feature/auth-v2`
 **Status:** Features 1–2 merged into develop. Migrations written and tested locally, NOT applied to Supabase (see docs/v2/DB.md).
-**Next step:** Start feature/auth-v2 from develop (PKCE + /auth/callback, sign-in frame 01, student/owner sign-up, role routing).
+**Next step:** Switch AuthProvider to PKCE flows and add /auth/callback route.
 
 Resume protocol: read this file → `git status` → check out the branch above → finish uncommitted work → continue from the first unchecked item.
 
@@ -38,6 +38,7 @@ Gates before the last commit of each feature (from `web/`): `npm run lint`, `npm
 - [x] fix(db): align migrations with prod schema (branch fix/db-v2-prod-alignment): enum status, v1 triggers/policies, archive behaviour, sign-in only
 
 ## 3. `feature/auth-v2`
+- [x] chore(db): add become_owner() for Google owner sign-ups
 - [ ] fix(auth): switch Supabase client to PKCE and add /auth/callback
 - [ ] feat(auth): redesign sign-in (frame 01)
 - [ ] feat(auth): sign-up with student/owner choice

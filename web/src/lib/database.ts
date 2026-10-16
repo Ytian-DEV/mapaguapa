@@ -1045,6 +1045,10 @@ export type Database = {
         };
         Returns: string;
       };
+      become_owner: {
+        Args: Record<PropertyKey, never>;
+        Returns: undefined;
+      };
       is_admin: {
         Args: Record<PropertyKey, never>;
         Returns: boolean;
