@@ -293,3 +293,68 @@
     display: none;
   }
 }
+
+/* Listings table (A2) */
+.admin-listings {
+  display: grid;
+  gap: 16px;
+}
+
+.admin-listings .ui-page-header {
+  margin-bottom: 0;
+}
+
+.admin-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-toolbar__search {
+  flex: 1 1 320px;
+}
+
+.admin-toolbar .ui-input-wrap {
+  height: 40px;
+}
+
+.admin-cell-listing {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.admin-cell-listing__text {
+  display: grid;
+  min-width: 0;
+}
+
+.admin-cell-listing__text strong {
+  overflow: hidden;
+  color: var(--color-ink);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-cell-listing__text span {
+  color: var(--color-muted);
+  font-size: var(--text-2xs);
+}
+
+.admin-cell-zero {
+  color: var(--tone-red-fg);
+  font-weight: 600;
+}
+
+.admin-row-focus td {
+  background: var(--color-row-selected);
+}
+
+@media (max-width: 767px) {
+  .admin-toolbar .ui-filter-select {
+    flex: 1 1 calc(50% - 4px);
+  }
+}
