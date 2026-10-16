@@ -65,7 +65,9 @@ One migration file per concern, timestamped after `20260610040000`:
 | 4 | `…_v2_moderation.sql` | `reports` (reporter_id, target_type `listing/message/user`, target_id, reason, details, status `open/resolved/dismissed`, resolved_by, resolution_note), `owner_verifications` (owner_id, document path in private bucket `owner-verifications`, status `pending/approved/rejected`, reviewer, note) + private bucket policies, `activity_log` (actor_id, action, entity_type, entity_id, meta jsonb, created_at; insert via `log_activity()` + triggers on listing status / role changes; admin-read only). |
 | 5 | `…_v2_admin_rpcs.sql` | `admin_overview_stats()`, `admin_users_page(search, role, page)` with duplicate flag (same normalised full_name, different email), `admin_set_role()`, `admin_set_active()`, `admin_merge_users()` — all `security definer` + `is_admin()` check + activity log. |
 
-Testing: no local Supabase here. I'll write the SQL defensively (idempotent `if not exists`, `drop policy if exists`) and syntax-check it; you apply them to a **staging/branch project** first. I will never run anything against production.
+**Status (2026-10-16): written and tested. See [DB.md](DB.md) for the final apply order, the assumptions to check against prod, and the test harness.** Changes from this table: no baseline migration (no dump yet; the v1 schema is reconstructed as a test fixture instead), and owner private notes moved to their own `conversation_notes` table so students can never read them.
+
+Testing (original note): no local Supabase here. I'll write the SQL defensively (idempotent `if not exists`, `drop policy if exists`) and syntax-check it; you apply them to a **staging/branch project** first. I will never run anything against production.
 
 ---
 

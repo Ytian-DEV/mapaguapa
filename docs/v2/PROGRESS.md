@@ -1,8 +1,8 @@
 # MAPAGUAPA v2 — Progress
 
-**Current branch:** `develop`
-**Status:** Feature 1 (design-system) merged into develop. Feature 2 blocked on schema dump.
-**Next step:** Waiting for the schema dump at web/supabase/schema-dump.sql; then branch feature/db-v2-schema from develop.
+**Current branch:** `feature/db-v2-schema`
+**Status:** Feature 2 in progress. No schema dump yet: v1 baseline reconstructed from types in web/supabase/tests/01_v1_baseline.sql.
+**Next step:** Start feature/auth-v2 from develop (PKCE + /auth/callback, sign-in frame 01, student/owner sign-up, role routing).
 
 Resume protocol: read this file → `git status` → check out the branch above → finish uncommitted work → continue from the first unchecked item.
 
@@ -26,14 +26,15 @@ Gates before the last commit of each feature (from `web/`): `npm run lint`, `npm
 - [x] chore: gates and merge to develop (pointer-glow hook is removed with the v1 pages in features 3, 6, 13)
 
 ## 2. `feature/db-v2-schema`
-- [ ] chore(db): baseline snapshot of existing schema (if dump provided)
-- [ ] chore(db): add v2 roles migration
-- [ ] chore(db): add v2 listings status, pricing and RLS migration
-- [ ] chore(db): add conversations, messages, visit requests migration
-- [ ] chore(db): add reports, owner verifications, activity log migration
-- [ ] chore(db): add admin RPCs migration
-- [ ] feat(types): regenerate database types and service helpers
-- [ ] docs(db): document apply order; merge to develop
+- [x] test(db): local migration harness with Supabase stub and reconstructed v1 baseline (no dump yet)
+- [ ] chore(db): baseline snapshot of existing schema (when dump provided)
+- [x] chore(db): add v2 roles migration
+- [x] chore(db): add v2 listings status, pricing and RLS migration
+- [x] chore(db): add conversations, messages, visit requests migration
+- [x] chore(db): add reports, owner verifications, activity log migration
+- [x] chore(db): add admin RPCs migration
+- [x] feat(types): regenerate database types and service helpers
+- [x] docs(db): document apply order; merge to develop
 
 ## 3. `feature/auth-v2`
 - [ ] fix(auth): switch Supabase client to PKCE and add /auth/callback
