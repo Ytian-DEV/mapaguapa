@@ -1,8 +1,8 @@
 # MAPAGUAPA v2 — Progress
 
 **Current branch:** `develop`
-**Status:** Features 1–10 merged into develop. 6 migrations tested locally, NOT applied to Supabase (deploy day; no staging). v1 admin console at /admin/legacy until features 11–13 replace it. UI verified with dev fixtures under /dev/*.
-**Next step:** Merge feature/admin-listings, then start feature/admin-review-queue.
+**Status:** Features 1–11 merged into develop. 6 migrations tested locally, NOT applied to Supabase (deploy day; no staging). v1 admin console at /admin/legacy (users only) until feature 13. UI verified with dev fixtures under /dev/*.
+**Next step:** Start feature/admin-review-queue from develop (frame A3).
 
 Resume protocol: read this file → `git status` → check out the branch above → finish uncommitted work → continue from the first unchecked item.
 
