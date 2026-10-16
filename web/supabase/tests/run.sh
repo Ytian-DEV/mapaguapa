@@ -22,7 +22,7 @@ esac
 
 run() {
   echo "-- $(basename "$1")"
-  "$psql_bin" "${conn[@]}" -d "$db" -qX -v ON_ERROR_STOP=1 -f "$1"
+  "$psql_bin" "${conn[@]}" -d "$db" -qX -v ON_ERROR_STOP=1 -o /dev/null -f "$1"
 }
 
 run "$here/00_supabase_stub.sql"

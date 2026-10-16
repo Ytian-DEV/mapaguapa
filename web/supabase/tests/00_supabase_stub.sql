@@ -1,10 +1,10 @@
 -- Minimal stand-in for the parts of Supabase the migrations depend on, so they
 -- can be tested on a plain local Postgres. NEVER run this against Supabase.
 --
--- auth.uid() reads `request.jwt.claim.sub`, the same setting PostgREST sets, so
--- tests can impersonate a user with:
+-- auth.uid() / auth.role() read the same settings PostgREST sets, so tests can
+-- impersonate a user with:
 --   set local role authenticated;
---   set local request.jwt.claim.sub = '<uuid>';
+--   set local request.jwt.claims = '{"sub":"<uuid>","role":"authenticated"}';
 
 do $$
 begin
@@ -29,13 +29,19 @@ create table if not exists auth.users (
 create or replace function auth.uid() returns uuid
 language sql stable
 as $$
-  select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid
+  select coalesce(
+    nullif(current_setting('request.jwt.claim.sub', true), ''),
+    (nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'sub')
+  )::uuid
 $$;
 
 create or replace function auth.role() returns text
 language sql stable
 as $$
-  select coalesce(nullif(current_setting('request.jwt.claim.role', true), ''), current_user)::text
+  select coalesce(
+    nullif(current_setting('request.jwt.claim.role', true), ''),
+    (nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'role')
+  )::text
 $$;
 
 create table if not exists storage.buckets (
@@ -76,3 +82,49 @@ grant select on storage.buckets to anon, authenticated, service_role;
 alter default privileges in schema public grant select, insert, update, delete on tables to anon, authenticated, service_role;
 alter default privileges in schema public grant execute on functions to anon, authenticated, service_role;
 alter default privileges in schema public grant usage, select on sequences to anon, authenticated, service_role;
+
+-- ---------------------------------------------------------------------------
+-- Test helpers
+-- ---------------------------------------------------------------------------
+create schema if not exists tests;
+grant usage on schema tests to anon, authenticated, service_role;
+
+-- Impersonate a user for the rest of the transaction (call, then `set local role authenticated`).
+create or replace function tests.login(p_user uuid) returns void
+language sql
+as $$
+  select set_config('request.jwt.claims', json_build_object('sub', p_user, 'role', 'authenticated')::text, true);
+$$;
+
+-- Asserts that running `p_sql` raises an error (optionally matching `p_like`).
+create or replace function tests.expect_error(p_sql text, p_like text default '%') returns void
+language plpgsql
+as $$
+begin
+  begin
+    execute p_sql;
+  exception when others then
+    if sqlerrm not ilike p_like then
+      raise exception 'Expected error like "%" but got "%" for: %', p_like, sqlerrm, p_sql;
+    end if;
+    return;
+  end;
+  raise exception 'Expected an error but none was raised: %', p_sql;
+end;
+$$;
+
+-- Asserts that `p_sql` (a count query) returns `p_expected`.
+create or replace function tests.expect_count(p_sql text, p_expected bigint, p_label text) returns void
+language plpgsql
+as $$
+declare
+  v_count bigint;
+begin
+  execute p_sql into v_count;
+  if v_count is distinct from p_expected then
+    raise exception '% — expected %, got %', p_label, p_expected, v_count;
+  end if;
+end;
+$$;
+
+grant execute on all functions in schema tests to anon, authenticated, service_role;
