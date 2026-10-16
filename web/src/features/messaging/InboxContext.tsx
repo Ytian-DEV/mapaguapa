@@ -74,6 +74,3 @@ export function useInbox() {
   return context;
 }
 
-/** Same shape without a provider, for fixture previews. */
-// eslint-disable-next-line react-refresh/only-export-components
-export const InboxContextProvider = InboxContext.Provider;

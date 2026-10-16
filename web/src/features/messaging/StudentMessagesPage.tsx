@@ -114,7 +114,7 @@ export default function StudentMessagesPage() {
   );
 
   return (
-    <div className="v2-container" style={{ paddingBlock: "24px 40px" }}>
+    <div className="v2-container messaging-page">
       <MessagingLayout
         aside={active ? <ListingPanel listing={listing} listingId={active.listing_id} /> : null}
         emptyDescription="Pick a conversation, or message an owner from any listing."

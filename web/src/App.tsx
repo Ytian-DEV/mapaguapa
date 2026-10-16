@@ -28,6 +28,7 @@ const NotFoundPage = lazy(() => import("./app/NotFoundPage"));
 const ComponentsPreview = import.meta.env.DEV ? lazy(() => import("./dev/ComponentsPreview")) : null;
 const BrowsePreview = import.meta.env.DEV ? lazy(() => import("./dev/BrowsePreview")) : null;
 const ListingPreview = import.meta.env.DEV ? lazy(() => import("./dev/ListingPreview")) : null;
+const MessagesPreview = import.meta.env.DEV ? lazy(() => import("./dev/MessagesPreview")) : null;
 
 function AboutRoute() {
   const { profile } = useAuth();
@@ -116,6 +117,7 @@ export default function App() {
               {ComponentsPreview && <Route element={<ComponentsPreview />} path="/dev/components" />}
               {BrowsePreview && <Route element={<BrowsePreview />} path="/dev/browse" />}
               {ListingPreview && <Route element={<ListingPreview />} path="/dev/listing" />}
+              {MessagesPreview && <Route element={<MessagesPreview />} path="/dev/messages/*" />}
               <Route element={<NotFoundPage />} path="*" />
             </Routes>
           </Suspense>

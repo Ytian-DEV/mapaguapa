@@ -2,7 +2,7 @@
 
 **Current branch:** `feature/messaging`
 **Status:** Features 1–6 merged into develop. Migrations tested locally, NOT applied to Supabase (see docs/v2/DB.md). Student pages verified with dev fixtures (/dev/browse, /dev/listing). Maps use OSM tiles until VITE_MAPTILER_KEY is set.
-**Next step:** Add /dev/messages fixture preview, verify, then merge feature/messaging.
+**Next step:** Merge feature/messaging, then start feature/owner-portal.
 
 Resume protocol: read this file → `git status` → check out the branch above → finish uncommitted work → continue from the first unchecked item.
 
@@ -75,7 +75,7 @@ Gates before the last commit of each feature (from `web/`): `npm run lint`, `npm
 - [x] feat(messaging): quick questions and saved replies
 - [x] feat(messaging): visit requests propose/confirm/suggest
 - [x] feat(messaging): owner inquiries view with statuses and notes (frame O3)
-- [ ] feat(messaging): block and report; merge
+- [x] feat(messaging): block and report; merge
 
 ## 8. `feature/owner-portal`
 - [ ] feat(owner): owner layout and sidebar
