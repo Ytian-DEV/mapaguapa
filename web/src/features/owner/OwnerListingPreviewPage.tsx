@@ -8,8 +8,8 @@ import { fetchListingDetail, type ListingDetailBundle } from "../listing/detailA
 import { ListingDetailView } from "../listing/ListingDetailView";
 import { editPath } from "../wizard/steps";
 
-/** How students see the owner's listing, with its review status. */
-export default function OwnerListingPreviewPage() {
+/** How students see a listing, with its review status. Used by owners and admins. */
+export default function OwnerListingPreviewPage({ base = "/owner" }: { base?: "/owner" | "/admin" }) {
   const { listingId = "" } = useParams();
   const [bundle, setBundle] = useState<ListingDetailBundle | null | undefined>(undefined);
 
@@ -35,7 +35,7 @@ export default function OwnerListingPreviewPage() {
   if (bundle === null) {
     return (
       <EmptyState
-        action={<ButtonLink to="/owner/listings">Back to my listings</ButtonLink>}
+        action={<ButtonLink to={`${base}/listings`}>{base === "/admin" ? "Back to listings" : "Back to my listings"}</ButtonLink>}
         icon={<SearchX />}
         title="Listing not found"
       />
@@ -47,16 +47,16 @@ export default function OwnerListingPreviewPage() {
     <div className="owner-preview">
       <ListingDetailView
         {...bundle}
-        back={{ to: "/owner/listings", label: "My listings" }}
+        back={{ to: `${base}/listings`, label: base === "/admin" ? "Listings" : "My listings" }}
         distanceKm={vsuDistanceKm(bundle.listing.location_lat, bundle.listing.location_lng)}
         notice={
           <div className="owner-banner owner-preview__notice">
             <Eye aria-hidden="true" />
             <p>
-              Preview — this is how students see your listing. <StatusBadge status={status} />
+              Preview — this is how students see {base === "/admin" ? "this" : "your"} listing. <StatusBadge status={status} />
             </p>
             {status !== "archived" && (
-              <ButtonLink size="sm" to={editPath("/owner", bundle.listing.id)} variant="secondary">
+              <ButtonLink size="sm" to={editPath(base, bundle.listing.id)} variant="secondary">
                 Edit listing
               </ButtonLink>
             )}

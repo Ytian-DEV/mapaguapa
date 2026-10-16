@@ -13,7 +13,7 @@ export default function AdminComingSoon({ title }: { title: string }) {
               Open the previous admin console
             </ButtonLink>
           }
-          description="This page is being rebuilt. Until then, the previous console still manages listings, the archive and users."
+          description="This page is being rebuilt. Until then, the previous console still manages users."
           icon={<Construction />}
           title={`${title} is coming soon`}
         />

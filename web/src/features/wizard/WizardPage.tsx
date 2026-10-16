@@ -65,7 +65,7 @@ export default function WizardPage({ mode = "owner", onDone }: { mode?: WizardMo
     }
   };
 
-  const previewBase = mode === "admin" ? null : "/owner/listings";
+  const previewBase = mode === "admin" ? "/admin/listings" : "/owner/listings";
 
   return (
     <WizardView

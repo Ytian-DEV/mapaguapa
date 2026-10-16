@@ -36,6 +36,7 @@ const WizardPage = lazy(() => import("./features/wizard/WizardPage"));
 const AdminOverviewPage = lazy(() => import("./features/admin/AdminOverviewPage"));
 const AdminSettingsPage = lazy(() => import("./features/admin/AdminSettingsPage"));
 const AdminComingSoon = lazy(() => import("./features/admin/AdminComingSoon"));
+const AdminListingsPage = lazy(() => import("./features/admin/AdminListingsPage"));
 const NotFoundPage = lazy(() => import("./app/NotFoundPage"));
 const ComponentsPreview = import.meta.env.DEV ? lazy(() => import("./dev/ComponentsPreview")) : null;
 const BrowsePreview = import.meta.env.DEV ? lazy(() => import("./dev/BrowsePreview")) : null;
@@ -44,6 +45,7 @@ const MessagesPreview = import.meta.env.DEV ? lazy(() => import("./dev/MessagesP
 const OwnerPreview = import.meta.env.DEV ? lazy(() => import("./dev/OwnerPreview")) : null;
 const WizardPreview = import.meta.env.DEV ? lazy(() => import("./dev/WizardPreview")) : null;
 const AdminPreview = import.meta.env.DEV ? lazy(() => import("./dev/AdminPreview")) : null;
+const AdminListingsPreview = import.meta.env.DEV ? lazy(() => import("./dev/AdminListingsPreview")) : null;
 
 function AboutRoute() {
   const { profile } = useAuth();
@@ -164,8 +166,9 @@ export default function App() {
                 <Route element={<Navigate replace to="/admin/listings/new/edit/basics" />} path="listings/new" />
                 <Route element={<WizardPage mode="admin" />} path="listings/:listingId/edit/:step?" />
                 <Route element={<AdminComingSoon title="Review queue" />} path="review" />
-                <Route element={<AdminComingSoon title="Listings" />} path="listings" />
-                <Route element={<AdminComingSoon title="Archive" />} path="archive" />
+                <Route element={<AdminListingsPage />} path="listings" />
+                <Route element={<OwnerListingPreviewPage base="/admin" />} path="listings/:listingId/preview" />
+                <Route element={<AdminListingsPage initialTab="archived" />} path="archive" />
                 <Route element={<AdminComingSoon title="Users" />} path="users" />
                 <Route element={<AdminComingSoon title="Reports" />} path="reports" />
                 <Route element={<AdminSettingsPage />} path="settings" />
@@ -179,6 +182,7 @@ export default function App() {
               {OwnerPreview && <Route element={<OwnerPreview />} path="/dev/owner" />}
               {WizardPreview && <Route element={<WizardPreview />} path="/dev/wizard/:step?" />}
               {AdminPreview && <Route element={<AdminPreview />} path="/dev/admin" />}
+              {AdminListingsPreview && <Route element={<AdminListingsPreview />} path="/dev/admin-listings" />}
               <Route element={<NotFoundPage />} path="*" />
             </Routes>
           </Suspense>
