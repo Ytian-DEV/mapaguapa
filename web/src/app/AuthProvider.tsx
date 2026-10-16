@@ -1,91 +1,57 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import type { Session, SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "../lib/database";
+import type { Session } from "@supabase/supabase-js";
 import type { Profile } from "../lib/models";
 import { supabase } from "../lib/supabase";
-
-type Credentials = {
-  email: string;
-  password: string;
-  fullName?: string;
-};
-
-type OAuthProvider = "google";
+import { takePendingAccountType } from "../features/auth/authApi";
 
 type AuthContextValue = {
   session: Session | null;
   profile: Profile | null;
   /** True until the initial session and (if signed in) profile are known. */
   loading: boolean;
-  submitting: boolean;
-  authError: string | null;
-  authInfo: string | null;
-  login: (credentials: Credentials) => Promise<void>;
-  signup: (credentials: Credentials) => Promise<boolean>;
-  loginWithOAuth: (provider: OAuthProvider) => Promise<void>;
-  resetPassword: (email: string) => Promise<void>;
+  /** A message for the sign-in screen, e.g. why the user was signed out. */
+  notice: string | null;
+  clearNotice: () => void;
+  /** True while the session is a password-recovery session. */
+  recovering: boolean;
+  refreshProfile: () => Promise<void>;
   signOut: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-const profileSelect = "id, email, full_name, phone, avatar_url, role, is_active, created_at, updated_at";
-const authRedirectTo = import.meta.env.VITE_AUTH_REDIRECT_URL?.trim();
-const passwordResetRedirectTo = import.meta.env.VITE_PASSWORD_RESET_REDIRECT_URL?.trim();
+const LEGACY_TOKEN_HASH = /(^|[#&])(access_token|refresh_token|provider_token)=/;
 
-async function fetchProfileWithRetry(client: SupabaseClient<Database>, userId: string) {
-  for (let attempt = 0; attempt < 5; attempt += 1) {
-    const { data, error } = await client.from("profiles").select(profileSelect).eq("id", userId).maybeSingle();
+/**
+ * After the client has exchanged it, drop the one-time PKCE `?code=` and any
+ * legacy implicit-flow tokens in the hash so neither stays in browser history.
+ * Error parameters are left for the callback page to show.
+ */
+function stripTokensFromUrl() {
+  const url = new URL(window.location.href);
+  const hadCode = url.searchParams.has("code");
+  url.searchParams.delete("code");
+  const hadTokenHash = LEGACY_TOKEN_HASH.test(url.hash);
+  if (hadTokenHash) url.hash = "";
+  if (hadCode || hadTokenHash) {
+    window.history.replaceState(window.history.state, "", url.pathname + url.search + url.hash);
+  }
+}
 
-    if (error) {
-      throw error;
-    }
-
+// The profile row is created by the on_auth_user_created trigger; give it a moment.
+async function fetchProfile(userId: string) {
+  if (!supabase) return null;
+  for (let attempt = 0; attempt < 6; attempt += 1) {
+    const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
+    if (error) throw error;
     if (data) {
-      return data as Profile;
+      const profile = data as Profile;
+      // Databases without the v2 roles migration still say "user".
+      return (profile.role as string) === "user" ? { ...profile, role: "student" } : profile;
     }
-
-    await new Promise((resolve) => window.setTimeout(resolve, 300));
+    await new Promise((resolve) => window.setTimeout(resolve, 400));
   }
-
   return null;
-}
-
-async function ensureProfile(client: SupabaseClient<Database>, session: Session) {
-  const existingProfile = await fetchProfileWithRetry(client, session.user.id);
-  if (existingProfile) {
-    return existingProfile;
-  }
-
-  const metadata = session.user.user_metadata;
-  const fullName =
-    typeof metadata.full_name === "string" ? metadata.full_name : typeof metadata.name === "string" ? metadata.name : null;
-  const avatarUrl = typeof metadata.avatar_url === "string" ? metadata.avatar_url : null;
-
-  const { data, error } = await ((client.from("profiles") as any)
-    .insert({
-      id: session.user.id,
-      email: session.user.email ?? null,
-      full_name: fullName,
-      avatar_url: avatarUrl,
-      role: "student",
-      is_active: true,
-    })
-    .select(profileSelect)
-    .single());
-
-  if (error) {
-    throw error;
-  }
-
-  return data as Profile;
-}
-
-function getFriendlyAuthError(message: string) {
-  if (message.toLowerCase().includes("email not confirmed")) {
-    return "Please confirm your email using the link we sent before logging in.";
-  }
-  return message;
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -93,9 +59,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [booting, setBooting] = useState(true);
   const [loadingProfile, setLoadingProfile] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [authError, setAuthError] = useState<string | null>(null);
-  const [authInfo, setAuthInfo] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [recovering, setRecovering] = useState(false);
 
   useEffect(() => {
     const client = supabase;
@@ -106,10 +71,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     let mounted = true;
 
+    // getSession() waits for the PKCE `?code=` exchange when there is one.
     void client.auth.getSession().then(({ data, error }) => {
       if (!mounted) return;
+      stripTokensFromUrl();
       if (error) {
-        setAuthError(error.message);
+        setNotice(error.message);
       } else {
         setSession(data.session);
       }
@@ -118,10 +85,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const {
       data: { subscription },
-    } = client.auth.onAuthStateChange((_event, nextSession) => {
+    } = client.auth.onAuthStateChange((event, nextSession) => {
       if (!mounted) return;
+      if (event === "PASSWORD_RECOVERY") setRecovering(true);
+      if (event === "SIGNED_OUT") setRecovering(false);
       setSession(nextSession);
-      setAuthError(null);
       if (!nextSession) {
         setProfile(null);
         setLoadingProfile(false);
@@ -134,11 +102,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  useEffect(() => {
+  const loadProfile = useCallback(async (userId: string) => {
     const client = supabase;
     if (!client) return;
 
-    if (!session?.user?.id) {
+    let nextProfile = await fetchProfile(userId);
+    if (!nextProfile) {
+      throw new Error("Your account is still being set up. Please refresh in a moment.");
+    }
+
+    if (!nextProfile.is_active) {
+      await client.auth.signOut();
+      setSession(null);
+      setProfile(null);
+      setNotice("Your account is inactive. Please contact the MAPAGUAPA admin.");
+      return;
+    }
+
+    // "I own a place" chosen before a Google sign-up.
+    if (takePendingAccountType() === "owner" && nextProfile.role === "student") {
+      const { error } = await client.rpc("become_owner");
+      if (error) {
+        setNotice(error.message);
+      } else {
+        nextProfile = (await fetchProfile(userId)) ?? nextProfile;
+      }
+    }
+
+    setProfile(nextProfile);
+    // Best effort; older databases don't have this RPC.
+    void client.rpc("touch_last_active").then(() => undefined, () => undefined);
+  }, []);
+
+  useEffect(() => {
+    const userId = session?.user?.id;
+    if (!userId) {
       setProfile(null);
       setLoadingProfile(false);
       return;
@@ -146,25 +144,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     let cancelled = false;
     setLoadingProfile(true);
-
-    void ensureProfile(client, session)
-      .then((nextProfile) => {
-        if (cancelled) return;
-
-        if (!nextProfile.is_active) {
-          void client.auth.signOut();
-          setSession(null);
-          setProfile(null);
-          setAuthError("Your account is inactive. Please contact the MAPAGUAPA admin.");
-          return;
-        }
-
-        setProfile(nextProfile);
-      })
-      .catch((profileError) => {
-        if (!cancelled) {
-          setAuthError(profileError instanceof Error ? profileError.message : "Failed to load profile.");
-        }
+    loadProfile(userId)
+      .catch((error: unknown) => {
+        if (!cancelled) setNotice(error instanceof Error ? error.message : "Failed to load your profile.");
       })
       .finally(() => {
         if (!cancelled) setLoadingProfile(false);
@@ -173,89 +155,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-    // Only re-run when the signed-in user changes, not on token refresh.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session?.user?.id]);
+  }, [session?.user?.id, loadProfile]);
 
-  const run = useCallback(async <T,>(action: () => Promise<T>) => {
-    setSubmitting(true);
-    setAuthError(null);
-    setAuthInfo(null);
-    try {
-      return await action();
-    } finally {
-      setSubmitting(false);
-    }
-  }, []);
-
-  const login = useCallback(
-    (credentials: Credentials) =>
-      run(async () => {
-        if (!supabase) return;
-        const { error } = await supabase.auth.signInWithPassword({ email: credentials.email, password: credentials.password });
-        if (error) setAuthError(getFriendlyAuthError(error.message));
-      }),
-    [run]
-  );
-
-  const signup = useCallback(
-    (credentials: Credentials) =>
-      run(async () => {
-        if (!supabase) return false;
-        const { data, error } = await supabase.auth.signUp({
-          email: credentials.email,
-          password: credentials.password,
-          options: { data: { full_name: credentials.fullName } },
-        });
-        if (error) {
-          setAuthError(getFriendlyAuthError(error.message));
-          return false;
-        }
-        setAuthInfo(data.session ? "Account created successfully." : "Account created. Check your email to confirm before signing in.");
-        return true;
-      }),
-    [run]
-  );
-
-  const loginWithOAuth = useCallback(
-    (provider: OAuthProvider) =>
-      run(async () => {
-        if (!supabase) return;
-        const { error } = await supabase.auth.signInWithOAuth({
-          provider,
-          options: { redirectTo: authRedirectTo || `${window.location.origin}/dashboard` },
-        });
-        if (error) setAuthError(getFriendlyAuthError(error.message));
-      }),
-    [run]
-  );
-
-  const resetPassword = useCallback(
-    (email: string) =>
-      run(async () => {
-        if (!supabase) return;
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: passwordResetRedirectTo || `${window.location.origin}/dashboard`,
-        });
-        if (error) {
-          setAuthError(getFriendlyAuthError(error.message));
-        } else {
-          setAuthInfo("Password reset email sent. Check your inbox for the reset link.");
-        }
-      }),
-    [run]
-  );
+  const refreshProfile = useCallback(async () => {
+    if (session?.user?.id) await loadProfile(session.user.id);
+  }, [loadProfile, session?.user?.id]);
 
   const signOut = useCallback(async () => {
     if (!supabase) return;
     const { error } = await supabase.auth.signOut();
     if (error) {
-      setAuthError(error.message);
+      setNotice(error.message);
       return;
     }
     setSession(null);
     setProfile(null);
-    setAuthInfo(null);
   }, []);
 
   const value = useMemo<AuthContextValue>(
@@ -263,16 +177,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       session,
       profile,
       loading: booting || (Boolean(session) && loadingProfile && !profile),
-      submitting,
-      authError,
-      authInfo,
-      login,
-      signup,
-      loginWithOAuth,
-      resetPassword,
+      notice,
+      clearNotice: () => setNotice(null),
+      recovering,
+      refreshProfile,
       signOut,
     }),
-    [session, profile, booting, loadingProfile, submitting, authError, authInfo, login, signup, loginWithOAuth, resetPassword, signOut]
+    [session, profile, booting, loadingProfile, notice, recovering, refreshProfile, signOut]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
