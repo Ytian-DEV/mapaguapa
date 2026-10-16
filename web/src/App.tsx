@@ -13,7 +13,6 @@ import { OwnerShell } from "./features/owner/OwnerShell";
 import { ToastProvider } from "./ui";
 import "./app.css";
 
-const MapaguapaAdminPage = lazy(() => import("./components/admin/MapaguapaAdminPage"));
 const AboutPage = lazy(() => import("./components/shared/AboutPage"));
 const BrowsePage = lazy(() => import("./features/browse/BrowsePage"));
 const SavedPage = lazy(() => import("./features/browse/SavedPage"));
@@ -55,13 +54,6 @@ function AboutRoute() {
   const { profile } = useAuth();
   const navigate = useNavigate();
   return <AboutPage onLogoClick={() => navigate(profile ? homeFor(profile.role) : "/sign-in")} />;
-}
-
-function AdminRoute() {
-  const { profile, signOut } = useAuth();
-  const navigate = useNavigate();
-  if (!profile) return null;
-  return <MapaguapaAdminPage onNavigateAbout={() => navigate("/about")} onSignOut={signOut} profile={profile} />;
 }
 
 /** Student area: shared nav, footer and saved state. */
@@ -164,7 +156,6 @@ export default function App() {
                 <Route element={<OwnerComingSoon />} path="*" />
               </Route>
               {/* The v1 console stays reachable until features 11–13 replace it. */}
-              <Route element={<RequireRole roles={["admin"]}><AdminRoute /></RequireRole>} path="/admin/legacy" />
               <Route element={<AdminLayout />} path="/admin">
                 <Route element={<AdminOverviewPage />} index />
                 <Route element={<Navigate replace to="/admin/listings/new/edit/basics" />} path="listings/new" />
