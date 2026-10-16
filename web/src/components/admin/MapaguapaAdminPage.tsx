@@ -359,8 +359,8 @@ export default function MapaguapaAdminPage({ onNavigateAbout, onSignOut, profile
   }
 
   function handleLogoClick() {
-    if (window.location.pathname !== "/admin") {
-      window.history.pushState(null, "", "/admin");
+    if (window.location.pathname !== "/admin/legacy") {
+      window.history.pushState(null, "", "/admin/legacy");
     }
     openSection("overview");
   }
