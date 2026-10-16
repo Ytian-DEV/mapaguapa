@@ -2,9 +2,9 @@ import type { Views } from "../../lib/database";
 import { PRICE_BANDS, type PriceBand } from "../../lib/domain";
 import { supabase } from "../../lib/supabase";
 
-export type ListingCardRow = Pick<
+// Views are typed as all-nullable; a listing row always has an id.
+export type ListingCardRow = { id: string } & Pick<
   Views<"listing_rows">,
-  | "id"
   | "name"
   | "area"
   | "address"
