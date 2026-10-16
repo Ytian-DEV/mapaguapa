@@ -2,7 +2,7 @@
 
 **Current branch:** `feature/db-v2-schema`
 **Status:** Feature 2 in progress. No schema dump yet: v1 baseline reconstructed from types in web/supabase/tests/01_v1_baseline.sql.
-**Next step:** Write docs/v2/DB.md (apply order, assumptions), merge feature/db-v2-schema.
+**Next step:** Start feature/auth-v2 from develop (PKCE + /auth/callback, sign-in frame 01, student/owner sign-up, role routing).
 
 Resume protocol: read this file → `git status` → check out the branch above → finish uncommitted work → continue from the first unchecked item.
 
@@ -34,7 +34,7 @@ Gates before the last commit of each feature (from `web/`): `npm run lint`, `npm
 - [x] chore(db): add reports, owner verifications, activity log migration
 - [x] chore(db): add admin RPCs migration
 - [x] feat(types): regenerate database types and service helpers
-- [ ] docs(db): document apply order; merge to develop
+- [x] docs(db): document apply order; merge to develop
 
 ## 3. `feature/auth-v2`
 - [ ] fix(auth): switch Supabase client to PKCE and add /auth/callback
