@@ -2,7 +2,7 @@
 
 **Current branch:** `feature/design-system`
 **Status:** Plan approved. Feature 1 in progress.
-**Next step:** Create `feature/design-system` and add deps + ESLint.
+**Next step:** Merge feature/design-system into develop, then start feature/db-v2-schema (waiting on schema dump at web/supabase/schema-dump.sql).
 
 Resume protocol: read this file → `git status` → check out the branch above → finish uncommitted work → continue from the first unchecked item.
 
@@ -14,16 +14,16 @@ Gates before the last commit of each feature (from `web/`): `npm run lint`, `npm
 - [x] chore(docs): add v2 plan and progress
 
 ## 1. `feature/design-system`
-- [ ] chore(deps): add react-router-dom, fontsource fonts, eslint
-- [ ] chore(lint): add eslint config, lint and typecheck scripts
-- [ ] feat(ui): add design tokens and base styles
-- [ ] feat(ui): add Button, Badge, Chip, Input, Select
-- [ ] feat(ui): add Card, Avatar, Tabs, Stepper
-- [ ] feat(ui): add DataTable, Pagination, EmptyState, Skeleton
-- [ ] feat(ui): add Sidebar, TopNav, Dialog, Drawer, Toast
-- [ ] feat(app): add router shell and role guards (v1 pages mounted unchanged)
-- [ ] feat(dev): add /dev/components preview page
-- [ ] chore: remove pointer-glow hook; merge to develop
+- [x] chore(deps): add react-router-dom, fontsource fonts, eslint
+- [x] chore(lint): add eslint config, lint and typecheck scripts
+- [x] feat(ui): add design tokens and base styles
+- [x] feat(ui): add Button, Badge, Chip, Input, Select
+- [x] feat(ui): add Card, Avatar, Tabs, Stepper
+- [x] feat(ui): add DataTable, Pagination, EmptyState, Skeleton
+- [x] feat(ui): add Sidebar, TopNav, Dialog, Drawer, Toast
+- [x] feat(app): add router shell and role guards (v1 pages mounted unchanged)
+- [x] feat(dev): add /dev/components preview page
+- [x] chore: gates and merge to develop (pointer-glow hook is removed with the v1 pages in features 3, 6, 13)
 
 ## 2. `feature/db-v2-schema`
 - [ ] chore(db): baseline snapshot of existing schema (if dump provided)

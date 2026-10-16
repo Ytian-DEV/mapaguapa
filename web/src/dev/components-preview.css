@@ -1,0 +1,56 @@
+.dev-preview {
+  padding-block: 40px 80px;
+}
+
+.dev-preview__section {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+  padding-block: var(--space-8);
+  border-top: 1px solid var(--color-line);
+}
+
+.dev-preview__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.dev-preview__stack {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.dev-preview__full {
+  width: 100%;
+}
+
+.dev-preview__grid,
+.dev-preview__cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--space-4);
+  width: 100%;
+}
+
+.dev-preview__stepper {
+  max-width: 280px;
+}
+
+.dev-preview__shell {
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card-lg);
+}
+
+.dev-preview__shell .ui-app-shell {
+  min-height: 640px;
+}
+
+.dev-preview__shell .ui-sidebar {
+  position: static;
+  height: 640px;
+}

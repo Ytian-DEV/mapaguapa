@@ -1,0 +1,75 @@
+.ui-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--color-paper-2);
+  color: var(--color-ink-2);
+  font-size: var(--text-2xs);
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.ui-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding-inline: 14px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease);
+}
+
+.ui-chip:hover {
+  border-color: var(--color-line-strong);
+}
+
+.ui-chip:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: 2px;
+}
+
+.ui-chip--selected,
+.ui-chip--selected:hover {
+  border-color: var(--color-forest);
+  background: var(--color-forest);
+  color: var(--color-on-dark);
+}
+
+.ui-chip svg {
+  width: 15px;
+  height: 15px;
+}
+
+.ui-chip-group {
+  display: flex;
+  flex: 1 1 100%;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+@media (max-width: 767px) {
+  .ui-chip-group {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    max-width: calc(100% + 2 * var(--gutter));
+    margin-inline: calc(-1 * var(--gutter));
+    padding-inline: var(--gutter);
+    scrollbar-width: none;
+  }
+
+  .ui-chip-group::-webkit-scrollbar {
+    display: none;
+  }
+}

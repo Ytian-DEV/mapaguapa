@@ -90,11 +90,6 @@ type AreaPageState = Record<string, number>;
 type AreaBooleanState = Record<string, boolean>;
 const INITIAL_AREA_CONCURRENCY = 2;
 
-type PriceInterval = {
-  min: number;
-  max: number;
-};
-
 function getFirstName(profile: Profile) {
   if (profile.full_name?.trim()) {
     return profile.full_name.trim().split(/\s+/)[0] ?? "Student";
@@ -117,23 +112,6 @@ function getInitials(profile: Profile) {
     .slice(0, 2);
 }
 
-function getAreaLabel(address: string | null | undefined) {
-  const value = address?.trim();
-  if (!value) {
-    return "Baybay City";
-  }
-
-  const lowered = value.toLowerCase();
-  if (lowered.includes("pangasugan")) {
-    return "Pangasugan";
-  }
-
-  if (lowered.includes("guadalupe")) {
-    return "Guadalupe";
-  }
-
-  return value.split(",")[0]?.trim() || "Baybay City";
-}
 
 function createSectionTitle(area: string) {
   return area === "Baybay City" ? "Student stays around Baybay City" : `Student stays around ${area}`;
@@ -173,73 +151,7 @@ function parseBudgetValue(value: string) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-function parsePriceIntervals(label: string | null | undefined): PriceInterval[] {
-  const normalized = label
-    ?.replace(/[₱â‚±]/g, "")
-    .replace(/[–—]/g, "-")
-    .replace(/\s+/g, " ")
-    .trim()
-    .toLowerCase();
 
-  if (!normalized) {
-    return [];
-  }
-
-  const intervals: PriceInterval[] = [];
-  const rangePattern = /(\d[\d,]*)\s*-\s*(\d[\d,]*)/g;
-  let rangeMatch: RegExpExecArray | null;
-
-  while ((rangeMatch = rangePattern.exec(normalized))) {
-    const first = parseBudgetValue(rangeMatch[1]);
-    const second = parseBudgetValue(rangeMatch[2]);
-
-    if (first !== null && second !== null) {
-      intervals.push({ min: Math.min(first, second), max: Math.max(first, second) });
-    }
-  }
-
-  const lessThanMatch = normalized.match(/(?:less than|<)\s*(\d[\d,]*)/);
-  if (lessThanMatch) {
-    const max = parseBudgetValue(lessThanMatch[1]);
-    if (max !== null) {
-      intervals.push({ min: 0, max });
-    }
-  }
-
-  const orMoreMatch = normalized.match(/(\d[\d,]*)\s*(?:or more|\+)/);
-  if (orMoreMatch) {
-    const min = parseBudgetValue(orMoreMatch[1]);
-    if (min !== null) {
-      intervals.push({ min, max: Number.POSITIVE_INFINITY });
-    }
-  }
-
-  if (intervals.length === 0) {
-    const exactMatch = normalized.match(/\d[\d,]*/);
-    const exact = exactMatch ? parseBudgetValue(exactMatch[0]) : null;
-
-    if (exact !== null) {
-      intervals.push({ min: exact, max: exact });
-    }
-  }
-
-  return intervals;
-}
-
-function doesPriceMatchBudget(label: string | null | undefined, minBudget: number | null, maxBudget: number | null) {
-  if (minBudget === null && maxBudget === null) {
-    return true;
-  }
-
-  const intervals = parsePriceIntervals(label);
-  if (intervals.length === 0) {
-    return false;
-  }
-
-  const selectedMin = minBudget ?? 0;
-  const selectedMax = maxBudget ?? Number.POSITIVE_INFINITY;
-  return intervals.some((interval) => interval.max >= selectedMin && interval.min <= selectedMax);
-}
 
 function shouldShowDetailItem(item: ModalDetailItem) {
   return !hiddenDetailValues.has(item.value.trim().toLowerCase());
