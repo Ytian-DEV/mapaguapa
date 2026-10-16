@@ -1,0 +1,135 @@
+import { useState } from "react";
+import { Heart, Home, Map } from "lucide-react";
+import { TopNav, useToast } from "../ui";
+import type { ListingDetail, ListingPhoto } from "../features/listing/detailApi";
+import { ListingDetailView } from "../features/listing/ListingDetailView";
+import { vsuDistanceKm } from "../lib/geo";
+import "../features/browse/student-shell.css";
+
+// Dev-only fixture (not bundled in production). Every optional section is filled.
+const listing = {
+  id: "fixture-listing",
+  name: "Fixture Boarding House",
+  address: "Guadalupe, Baybay City, Leyte",
+  accommodation_type: "Boarding house",
+  accommodation_type_other: null,
+  description: "A fixture listing used to check the detail layout.\nRooms have their own comfort room; internet and water are included.",
+  is_fenced: true,
+  floors_label: null,
+  floor_count: 2,
+  rooms_available: 2,
+  rooms_total: 8,
+  exclusivity: "Mixed",
+  exclusivity_group: "mixed",
+  occupancy_label: null,
+  occupancy_min: 1,
+  occupancy_max: 4,
+  monthly_rental_label: "₱3,000+",
+  monthly_rent_min: 2800,
+  monthly_rent_max: 3200,
+  rent_exact: 2800,
+  price_band: "2000_2999",
+  advance_deposit: "1 month advance + 1 month deposit",
+  room_types: [],
+  utilities_included: true,
+  bills_included: "Internet, water",
+  bills_not_included: "Electricity",
+  has_additional_appliance_fee: true,
+  appliance_fee_label: null,
+  appliance_fee_amount: 300,
+  has_laundry_area: true,
+  has_drying_area: true,
+  has_comfort_room_each_room: true,
+  comfort_rooms_separate_from_bathrooms: null,
+  comfort_room_count: null,
+  bathroom_count: null,
+  has_bathroom_each_floor: true,
+  has_charging_slots_each_room: true,
+  charging_station_count_label: null,
+  charging_station_count: null,
+  has_electric_fans: true,
+  has_aircon: false,
+  aircon_room_count: null,
+  has_common_kitchen: true,
+  has_refrigerator: null,
+  has_television: null,
+  other_amenities: null,
+  has_study_area: true,
+  has_wifi: true,
+  cellular_signals_raw: null,
+  cellular_signals: ["Smart", "TNT", "Globe", "TM"],
+  has_parking_area: true,
+  pets_allowed: false,
+  curfew: "10:00 PM",
+  visitors_allowed: true,
+  visitor_time: "until 8 PM",
+  smoking_allowed: false,
+  has_security_cctv: true,
+  has_emergency_exit: true,
+  has_fire_alarm: true,
+  has_emergency_lights: true,
+  has_fire_extinguisher: true,
+  has_smoke_detector: true,
+  has_sprinkler: false,
+  contact_person: "Fixture Owner",
+  contact_number: "0900 000 0000",
+  other_contact_information: null,
+  location_lat: 10.7419,
+  location_lng: 124.7951,
+  raw_import_data: {},
+  source_row_number: null,
+  status: "published",
+  owner_id: "fixture-owner",
+  review_note: null,
+  submitted_at: null,
+  reviewed_at: null,
+  reviewed_by: null,
+  published_at: null,
+  created_by: null,
+  updated_by: null,
+  deleted_by: null,
+  created_at: "2026-10-01T00:00:00Z",
+  updated_at: "2026-10-01T00:00:00Z",
+  deleted_at: null,
+} as unknown as ListingDetail;
+
+const photos = Array.from({ length: 6 }, (_, index) => ({
+  id: `p${index}`,
+  listing_id: listing.id,
+  storage_bucket: "listing-photos",
+  storage_path: `fixture/missing-${index}.jpg`,
+  caption: index === 0 ? "Front of the house" : null,
+  alt_text: null,
+  sort_order: index,
+  is_cover: index === 0,
+  uploaded_by: null,
+  created_at: listing.created_at,
+  updated_at: listing.created_at,
+})) as ListingPhoto[];
+
+export default function ListingPreview() {
+  const toast = useToast();
+  const [saved, setSaved] = useState(false);
+  return (
+    <div className="v2 student-shell">
+      <TopNav
+        links={[
+          { to: "/dev/browse", label: "Browse", icon: <Home /> },
+          { to: "/map", label: "Map view", icon: <Map /> },
+          { to: "/saved", label: "Saved", icon: <Heart /> },
+        ]}
+        savedCount={saved ? 1 : 0}
+        user={{ name: "Dev Student" }}
+      />
+      <ListingDetailView
+        distanceKm={vsuDistanceKm(listing.location_lat, listing.location_lng)}
+        listing={listing}
+        onMessage={() => toast.show("Would open a conversation")}
+        onToggleSaved={() => setSaved((value) => !value)}
+        owner={{ id: "fixture-owner", full_name: "Fixture Owner", avatar_url: null, role: "owner", is_verified_owner: true }}
+        photos={photos}
+        saved={saved}
+      />
+    </div>
+  );
+}

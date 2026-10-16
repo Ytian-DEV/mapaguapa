@@ -13,7 +13,7 @@ const AboutPage = lazy(() => import("./components/shared/AboutPage"));
 const BrowsePage = lazy(() => import("./features/browse/BrowsePage"));
 const SavedPage = lazy(() => import("./features/browse/SavedPage"));
 const MapPage = lazy(() => import("./features/map/MapPage"));
-const ListingComingSoon = lazy(() => import("./features/browse/ListingComingSoon"));
+const ListingDetailPage = lazy(() => import("./features/listing/ListingDetailPage"));
 const SignInPage = lazy(() => import("./features/auth/SignInPage"));
 const SignUpPage = lazy(() => import("./features/auth/SignUpPage"));
 const ForgotPasswordPage = lazy(() => import("./features/auth/ForgotPasswordPage"));
@@ -23,6 +23,7 @@ const OwnerComingSoon = lazy(() => import("./features/owner/OwnerComingSoon"));
 const NotFoundPage = lazy(() => import("./app/NotFoundPage"));
 const ComponentsPreview = import.meta.env.DEV ? lazy(() => import("./dev/ComponentsPreview")) : null;
 const BrowsePreview = import.meta.env.DEV ? lazy(() => import("./dev/BrowsePreview")) : null;
+const ListingPreview = import.meta.env.DEV ? lazy(() => import("./dev/ListingPreview")) : null;
 
 function AboutRoute() {
   const { profile } = useAuth();
@@ -77,7 +78,7 @@ export default function App() {
                 <Route element={<BrowsePage />} path="/" />
                 <Route element={<SavedPage />} path="/saved" />
                 <Route element={<MapPage />} path="/map" />
-                <Route element={<ListingComingSoon />} path="/listing/:listingId" />
+                <Route element={<ListingDetailPage />} path="/listing/:listingId" />
               </Route>
               <Route element={<Navigate replace to="/saved" />} path="/dashboard/saved" />
               <Route element={<LegacyDashboardRedirect />} path="/dashboard" />
@@ -86,6 +87,7 @@ export default function App() {
 
               {ComponentsPreview && <Route element={<ComponentsPreview />} path="/dev/components" />}
               {BrowsePreview && <Route element={<BrowsePreview />} path="/dev/browse" />}
+              {ListingPreview && <Route element={<ListingPreview />} path="/dev/listing" />}
               <Route element={<NotFoundPage />} path="*" />
             </Routes>
           </Suspense>
