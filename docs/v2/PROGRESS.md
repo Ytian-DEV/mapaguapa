@@ -2,7 +2,7 @@
 
 **Current branch:** `feature/auth-v2`
 **Status:** Features 1–2 merged into develop. Migrations written and tested locally, NOT applied to Supabase (see docs/v2/DB.md).
-**Next step:** Commit docs, then merge feature/auth-v2.
+**Next step:** Merge feature/auth-v2, then start feature/student-browse.
 
 Resume protocol: read this file → `git status` → check out the branch above → finish uncommitted work → continue from the first unchecked item.
 
@@ -43,7 +43,7 @@ Gates before the last commit of each feature (from `web/`): `npm run lint`, `npm
 - [x] feat(auth): redesign sign-in (frame 01)
 - [x] feat(auth): sign-up with student/owner choice
 - [x] feat(auth): password reset flow on new design
-- [ ] feat(auth): role-based home routing; remove v1 auth page; merge
+- [x] feat(auth): role-based home routing; remove v1 auth page; merge
 
 ## 4. `feature/student-browse`
 - [ ] feat(browse): browse service with server-side filters and price bands

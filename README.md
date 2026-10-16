@@ -157,8 +157,6 @@ VITE_APP_NAME=MAPAGUAPA
 VITE_SUPABASE_URL=https://your-project-id.supabase.co
 VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
 VITE_SUPABASE_LISTING_PHOTOS_BUCKET=listing-photos
-VITE_AUTH_REDIRECT_URL=http://localhost:5173/dashboard
-VITE_PASSWORD_RESET_REDIRECT_URL=http://localhost:5173/dashboard
 ```
 
 ### Variable Reference
@@ -169,8 +167,8 @@ VITE_PASSWORD_RESET_REDIRECT_URL=http://localhost:5173/dashboard
 | `VITE_SUPABASE_URL` | Yes | Supabase project URL. |
 | `VITE_SUPABASE_ANON_KEY` | Yes | Supabase anon public key. |
 | `VITE_SUPABASE_LISTING_PHOTOS_BUCKET` | No | Storage bucket for listing photos. Defaults to `listing-photos`. |
-| `VITE_AUTH_REDIRECT_URL` | Recommended | OAuth redirect URL. Use `/dashboard` for the app route. |
-| `VITE_PASSWORD_RESET_REDIRECT_URL` | Recommended | Password reset redirect URL. |
+
+Auth redirects are built from the site's own origin (`/auth/callback` and `/reset-password`), so no redirect variables are needed.
 
 Do not commit real `.env` secrets or project keys.
 
@@ -185,12 +183,16 @@ MAPAGUAPA expects these Supabase resources:
 - Email confirmation enabled if you want users to verify email before login.
 - Redirect URLs configured for local and production routes.
 
-Recommended redirect URLs:
+Redirect URLs (Authentication → URL Configuration). The app uses the PKCE flow, so these pages receive a one-time `?code=` instead of tokens:
 
 ```text
-http://localhost:5173/dashboard
-https://your-production-domain.com/dashboard
+http://localhost:5173/auth/callback
+http://localhost:5173/reset-password
+https://your-production-domain.com/auth/callback
+https://your-production-domain.com/reset-password
 ```
+
+Keep the old `/dashboard` entries until v1 links have expired; the app forwards them.
 
 For Vercel production, also set the Site URL to your deployed app URL.
 
@@ -259,11 +261,13 @@ The app supports:
 - Session persistence and auto refresh.
 - Role-based page rendering.
 
+Sign-in uses the Supabase PKCE flow (`web/src/lib/supabase.ts`): OAuth, email-confirmation and reset links come back with a one-time code that is exchanged and then removed from the URL, so access tokens never appear in the address bar.
+
 Routing behavior:
 
-- Signed-out users see the auth page.
-- Signed-in users with `role = "user"` see the student catalog.
-- Signed-in users with `role = "admin"` see the admin dashboard.
+- Signed-out users are sent to `/sign-in` (with `?next=` to return afterwards).
+- Sign-up asks "I'm a student / I own a place" and stores it as the account type.
+- Students land on `/`, owners on `/owner`, admins on `/admin`.
 - Inactive profiles are signed out and shown an inactive account message.
 
 ## Admin Workflow
@@ -365,13 +369,14 @@ The file `web/vercel.json` contains a rewrite that sends all app routes to `inde
 }
 ```
 
-This is required so direct visits and OAuth redirects such as `/dashboard` do not return `404: NOT_FOUND`.
+This is required so direct visits and OAuth redirects such as `/auth/callback` do not return `404: NOT_FOUND`.
 
 After deploying, update Supabase Auth URL configuration:
 
 - Site URL: your production domain
 - Redirect URLs:
-  - `https://your-production-domain.com/dashboard`
+  - `https://your-production-domain.com/auth/callback`
+  - `https://your-production-domain.com/reset-password`
   - any local development URL you still use
 
 ## Quality Checks
@@ -398,8 +403,7 @@ Check that:
 
 - `web/vercel.json` is deployed.
 - Vercel root directory is set to `web`.
-- Supabase redirect URL points to your deployed `/dashboard` route.
-- `VITE_AUTH_REDIRECT_URL` is set correctly for the environment.
+- Supabase redirect URLs include your deployed `/auth/callback` and `/reset-password` routes.
 
 ### Supabase is not configured
 
