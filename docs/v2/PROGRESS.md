@@ -1,8 +1,8 @@
 # MAPAGUAPA v2 — Progress
 
 **Current branch:** `develop`
-**Status:** Features 1–5 merged into develop. Migrations tested locally, NOT applied to Supabase (see docs/v2/DB.md). Student pages verified with dev fixtures at /dev/browse. Maps use OSM tiles until VITE_MAPTILER_KEY is set.
-**Next step:** Merge feature/listing-detail-v2, then start feature/messaging.
+**Status:** Features 1–6 merged into develop. Migrations tested locally, NOT applied to Supabase (see docs/v2/DB.md). Student pages verified with dev fixtures (/dev/browse, /dev/listing). Maps use OSM tiles until VITE_MAPTILER_KEY is set.
+**Next step:** Start feature/messaging from develop (frames 04 + O3).
 
 Resume protocol: read this file → `git status` → check out the branch above → finish uncommitted work → continue from the first unchecked item.
 
