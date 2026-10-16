@@ -2,7 +2,7 @@
 
 **Current branch:** `feature/design-system`
 **Status:** Plan approved. Feature 1 in progress.
-**Next step:** Add /dev/components preview page.
+**Next step:** Visually check /dev/components, then run gates and merge feature/design-system into develop.
 
 Resume protocol: read this file → `git status` → check out the branch above → finish uncommitted work → continue from the first unchecked item.
 
@@ -22,7 +22,7 @@ Gates before the last commit of each feature (from `web/`): `npm run lint`, `npm
 - [x] feat(ui): add DataTable, Pagination, EmptyState, Skeleton
 - [x] feat(ui): add Sidebar, TopNav, Dialog, Drawer, Toast
 - [x] feat(app): add router shell and role guards (v1 pages mounted unchanged)
-- [ ] feat(dev): add /dev/components preview page
+- [x] feat(dev): add /dev/components preview page
 - [ ] chore: gates and merge to develop (pointer-glow hook is removed with the v1 pages in features 3, 6, 13)
 
 ## 2. `feature/db-v2-schema`
