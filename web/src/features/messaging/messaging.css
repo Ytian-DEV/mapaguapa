@@ -39,6 +39,20 @@
   border-left: 1px solid var(--color-line);
 }
 
+/* Owner portal: no top nav, but a page header above the workspace. */
+.messaging--owner {
+  height: calc(100dvh - 210px);
+}
+
+.thread-head__status {
+  width: 170px;
+}
+
+.thread-head__status .ui-select__control {
+  height: var(--control-h-sm);
+  font-size: var(--text-xs);
+}
+
 /* ---------- Conversation list ---------- */
 .convo-list {
   display: flex;

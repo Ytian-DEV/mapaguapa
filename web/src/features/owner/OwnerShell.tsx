@@ -2,14 +2,15 @@ import type { ReactNode } from "react";
 import { BadgeCheck, HelpCircle, Home, List, MessageSquare, Plus, User } from "lucide-react";
 import { useAuth } from "../../app/AuthProvider";
 import { AppShell, Sidebar, type SidebarGroup } from "../../ui";
+import { useInbox } from "../messaging/InboxContext";
 
-const ownerNav: SidebarGroup[] = [
+const ownerNav = (unread: number): SidebarGroup[] => [
   {
     label: "Manage",
     items: [
       { to: "/owner", label: "Overview", icon: <Home />, end: true },
       { to: "/owner/listings", label: "My listings", icon: <List /> },
-      { to: "/owner/inquiries", label: "Inquiries", icon: <MessageSquare /> },
+      { to: "/owner/inquiries", label: "Inquiries", icon: <MessageSquare />, count: unread, emphasis: true },
       { to: "/owner/listings/new", label: "Create listing", icon: <Plus /> },
     ],
   },
@@ -23,16 +24,17 @@ const ownerNav: SidebarGroup[] = [
   },
 ];
 
-/** Owner portal frame (sidebar from Components 14-301). Counts are added in feature 8. */
+/** Owner portal frame (sidebar from Components 14-301). Listing counts are added in feature 8. */
 export function OwnerShell({ children }: { children: ReactNode }) {
   const { profile, signOut } = useAuth();
   const verified = Boolean(profile?.verified_owner_at);
+  const { unreadTotal } = useInbox();
 
   return (
     <AppShell
       sidebar={
         <Sidebar
-          groups={ownerNav}
+          groups={ownerNav(unreadTotal)}
           homeTo="/owner"
           onSignOut={() => void signOut()}
           user={{

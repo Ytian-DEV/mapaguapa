@@ -6,6 +6,7 @@ import { homeFor, PublicOnly, RequireRole } from "./app/guards";
 import { SavedProvider } from "./features/browse/SavedContext";
 import { StudentShell } from "./features/browse/StudentShell";
 import { InboxProvider } from "./features/messaging/InboxContext";
+import { OwnerShell } from "./features/owner/OwnerShell";
 import { ToastProvider } from "./ui";
 import "./app.css";
 
@@ -22,6 +23,7 @@ const ForgotPasswordPage = lazy(() => import("./features/auth/ForgotPasswordPage
 const ResetPasswordPage = lazy(() => import("./features/auth/ResetPasswordPage"));
 const AuthCallbackPage = lazy(() => import("./features/auth/AuthCallbackPage"));
 const OwnerComingSoon = lazy(() => import("./features/owner/OwnerComingSoon"));
+const OwnerInquiriesPage = lazy(() => import("./features/messaging/OwnerInquiriesPage"));
 const NotFoundPage = lazy(() => import("./app/NotFoundPage"));
 const ComponentsPreview = import.meta.env.DEV ? lazy(() => import("./dev/ComponentsPreview")) : null;
 const BrowsePreview = import.meta.env.DEV ? lazy(() => import("./dev/BrowsePreview")) : null;
@@ -57,6 +59,21 @@ function StudentLayout() {
   );
 }
 
+/** Owner area: sidebar with unread inquiries. */
+function OwnerLayout() {
+  return (
+    <RequireRole roles={["owner"]}>
+      <InboxProvider>
+        <OwnerShell>
+          <Suspense fallback={null}>
+            <Outlet />
+          </Suspense>
+        </OwnerShell>
+      </InboxProvider>
+    </RequireRole>
+  );
+}
+
 /** v1 sent OAuth and reset links to /dashboard; send any that still arrive with a code to the callback. */
 function LegacyDashboardRedirect() {
   const location = useLocation();
@@ -88,7 +105,12 @@ export default function App() {
               </Route>
               <Route element={<Navigate replace to="/saved" />} path="/dashboard/saved" />
               <Route element={<LegacyDashboardRedirect />} path="/dashboard" />
-              <Route element={<RequireRole roles={["owner"]}><OwnerComingSoon /></RequireRole>} path="/owner/*" />
+              <Route element={<OwnerLayout />} path="/owner">
+                <Route element={<OwnerComingSoon />} index />
+                <Route element={<OwnerInquiriesPage />} path="inquiries" />
+                <Route element={<OwnerInquiriesPage />} path="inquiries/:conversationId" />
+                <Route element={<OwnerComingSoon />} path="*" />
+              </Route>
               <Route element={<RequireRole roles={["admin"]}><AdminRoute /></RequireRole>} path="/admin/*" />
 
               {ComponentsPreview && <Route element={<ComponentsPreview />} path="/dev/components" />}
