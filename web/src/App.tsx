@@ -12,6 +12,7 @@ const MapaguapaAdminPage = lazy(() => import("./components/admin/MapaguapaAdminP
 const AboutPage = lazy(() => import("./components/shared/AboutPage"));
 const BrowsePage = lazy(() => import("./features/browse/BrowsePage"));
 const SavedPage = lazy(() => import("./features/browse/SavedPage"));
+const MapPage = lazy(() => import("./features/map/MapPage"));
 const ListingComingSoon = lazy(() => import("./features/browse/ListingComingSoon"));
 const SignInPage = lazy(() => import("./features/auth/SignInPage"));
 const SignUpPage = lazy(() => import("./features/auth/SignUpPage"));
@@ -75,6 +76,7 @@ export default function App() {
               <Route element={<StudentLayout />}>
                 <Route element={<BrowsePage />} path="/" />
                 <Route element={<SavedPage />} path="/saved" />
+                <Route element={<MapPage />} path="/map" />
                 <Route element={<ListingComingSoon />} path="/listing/:listingId" />
               </Route>
               <Route element={<Navigate replace to="/saved" />} path="/dashboard/saved" />

@@ -39,10 +39,27 @@ function toBBox(map: LeafletMap): BBox {
 function FitToPins({ pins, enabled, onProgrammaticMove }: { pins: MapPin[]; enabled: boolean; onProgrammaticMove: () => void }) {
   const map = useMap();
   const key = pins.map((pin) => pin.id).join(",");
+  const pinsRef = useRef(pins);
+  pinsRef.current = pins;
+  const [sizeToken, setSizeToken] = useState(0);
+
+  // A map mounted while hidden (List / Map toggle) has no size; refit once it gets one.
+  useEffect(() => {
+    let wasEmpty = map.getSize().x === 0;
+    const observer = new ResizeObserver(() => {
+      const empty = map.getSize().x === 0;
+      if (wasEmpty && !empty) setSizeToken((value) => value + 1);
+      wasEmpty = empty;
+    });
+    observer.observe(map.getContainer());
+    return () => observer.disconnect();
+  }, [map]);
 
   useEffect(() => {
     if (!enabled) return;
-    const points = pins.map((pin) => L.latLng(pin.lat, pin.lng));
+    map.invalidateSize();
+    if (map.getSize().x === 0) return;
+    const points = pinsRef.current.map((pin) => L.latLng(pin.lat, pin.lng));
     points.push(L.latLng(VSU_LOCATION.lat, VSU_LOCATION.lng));
     onProgrammaticMove();
     if (points.length === 1) {
@@ -50,9 +67,9 @@ function FitToPins({ pins, enabled, onProgrammaticMove }: { pins: MapPin[]; enab
     } else {
       map.fitBounds(L.latLngBounds(points), { padding: [48, 48], maxZoom: 16 });
     }
-    // Only refit when the set of pins changes, not on every render.
+    // Refit when the set of pins changes or the map first becomes visible, not on every render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key, enabled, map]);
+  }, [key, enabled, map, sizeToken]);
 
   return null;
 }

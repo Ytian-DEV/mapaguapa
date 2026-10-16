@@ -1,13 +1,14 @@
 import type { ReactNode } from "react";
-import { Heart, Home } from "lucide-react";
+import { Heart, Home, Map } from "lucide-react";
 import { useAuth } from "../../app/AuthProvider";
 import { Logo, TopNav, type TopNavLink } from "../../ui";
 import { useSaved } from "./SavedContext";
 import "./student-shell.css";
 
-// Map view (feature 5) and Messages (feature 7) join this list when they ship.
+// Messages (feature 7) joins this list when it ships.
 const studentLinks: TopNavLink[] = [
   { to: "/", label: "Browse", icon: <Home />, end: true },
+  { to: "/map", label: "Map view", icon: <Map /> },
   { to: "/saved", label: "Saved", icon: <Heart /> },
 ];
 
