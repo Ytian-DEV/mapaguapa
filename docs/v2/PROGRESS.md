@@ -1,6 +1,6 @@
 # MAPAGUAPA v2 — Progress
 
-**Current branch:** `develop`
+**Current branch:** `fix/db-v2-prod-alignment`
 **Status:** Features 1–2 merged into develop. Migrations written and tested locally, NOT applied to Supabase (see docs/v2/DB.md).
 **Next step:** Start feature/auth-v2 from develop (PKCE + /auth/callback, sign-in frame 01, student/owner sign-up, role routing).
 
@@ -35,6 +35,7 @@ Gates before the last commit of each feature (from `web/`): `npm run lint`, `npm
 - [x] chore(db): add admin RPCs migration
 - [x] feat(types): regenerate database types and service helpers
 - [x] docs(db): document apply order; merge to develop
+- [x] fix(db): align migrations with prod schema (branch fix/db-v2-prod-alignment): enum status, v1 triggers/policies, archive behaviour, sign-in only
 
 ## 3. `feature/auth-v2`
 - [ ] fix(auth): switch Supabase client to PKCE and add /auth/callback

@@ -5,8 +5,28 @@
 -- * Owners create/edit only their own listings and can't publish or archive.
 --   Editing a published listing sends it back to in_review.
 -- * rent_exact drives price_band, monthly_rent_min/max and monthly_rental_label.
--- * archive_listing() / restore_listing() keep their v1 call signatures.
+-- * archive_listing() / restore_listing() keep their v1 signatures and
+--   behaviour ({listing, photos} snapshot; restore keeps the archive record).
+-- * Reads require sign-in, as in v1.
+-- Prod (2026-10-16) has status as the enum `listing_status` and two policies
+-- that reference it, so all v1 policies are dropped before the type change.
 -- Requires 20261016010000_v2_roles.sql. Safe to re-run.
+
+-- ---------------------------------------------------------------------------
+-- Drop v1 policies first (they depend on listings.status)
+-- ---------------------------------------------------------------------------
+do $$
+declare
+  v_policy record;
+begin
+  for v_policy in
+    select tablename, policyname from pg_policies
+    where schemaname = 'public' and tablename in ('listings', 'listing_photos', 'deleted_listings')
+  loop
+    execute format('drop policy %I on public.%I', v_policy.policyname, v_policy.tablename);
+  end loop;
+end
+$$;
 
 -- ---------------------------------------------------------------------------
 -- Columns
@@ -272,27 +292,23 @@ create index if not exists listings_status_updated_at_idx on public.listings(sta
 create index if not exists listings_location_idx on public.listings(location_lat, location_lng) where status = 'published';
 
 -- ---------------------------------------------------------------------------
--- RLS: listings, listing_photos, deleted_listings (replace existing policies)
+-- RLS: listings, listing_photos, deleted_listings
+-- (v1 policies were dropped at the top; drop-if-exists keeps re-runs working)
 -- ---------------------------------------------------------------------------
-do $$
-declare
-  v_policy record;
-begin
-  for v_policy in
-    select tablename, policyname from pg_policies
-    where schemaname = 'public' and tablename in ('listings', 'listing_photos', 'deleted_listings')
-  loop
-    execute format('drop policy %I on public.%I', v_policy.policyname, v_policy.tablename);
-  end loop;
-end
-$$;
+drop policy if exists "listings: read published, own, or admin" on public.listings;
+drop policy if exists "listings: owners and admins insert" on public.listings;
+drop policy if exists "listings: owners update own, admins all" on public.listings;
+drop policy if exists "listings: owners delete own drafts, admins all" on public.listings;
+drop policy if exists "listing_photos: read with listing" on public.listing_photos;
+drop policy if exists "listing_photos: owners and admins write" on public.listing_photos;
+drop policy if exists "deleted_listings: admins read" on public.deleted_listings;
 
 alter table public.listings enable row level security;
 alter table public.listing_photos enable row level security;
 alter table public.deleted_listings enable row level security;
 
 create policy "listings: read published, own, or admin"
-on public.listings for select to anon, authenticated
+on public.listings for select to authenticated
 using (status = 'published' or owner_id = auth.uid() or app.is_admin());
 
 create policy "listings: owners and admins insert"
@@ -310,7 +326,7 @@ using ((owner_id = auth.uid() and status = 'draft') or app.is_admin());
 
 -- Photos follow their listing's visibility (the subquery is itself filtered by RLS).
 create policy "listing_photos: read with listing"
-on public.listing_photos for select to anon, authenticated
+on public.listing_photos for select to authenticated
 using (exists (select 1 from public.listings l where l.id = listing_id));
 
 create policy "listing_photos: owners and admins write"
@@ -378,8 +394,8 @@ using (bucket_id = 'listing-photos' and app.is_admin())
 with check (bucket_id = 'listing-photos' and app.is_admin());
 
 -- ---------------------------------------------------------------------------
--- archive_listing / restore_listing (same call signatures as v1)
--- Dropped by name first because the v1 return types are not in source control.
+-- archive_listing / restore_listing: v1 behaviour on the v2 statuses.
+-- Dropped by name first so no stale overload can survive.
 -- ---------------------------------------------------------------------------
 do $$
 declare
@@ -401,8 +417,12 @@ language plpgsql security definer set search_path = public, pg_temp
 as $$
 declare
   v_listing public.listings;
+  v_snapshot jsonb;
   v_archive_id uuid;
 begin
+  if auth.uid() is null then
+    raise exception 'You must be signed in.' using errcode = '42501';
+  end if;
   if not app.is_admin() then
     raise exception 'Only admins can archive listings.' using errcode = '42501';
   end if;
@@ -415,8 +435,21 @@ begin
     raise exception 'Listing is already archived.';
   end if;
 
+  -- Same snapshot shape as v1.
+  v_snapshot := jsonb_build_object(
+    'listing', to_jsonb(v_listing),
+    'photos', coalesce(
+      (
+        select jsonb_agg(to_jsonb(lp) order by lp.sort_order, lp.created_at)
+        from public.listing_photos lp
+        where lp.listing_id = v_listing.id
+      ),
+      '[]'::jsonb
+    )
+  );
+
   insert into public.deleted_listings (original_listing_id, listing_name, deleted_by, delete_reason, listing_snapshot)
-  values (v_listing.id, v_listing.name, auth.uid(), p_delete_reason, to_jsonb(v_listing))
+  values (v_listing.id, v_listing.name, auth.uid(), p_delete_reason, v_snapshot)
   returning id into v_archive_id;
 
   update public.listings
@@ -432,10 +465,14 @@ returns void
 language plpgsql security definer set search_path = public, pg_temp
 as $$
 begin
+  if auth.uid() is null then
+    raise exception 'You must be signed in.' using errcode = '42501';
+  end if;
   if not app.is_admin() then
     raise exception 'Only admins can restore listings.' using errcode = '42501';
   end if;
 
+  -- Like v1, the deleted_listings record is kept as history.
   update public.listings
   set status = 'published', deleted_by = null, deleted_at = null
   where id = p_listing_id and status = 'archived';
@@ -443,8 +480,6 @@ begin
   if not found then
     raise exception 'Archived listing not found.' using errcode = 'P0002';
   end if;
-
-  delete from public.deleted_listings where original_listing_id = p_listing_id;
 end;
 $$;
 

@@ -9,7 +9,8 @@ insert into public.profiles (id, email, full_name, role) values
   ('00000000-0000-0000-0000-00000000000a', 'admin@test.local', 'Test Admin', 'admin'),
   ('00000000-0000-0000-0000-0000000000b1', 'student1@test.local', 'Student One', 'user'),
   ('00000000-0000-0000-0000-0000000000b2', 'student2@test.local', 'Student Two', 'user')
-on conflict do nothing;
+-- v1's on_auth_user_created trigger already created these rows.
+on conflict (id) do update set role = excluded.role, full_name = excluded.full_name;
 
 insert into public.listings (id, name, address, accommodation_type, exclusivity, monthly_rental_label, monthly_rent_min, monthly_rent_max, status) values
   ('10000000-0000-0000-0000-000000000001', 'Fixture Range BH', 'Guadalupe, Baybay City', 'Boarding house', 'Mixed', '₱1,000-1,999', 1000, 1999, 'active'),

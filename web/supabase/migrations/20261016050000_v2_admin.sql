@@ -71,7 +71,8 @@ left join lateral (
   limit 1
 ) cover on true;
 
-grant select on public.listing_rows to anon, authenticated;
+revoke all on public.listing_rows from anon;
+grant select on public.listing_rows to authenticated;
 
 -- ---------------------------------------------------------------------------
 -- Duplicate detection: same normalised name, different email.

@@ -34,7 +34,7 @@ select tests.expect_count($$select count(*) from public.profiles where id = '000
 
 select tests.logout();
 set local role anon;
-select tests.expect_count($$select count(*) from public.listing_rows where id::text like '20000000%'$$, 2, 'anon listing_rows published only');
+select tests.expect_error($$select count(*) from public.listing_rows$$, '%permission denied%');
 reset role;
 
 -- Admin overview numbers

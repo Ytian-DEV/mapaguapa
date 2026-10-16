@@ -24,7 +24,8 @@ insert into auth.users (id, email, raw_user_meta_data) values
 
 -- Anonymous visitors and students only see published listings
 set local role anon;
-select tests.expect_count($$select count(*) from public.listings$$, 4, 'anon sees published only');
+select tests.expect_count($$select count(*) from public.listings$$, 0, 'signed-out visitors see nothing (as in v1)');
+select tests.expect_error($$select count(*) from public.profile_cards$$, '%permission denied%');
 reset role;
 select tests.login('00000000-0000-0000-0000-0000000000b1');
 set local role authenticated;
@@ -102,7 +103,8 @@ set local role authenticated;
 select public.archive_listing('10000000-0000-0000-0000-000000000003', 'closed');
 reset role;
 select tests.expect_count($$select count(*) from public.listings where id = '10000000-0000-0000-0000-000000000003' and status = 'archived' and deleted_at is not null$$, 1, 'archived');
-select tests.expect_count($$select count(*) from public.deleted_listings where original_listing_id = '10000000-0000-0000-0000-000000000003'$$, 1, 'archive snapshot');
+select tests.expect_count($$select count(*) from public.deleted_listings where original_listing_id = '10000000-0000-0000-0000-000000000003'
+  and listing_snapshot ? 'listing' and listing_snapshot ? 'photos' and listing_snapshot #>> '{listing,status}' = 'published'$$, 1, 'archive snapshot keeps v1 {listing, photos} shape');
 
 select tests.login('00000000-0000-0000-0000-0000000000c1');
 set local role authenticated;
@@ -114,7 +116,7 @@ set local role authenticated;
 select public.restore_listing('10000000-0000-0000-0000-000000000003');
 insert into public.listings (id, name, address, accommodation_type, monthly_rental_label, status)
 values ('30000000-0000-0000-0000-000000000001', 'v1 admin insert', 'Baybay', 'Boarding house', '₱2,000-2,999', 'active');
-select tests.expect_count($$select count(*) from public.deleted_listings$$, 0, 'admin reads archive; restore removed record');
+select tests.expect_count($$select count(*) from public.deleted_listings$$, 1, 'admin reads archive; restore keeps the record (v1 behaviour)');
 reset role;
 select tests.expect_count($$select count(*) from public.listings where id = '10000000-0000-0000-0000-000000000003' and status = 'published'$$, 1, 'restored');
 select tests.expect_count($$select count(*) from public.listings where id = '30000000-0000-0000-0000-000000000001' and status = 'published' and price_band = '2000_2999'$$, 1, 'v1 active insert mapped');
