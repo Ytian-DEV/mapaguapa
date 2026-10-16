@@ -63,9 +63,9 @@ Gates before the last commit of each feature (from `web/`): `npm run lint`, `npm
 
 ## 6. `feature/listing-detail-v2`
 - [x] feat(listing): detail route, gallery and show-all-photos
-- [ ] feat(listing): key facts, about, amenities, bills and fees
-- [ ] feat(listing): house rules, safety badges, location map
-- [ ] feat(listing): sticky contact card and verified badge
+- [x] feat(listing): key facts, about, amenities, bills and fees
+- [x] feat(listing): house rules, safety badges, location map
+- [x] feat(listing): sticky contact card and verified badge
 - [ ] feat(listing): report listing link; remove v1 user page; merge
 
 ## 7. `feature/messaging`
