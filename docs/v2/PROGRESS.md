@@ -2,7 +2,7 @@
 
 **Current branch:** `feature/student-browse`
 **Status:** Features 1–3 merged into develop. Migrations tested locally, NOT applied to Supabase (see docs/v2/DB.md).
-**Next step:** Write browse service (web/src/features/browse/browseApi.ts).
+**Next step:** Build browse page header, search, filters, chips, grid.
 
 Resume protocol: read this file → `git status` → check out the branch above → finish uncommitted work → continue from the first unchecked item.
 
@@ -48,7 +48,7 @@ Gates before the last commit of each feature (from `web/`): `npm run lint`, `npm
 
 ## 4. `feature/student-browse`
 - [x] chore(db): exclusivity group, curfew flag and VSU distance for browse filters
-- [ ] feat(browse): browse service with server-side filters and price bands
+- [x] feat(browse): browse service with server-side filters and price bands
 - [ ] feat(browse): top nav, header, search and filter selects
 - [ ] feat(browse): quick chips and result count
 - [ ] feat(browse): listing card grid with show-more pagination
