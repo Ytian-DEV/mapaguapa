@@ -1,8 +1,8 @@
 # MAPAGUAPA v2 — Progress
 
-**Current branch:** `develop`
+**Current branch:** `feature/owner-portal`
 **Status:** Features 1–7 merged into develop. Migrations tested locally, NOT applied to Supabase (applied on deploy day; no staging). UI verified with dev fixtures (/dev/browse, /dev/listing, /dev/messages).
-**Next step:** Start feature/owner-portal from develop (frame O1).
+**Next step:** Build owner data context + Overview page (frame O1).
 
 Resume protocol: read this file → `git status` → check out the branch above → finish uncommitted work → continue from the first unchecked item.
 
@@ -78,7 +78,8 @@ Gates before the last commit of each feature (from `web/`): `npm run lint`, `npm
 - [x] feat(messaging): block and report; merge
 
 ## 8. `feature/owner-portal`
-- [ ] feat(owner): owner layout and sidebar
+- [x] chore(db): listing views, owner_overview() and draft_step (migration 6)
+- [x] feat(owner): owner layout and sidebar
 - [ ] feat(owner): overview stats, listings, inquiries, visits, reminder
 - [ ] feat(owner): my listings page
 - [ ] feat(owner): verification upload
