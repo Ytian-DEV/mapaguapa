@@ -21,7 +21,7 @@ type TopNavProps = {
 };
 
 /** Student top navigation (Components 2-41). Collapses into a drawer below 768px. */
-export function TopNav({ links, savedCount = 0, user, onSignOut, profileTo = "/profile", signedOutActions }: TopNavProps) {
+export function TopNav({ links, savedCount = 0, user, onSignOut, profileTo, signedOutActions }: TopNavProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -66,7 +66,7 @@ export function TopNav({ links, savedCount = 0, user, onSignOut, profileTo = "/p
               </Link>
               <Menu
                 items={[
-                  { key: "profile", label: "Profile", icon: <User />, onSelect: () => navigate(profileTo) },
+                  ...(profileTo ? [{ key: "profile", label: "Profile", icon: <User />, onSelect: () => navigate(profileTo) }] : []),
                   { key: "signout", label: "Sign out", icon: <LogOut />, onSelect: () => onSignOut?.() },
                 ]}
                 label="Account menu"

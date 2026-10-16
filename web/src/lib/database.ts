@@ -341,6 +341,7 @@ export type Database = {
           rooms_total: number | null;
           room_types: Json;
           price_band: string | null;
+          exclusivity_group: string | null;
         };
         Insert: {
           id?: string;
@@ -425,6 +426,7 @@ export type Database = {
           rooms_total?: number | null;
           room_types?: Json;
           price_band?: string | null;
+          exclusivity_group?: string | null;
         };
         Update: {
           id?: string;
@@ -509,6 +511,7 @@ export type Database = {
           rooms_total?: number | null;
           room_types?: Json;
           price_band?: string | null;
+          exclusivity_group?: string | null;
         };
         Relationships: [
           {
@@ -972,6 +975,18 @@ export type Database = {
           archived_at: string | null;
           location_lat: number | null;
           location_lng: number | null;
+          distance_km: number | null;
+          exclusivity_group: string | null;
+          curfew: string | null;
+          has_curfew: boolean | null;
+          has_wifi: boolean | null;
+          has_study_area: boolean | null;
+          has_laundry_area: boolean | null;
+          has_parking_area: boolean | null;
+          has_common_kitchen: boolean | null;
+          has_aircon: boolean | null;
+          pets_allowed: boolean | null;
+          visitors_allowed: boolean | null;
           photo_count: number | null;
           cover_bucket: string | null;
           cover_path: string | null;

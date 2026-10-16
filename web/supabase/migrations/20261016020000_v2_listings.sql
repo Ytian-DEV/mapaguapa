@@ -42,13 +42,15 @@ alter table public.listings
   add column if not exists advance_deposit text,
   add column if not exists rooms_total integer,
   add column if not exists room_types jsonb not null default '[]'::jsonb,
-  add column if not exists price_band text;
+  add column if not exists price_band text,
+  add column if not exists exclusivity_group text;
 
 comment on column public.listings.owner_id is 'Owner account that manages this listing; null for admin-created listings.';
 comment on column public.listings.review_note is 'Admin note shown to the owner when changes are requested.';
 comment on column public.listings.rent_exact is 'Monthly rent per person in PHP. Drives price_band and the v1 rent columns.';
 comment on column public.listings.advance_deposit is 'Advance/deposit terms, e.g. "1 month advance + 1 month deposit".';
 comment on column public.listings.room_types is 'Array of {label, capacity, rent, available} for listings with mixed room prices.';
+comment on column public.listings.exclusivity_group is 'ladies | men | mixed, derived from the free-text exclusivity. Used by filters.';
 comment on column public.listings.price_band is 'under_1000 | 1000_1999 | 2000_2999 | 3000_plus. Derived; do not write directly.';
 
 do $$
@@ -77,7 +79,8 @@ begin
         or pg_get_constraintdef(con.oid) ilike '%price_band%'
         or pg_get_constraintdef(con.oid) ilike '%rent_exact%'
         or pg_get_constraintdef(con.oid) ilike '%room_types%'
-        or pg_get_constraintdef(con.oid) ilike '%rooms_total%')
+        or pg_get_constraintdef(con.oid) ilike '%rooms_total%'
+        or pg_get_constraintdef(con.oid) ilike '%exclusivity_group%')
   loop
     execute format('alter table public.listings drop constraint %I', v_constraint.conname);
   end loop;
@@ -96,7 +99,8 @@ alter table public.listings
     check (price_band is null or price_band in ('under_1000', '1000_1999', '2000_2999', '3000_plus')),
   add constraint listings_rent_exact_check check (rent_exact is null or rent_exact >= 0),
   add constraint listings_rooms_total_check check (rooms_total is null or rooms_total >= 0),
-  add constraint listings_room_types_check check (jsonb_typeof(room_types) = 'array');
+  add constraint listings_room_types_check check (jsonb_typeof(room_types) = 'array'),
+  add constraint listings_exclusivity_group_check check (exclusivity_group is null or exclusivity_group in ('ladies', 'men', 'mixed'));
 
 -- ---------------------------------------------------------------------------
 -- Price band helpers
@@ -148,6 +152,19 @@ $$;
 -- ---------------------------------------------------------------------------
 -- Derive pricing columns (runs for everyone, before the guard)
 -- ---------------------------------------------------------------------------
+-- Groups the v1 free-text exclusivity ("Ladies only", "Female", "Co-ed", ...).
+create or replace function app.exclusivity_group_of(p_value text) returns text
+language sql immutable
+as $$
+  select case
+    when p_value is null or btrim(p_value) = '' then null
+    when p_value ~* '(mix|co-?ed|both|any|all gender|male\s*(and|&|/)\s*female)' then 'mixed'
+    when p_value ~* '(lad(y|ies)|female|wom[ae]n|girl)' then 'ladies'
+    when p_value ~* '(\mmen\M|\mmale|boy|gent)' then 'men'
+    else null
+  end
+$$;
+
 create or replace function app.listings_derive_price() returns trigger
 language plpgsql
 as $$
@@ -175,6 +192,7 @@ begin
     new.monthly_rental_label := coalesce(nullif(new.monthly_rental_label, ''), app.price_band_label(new.price_band), 'Not specified');
   end if;
 
+  new.exclusivity_group := app.exclusivity_group_of(new.exclusivity);
   return new;
 end;
 $$;
@@ -185,7 +203,7 @@ before insert or update on public.listings
 for each row execute function app.listings_derive_price();
 
 -- Backfill bands for existing rows (fires the derive trigger).
-update public.listings set price_band = null where price_band is null;
+update public.listings set price_band = null where price_band is null or (exclusivity_group is null and exclusivity is not null);
 
 -- ---------------------------------------------------------------------------
 -- Workflow guard (runs after pricing; trigger names sort alphabetically)
@@ -288,6 +306,7 @@ for each row execute function app.listings_guard();
 
 create index if not exists listings_owner_id_idx on public.listings(owner_id);
 create index if not exists listings_status_price_band_idx on public.listings(status, price_band);
+create index if not exists listings_status_exclusivity_group_idx on public.listings(status, exclusivity_group);
 create index if not exists listings_status_updated_at_idx on public.listings(status, updated_at desc);
 create index if not exists listings_location_idx on public.listings(location_lat, location_lng) where status = 'published';
 

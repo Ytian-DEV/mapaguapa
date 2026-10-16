@@ -10,6 +10,15 @@ select tests.expect_count($$select count(*) from public.listings where id = '100
 select tests.expect_count($$select count(*) from public.listings where id = '10000000-0000-0000-0000-000000000003' and price_band = '3000_plus'$$, 1, 'band from min only');
 select tests.expect_count($$select count(*) from public.listings where id = '10000000-0000-0000-0000-000000000004' and price_band = '2000_2999'$$, 1, 'band from label only');
 
+-- Exclusivity grouping from v1 free text
+select tests.expect_count($$select count(*) from public.listings where id = '10000000-0000-0000-0000-000000000002' and exclusivity_group = 'ladies'$$, 1, 'Ladies only -> ladies');
+select tests.expect_count($$select count(*) from public.listings where id = '10000000-0000-0000-0000-000000000003' and exclusivity_group = 'men'$$, 1, 'Men only -> men');
+select tests.expect_count($$select count(*) from public.listings where id = '10000000-0000-0000-0000-000000000001' and exclusivity_group = 'mixed'$$, 1, 'Mixed -> mixed');
+select tests.expect_count($$select count(*) from (values
+  ('Female only', 'ladies'), ('Women', 'ladies'), ('Male only', 'men'), ('Boys', 'men'),
+  ('Co-ed', 'mixed'), ('Male and Female', 'mixed'), ('', null), ('Family', null)
+) v(input, expected) where app.exclusivity_group_of(input) is distinct from expected$$, 0, 'exclusivity grouping rules');
+
 -- rent_exact drives band, min/max and label (room types widen the range)
 update public.listings
 set rent_exact = 2800, room_types = '[{"label":"Room for 2","capacity":2,"rent":3000,"available":1},{"label":"Room for 4","capacity":4,"rent":2800,"available":1}]'

@@ -1,8 +1,8 @@
 # MAPAGUAPA v2 — Progress
 
-**Current branch:** `develop`
+**Current branch:** `feature/student-browse`
 **Status:** Features 1–3 merged into develop. Migrations tested locally, NOT applied to Supabase (see docs/v2/DB.md).
-**Next step:** Start feature/student-browse from develop (frame 02: search, filters, chips, card grid, show more, saved).
+**Next step:** Merge feature/student-browse, then start feature/map-v2.
 
 Resume protocol: read this file → `git status` → check out the branch above → finish uncommitted work → continue from the first unchecked item.
 
@@ -47,12 +47,13 @@ Gates before the last commit of each feature (from `web/`): `npm run lint`, `npm
 - [x] fix(auth): balance sign-in columns on wide screens (branch fix/auth-layout-balance)
 
 ## 4. `feature/student-browse`
-- [ ] feat(browse): browse service with server-side filters and price bands
-- [ ] feat(browse): top nav, header, search and filter selects
-- [ ] feat(browse): quick chips and result count
-- [ ] feat(browse): listing card grid with show-more pagination
-- [ ] feat(browse): saved listings (heart) and /saved page
-- [ ] feat(browse): mobile layout; merge
+- [x] chore(db): exclusivity group, curfew flag and VSU distance for browse filters
+- [x] feat(browse): browse service with server-side filters and price bands
+- [x] feat(browse): top nav, header, search and filter selects
+- [x] feat(browse): quick chips and result count
+- [x] feat(browse): listing card grid with show-more pagination
+- [x] feat(browse): saved listings (heart) and /saved page
+- [x] feat(browse): mobile layout; merge
 
 ## 5. `feature/map-v2`
 - [ ] feat(map): switch tile provider with env key
