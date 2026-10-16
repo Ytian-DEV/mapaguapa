@@ -2,7 +2,7 @@
 
 **Current branch:** `feature/admin-users`
 **Status:** Features 1–12 merged into develop. 6 migrations tested locally, NOT applied to Supabase (deploy day; no staging). v1 admin console at /admin/legacy (users only) until feature 13. UI verified with dev fixtures under /dev/*.
-**Next step:** Users table view (frame A4) on top of usersApi
+**Next step:** Remove the v1 admin console (/admin/legacy) and usePointerGlow; merge
 
 Resume protocol: read this file → `git status` → check out the branch above → finish uncommitted work → continue from the first unchecked item.
 
@@ -114,9 +114,9 @@ Gates before the last commit of each feature (from `web/`): `npm run lint`, `npm
 - [x] feat(admin): owner verification approvals; merge
 
 ## 13. `feature/admin-users`
-- [ ] feat(admin): users table, search, role tabs, server pagination
-- [ ] feat(admin): row menu with confirm dialogs (role, deactivate)
-- [ ] feat(admin): duplicate flag and merge
+- [x] feat(admin): users table, search, role tabs, server pagination
+- [x] feat(admin): row menu with confirm dialogs (role, deactivate)
+- [x] feat(admin): duplicate flag and merge
 - [ ] chore(admin): remove v1 admin page; merge
 
 ## 14. `feature/reports`

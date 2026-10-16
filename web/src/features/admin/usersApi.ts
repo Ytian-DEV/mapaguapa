@@ -36,6 +36,30 @@ export function userFiltersToParams(filters: UserFilters) {
   return params;
 }
 
+// ---------------------------------------------------------------------------
+// Display helpers
+// ---------------------------------------------------------------------------
+const dateFmt = new Intl.DateTimeFormat("en-PH", { month: "short", day: "numeric", year: "numeric" });
+const shortFmt = new Intl.DateTimeFormat("en-PH", { month: "short", day: "numeric" });
+
+export function joinedLabel(iso: string | null) {
+  return iso ? dateFmt.format(new Date(iso)) : "—";
+}
+
+export function lastActiveLabel(iso: string | null) {
+  if (!iso) return "Never";
+  const date = new Date(iso);
+  const days = Math.floor((Date.now() - date.getTime()) / 86_400_000);
+  if (days < 1 && date.toDateString() === new Date().toDateString()) return "Today";
+  if (days < 2) return "Yesterday";
+  if (days < 7) return `${days} days ago`;
+  return shortFmt.format(date);
+}
+
+export function roleOf(user: AdminUser): Role {
+  return user.role === "admin" || user.role === "owner" ? user.role : "student";
+}
+
 function client() {
   if (!supabase) throw new Error("Supabase is not configured.");
   return supabase;
