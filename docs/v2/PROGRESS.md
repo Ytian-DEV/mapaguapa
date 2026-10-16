@@ -2,7 +2,7 @@
 
 **Current branch:** `develop`
 **Status:** Features 1–5 merged into develop. Migrations tested locally, NOT applied to Supabase (see docs/v2/DB.md). Student pages verified with dev fixtures at /dev/browse. Maps use OSM tiles until VITE_MAPTILER_KEY is set.
-**Next step:** Start feature/listing-detail-v2 from develop (frame 03).
+**Next step:** x
 
 Resume protocol: read this file → `git status` → check out the branch above → finish uncommitted work → continue from the first unchecked item.
 
@@ -62,7 +62,7 @@ Gates before the last commit of each feature (from `web/`): `npm run lint`, `npm
 - [x] feat(map): map on browse (desktop split, mobile toggle) and /map; merge
 
 ## 6. `feature/listing-detail-v2`
-- [ ] feat(listing): detail route, gallery and show-all-photos
+- [x] feat(listing): detail route, gallery and show-all-photos
 - [ ] feat(listing): key facts, about, amenities, bills and fees
 - [ ] feat(listing): house rules, safety badges, location map
 - [ ] feat(listing): sticky contact card and verified badge
