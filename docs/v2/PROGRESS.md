@@ -1,6 +1,6 @@
 # MAPAGUAPA v2 — Progress
 
-**Current branch:** `fix/auth-layout-balance`
+**Current branch:** `develop`
 **Status:** Features 1–3 merged into develop. Migrations tested locally, NOT applied to Supabase (see docs/v2/DB.md).
 **Next step:** Start feature/student-browse from develop (frame 02: search, filters, chips, card grid, show more, saved).
 
