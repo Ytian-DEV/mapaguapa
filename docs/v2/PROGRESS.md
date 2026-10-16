@@ -1,8 +1,8 @@
 # MAPAGUAPA v2 — Progress
 
-**Current branch:** `feature/auth-v2`
-**Status:** Features 1–2 merged into develop. Migrations written and tested locally, NOT applied to Supabase (see docs/v2/DB.md).
-**Next step:** Merge feature/auth-v2, then start feature/student-browse.
+**Current branch:** `develop`
+**Status:** Features 1–3 merged into develop. Migrations tested locally, NOT applied to Supabase (see docs/v2/DB.md).
+**Next step:** Start feature/student-browse from develop (frame 02: search, filters, chips, card grid, show more, saved).
 
 Resume protocol: read this file → `git status` → check out the branch above → finish uncommitted work → continue from the first unchecked item.
 
