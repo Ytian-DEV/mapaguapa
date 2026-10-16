@@ -20,6 +20,8 @@
   --color-clay: #b85433;
   --color-clay-tint: #f6e6de;
   --color-on-dark: #f5f2ec;
+  --color-ink-hover: #070d0a;
+  --color-danger-hover: #7f2516;
 
   /* Status tones: background / foreground / dot */
   --tone-green-bg: #e3ebe2;
