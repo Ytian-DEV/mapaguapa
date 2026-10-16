@@ -2,7 +2,7 @@
 
 **Current branch:** `develop`
 **Status:** Features 1–10 merged into develop. 6 migrations tested locally, NOT applied to Supabase (deploy day; no staging). v1 admin console at /admin/legacy until features 11–13 replace it. UI verified with dev fixtures under /dev/*.
-**Next step:** Start feature/admin-listings from develop (frame A2).
+**Next step:** Merge feature/admin-listings, then start feature/admin-review-queue.
 
 Resume protocol: read this file → `git status` → check out the branch above → finish uncommitted work → continue from the first unchecked item.
 
@@ -100,11 +100,11 @@ Gates before the last commit of each feature (from `web/`): `npm run lint`, `npm
 - [x] feat(admin): recent activity and listings by price range; merge
 
 ## 11. `feature/admin-listings`
-- [ ] feat(admin): listings table with status tabs and server pagination
-- [ ] feat(admin): search and filters
-- [ ] feat(admin): bulk archive (password re-entry) and CSV export
-- [ ] feat(admin): restore from archive; wire wizard create/edit
-- [ ] chore(admin): remove v1 admin listing/archive pages; merge
+- [x] feat(admin): listings table with status tabs and server pagination
+- [x] feat(admin): search and filters
+- [x] feat(admin): bulk archive (password re-entry) and CSV export
+- [x] feat(admin): restore from archive; wire wizard create/edit
+- [x] chore(admin): v1 listing/archive pages retired (sidebar points to v2; the whole v1 console at /admin/legacy is deleted in feature 13); merge
 
 ## 12. `feature/admin-review-queue`
 - [ ] feat(admin): review queue with next/previous navigator
