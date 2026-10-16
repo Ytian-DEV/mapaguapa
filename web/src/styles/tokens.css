@@ -55,6 +55,7 @@
   --pin-active-bg: var(--color-forest);
   --pin-active-fg: var(--color-on-dark);
   --map-water: #bfd9cf;
+  --map-bg: #e7ece4;
 
   /* Auth panel illustration (frame 01) */
   --art-bg: var(--color-forest);
