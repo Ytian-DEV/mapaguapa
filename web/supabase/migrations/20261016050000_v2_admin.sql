@@ -22,6 +22,28 @@ create index if not exists listings_area_idx on public.listings(app.area_of(addr
 create index if not exists listings_name_trgm_idx on public.listings using gin (lower(name) extensions.gin_trgm_ops);
 
 -- ---------------------------------------------------------------------------
+-- VSU Main Campus (Baybay City) and straight-line distance in km.
+-- ---------------------------------------------------------------------------
+create or replace function app.vsu_distance_km(p_lat double precision, p_lng double precision) returns double precision
+language sql immutable
+as $$
+  select case
+    when p_lat is null or p_lng is null then null
+    else 6371 * 2 * asin(sqrt(
+      power(sin(radians(p_lat - 10.7446) / 2), 2)
+      + cos(radians(10.7446)) * cos(radians(p_lat)) * power(sin(radians(p_lng - 124.7928) / 2), 2)
+    ))
+  end
+$$;
+
+-- "No curfew" filter: empty or explicitly none.
+create or replace function app.has_curfew(p_curfew text) returns boolean
+language sql immutable
+as $$
+  select p_curfew is not null and btrim(p_curfew) <> '' and p_curfew !~* '^\s*(no(ne)?|n/?a|wala|no curfew|none\.?)\s*$'
+$$;
+
+-- ---------------------------------------------------------------------------
 -- listing_rows: one row per visible listing for tables and cards.
 -- security_invoker so listings/photos RLS still decides what the caller sees.
 -- ---------------------------------------------------------------------------
@@ -55,6 +77,18 @@ select
   l.deleted_at as archived_at,
   l.location_lat,
   l.location_lng,
+  app.vsu_distance_km(l.location_lat, l.location_lng) as distance_km,
+  l.exclusivity_group,
+  l.curfew,
+  app.has_curfew(l.curfew) as has_curfew,
+  l.has_wifi,
+  l.has_study_area,
+  l.has_laundry_area,
+  l.has_parking_area,
+  l.has_common_kitchen,
+  l.has_aircon,
+  l.pets_allowed,
+  l.visitors_allowed,
   coalesce(photos.photo_count, 0)::integer as photo_count,
   cover.storage_bucket as cover_bucket,
   cover.storage_path as cover_path
@@ -437,4 +471,5 @@ grant execute on function public.admin_set_active(uuid, boolean) to authenticate
 grant execute on function public.admin_merge_users(uuid, uuid) to authenticated;
 grant execute on function public.similar_listings(uuid) to authenticated;
 grant execute on function public.touch_last_active() to authenticated;
-grant execute on function app.area_of(text), app.normalised_name(text) to anon, authenticated, service_role;
+grant execute on function app.area_of(text), app.normalised_name(text), app.vsu_distance_km(double precision, double precision),
+  app.has_curfew(text) to anon, authenticated, service_role;

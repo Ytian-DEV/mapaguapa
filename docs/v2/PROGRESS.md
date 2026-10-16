@@ -1,8 +1,8 @@
 # MAPAGUAPA v2 — Progress
 
-**Current branch:** `develop`
+**Current branch:** `feature/student-browse`
 **Status:** Features 1–3 merged into develop. Migrations tested locally, NOT applied to Supabase (see docs/v2/DB.md).
-**Next step:** Start feature/student-browse from develop (frame 02: search, filters, chips, card grid, show more, saved).
+**Next step:** Write browse service (web/src/features/browse/browseApi.ts).
 
 Resume protocol: read this file → `git status` → check out the branch above → finish uncommitted work → continue from the first unchecked item.
 
@@ -47,6 +47,7 @@ Gates before the last commit of each feature (from `web/`): `npm run lint`, `npm
 - [x] fix(auth): balance sign-in columns on wide screens (branch fix/auth-layout-balance)
 
 ## 4. `feature/student-browse`
+- [x] chore(db): exclusivity group, curfew flag and VSU distance for browse filters
 - [ ] feat(browse): browse service with server-side filters and price bands
 - [ ] feat(browse): top nav, header, search and filter selects
 - [ ] feat(browse): quick chips and result count

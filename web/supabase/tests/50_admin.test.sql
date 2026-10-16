@@ -28,6 +28,10 @@ select tests.expect_error($$select * from public.similar_listings('20000000-0000
 -- listing_rows respects RLS: owner sees own in-review + all published
 select tests.expect_count($$select count(*) from public.listing_rows where id::text like '20000000%'$$, 3, 'owner listing_rows');
 select tests.expect_count($$select count(*) from public.listing_rows where id = '20000000-0000-0000-0000-000000000002' and photo_count = 2 and cover_path = 'owner/b.jpg' and owner_name = 'Owner One' and area = 'Guadalupe'$$, 1, 'listing_rows fields');
+select tests.expect_count($$select count(*) from (values ('10 PM', true), ('None', false), ('no curfew', false), ('', false), (null, false), ('N/A', false)) v(c, e) where app.has_curfew(c) is distinct from e$$, 0, 'curfew flag rules');
+select tests.expect_count($$select count(*) from public.listing_rows where distance_km is not null$$, 0, 'no coordinates -> no distance');
+select tests.expect_count($$select round(app.vsu_distance_km(10.7446, 124.7928)::numeric, 3)::bigint$$, 0, 'distance at VSU is 0');
+select tests.expect_count($$select round(app.vsu_distance_km(10.7536, 124.7928)::numeric)::bigint$$, 1, '0.009 deg north is about 1 km');
 select public.touch_last_active();
 reset role;
 select tests.expect_count($$select count(*) from public.profiles where id = '00000000-0000-0000-0000-0000000000c1' and last_active_at is not null$$, 1, 'last active recorded');
