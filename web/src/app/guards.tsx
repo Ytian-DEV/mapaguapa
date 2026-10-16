@@ -1,18 +1,18 @@
 import type { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import type { Profile } from "../lib/models";
+import type { Role } from "../lib/domain";
 import { useAuth } from "./AuthProvider";
 import { FullPageLoader } from "./FullPageLoader";
 
-type AppRole = Profile["role"];
-
 /** Where each role lands after sign-in. */
-export function homeFor(role: AppRole | null | undefined) {
-  return role === "admin" ? "/admin" : "/";
+export function homeFor(role: string | null | undefined) {
+  if (role === "admin") return "/admin";
+  if (role === "owner") return "/owner";
+  return "/";
 }
 
-/** Renders children only for signed-in users with one of `roles`; otherwise redirects. */
-export function RequireRole({ roles, children }: { roles: AppRole[]; children: ReactNode }) {
+/** Signed-in users with one of `roles` only; others go to sign-in or their own home. */
+export function RequireRole({ roles, children }: { roles: Role[]; children: ReactNode }) {
   const { profile, loading } = useAuth();
   const location = useLocation();
 
@@ -21,11 +21,30 @@ export function RequireRole({ roles, children }: { roles: AppRole[]; children: R
   }
 
   if (!profile) {
-    return <Navigate replace state={{ from: location.pathname }} to="/" />;
+    const from = location.pathname + location.search;
+    return <Navigate replace state={{ from }} to={`/sign-in${from && from !== "/" ? `?next=${encodeURIComponent(from)}` : ""}`} />;
   }
 
-  if (!roles.includes(profile.role)) {
+  if (!roles.includes(profile.role as Role)) {
     return <Navigate replace to={homeFor(profile.role)} />;
+  }
+
+  return <>{children}</>;
+}
+
+/** Sign-in / sign-up screens: already signed-in users go straight to their home. */
+export function PublicOnly({ children }: { children: ReactNode }) {
+  const { profile, loading } = useAuth();
+  const location = useLocation();
+
+  if (loading) {
+    return <FullPageLoader />;
+  }
+
+  if (profile) {
+    const next = new URLSearchParams(location.search).get("next");
+    const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : null;
+    return <Navigate replace to={safeNext ?? homeFor(profile.role)} />;
   }
 
   return <>{children}</>;

@@ -141,6 +141,20 @@ begin
     return new;
   end if;
 
+  -- One-shot permission set by public.become_owner() for its own update.
+  if tg_op = 'UPDATE' and coalesce(current_setting('app.owner_upgrade', true), '') = 'on' then
+    perform set_config('app.owner_upgrade', 'off', true);
+    if old.role = 'student' and new.role = 'owner' and new.id = auth.uid()
+      and new.is_active is not distinct from old.is_active
+      and new.verified_owner_at is not distinct from old.verified_owner_at
+      and new.deactivated_at is not distinct from old.deactivated_at
+      and new.merged_into is not distinct from old.merged_into
+      and new.email is not distinct from old.email then
+      new.updated_at := now();
+      return new;
+    end if;
+  end if;
+
   if tg_op = 'INSERT' then
     if new.id is distinct from auth.uid() then
       raise exception 'You can only create your own profile.' using errcode = '42501';
@@ -177,6 +191,36 @@ drop trigger if exists profiles_guard on public.profiles;
 create trigger profiles_guard
 before insert or update on public.profiles
 for each row execute function app.profiles_guard();
+
+-- ---------------------------------------------------------------------------
+-- Google sign-ups can't carry the "I own a place" choice through the OAuth
+-- redirect, so a brand-new student account may switch itself to owner once.
+-- Owners still can't publish without admin review.
+-- ---------------------------------------------------------------------------
+create or replace function public.become_owner() returns void
+language plpgsql security definer set search_path = public, pg_temp
+as $$
+declare
+  v_profile public.profiles;
+begin
+  select * into v_profile from public.profiles where id = auth.uid() and is_active;
+  if not found then
+    raise exception 'You must be signed in.' using errcode = '42501';
+  end if;
+  if v_profile.role = 'owner' then
+    return;
+  end if;
+  if v_profile.role <> 'student' or v_profile.created_at < now() - interval '24 hours' then
+    raise exception 'Ask an admin to switch your account to an owner account.' using errcode = '42501';
+  end if;
+
+  perform set_config('app.owner_upgrade', 'on', true);
+  update public.profiles set role = 'owner' where id = v_profile.id;
+end;
+$$;
+
+revoke all on function public.become_owner() from public, anon;
+grant execute on function public.become_owner() to authenticated;
 
 -- ---------------------------------------------------------------------------
 -- Create the profile when the auth user is created

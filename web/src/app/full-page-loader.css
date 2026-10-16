@@ -1,0 +1,40 @@
+.app-loader {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: var(--space-5);
+  min-height: 100dvh;
+}
+
+.app-loader__bar {
+  width: 120px;
+  height: 3px;
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  background: var(--color-paper-2);
+}
+
+.app-loader__bar::after {
+  content: "";
+  display: block;
+  width: 40%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-forest);
+  animation: app-loader-slide 1.1s var(--ease) infinite;
+}
+
+@keyframes app-loader-slide {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-loader__bar::after {
+    animation: none;
+  }
+}

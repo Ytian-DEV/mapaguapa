@@ -46,6 +46,26 @@ select tests.expect_count($$select count(*) from public.profiles where id = '000
 -- Re-running the auth insert upsert keeps the role and fills missing names
 select tests.expect_count($$select count(*) from public.profiles where id = '00000000-0000-0000-0000-0000000000c1' and role = 'owner'$$, 1, 'owner role kept');
 
+-- become_owner(): only for new student accounts, only role changes
+select tests.login('00000000-0000-0000-0000-0000000000b3');
+set local role authenticated;
+select public.become_owner();
+select tests.expect_count($$select count(*) from public.profiles where id = '00000000-0000-0000-0000-0000000000b3' and role = 'owner'$$, 1, 'new student became owner');
+select public.become_owner();
+-- the one-shot permission does not leak into a later update
+select tests.expect_error($$update public.profiles set role = 'admin' where id = '00000000-0000-0000-0000-0000000000b3'$$, '%Only an admin%');
+reset role;
+update public.profiles set created_at = now() - interval '3 days' where id = '00000000-0000-0000-0000-0000000000b2';
+select tests.login('00000000-0000-0000-0000-0000000000b2');
+set local role authenticated;
+select tests.expect_error($$select public.become_owner()$$, '%Ask an admin%');
+reset role;
+select tests.login('00000000-0000-0000-0000-00000000000a');
+set local role authenticated;
+select tests.expect_error($$select public.become_owner()$$, '%Ask an admin%');
+reset role;
+select tests.expect_count($$select count(*) from public.profiles where id = '00000000-0000-0000-0000-00000000000a' and role = 'admin'$$, 1, 'admin not downgraded');
+
 -- Admin can change roles.
 select tests.login('00000000-0000-0000-0000-00000000000a');
 set local role authenticated;

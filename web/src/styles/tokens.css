@@ -20,6 +20,9 @@
   --color-clay: #b85433;
   --color-clay-tint: #f6e6de;
   --color-on-dark: #f5f2ec;
+  --color-on-dark-muted: rgba(245, 242, 236, 0.82);
+  --color-on-dark-faint: rgba(245, 242, 236, 0.66);
+  --color-on-dark-line: rgba(245, 242, 236, 0.16);
   --color-ink-hover: #070d0a;
   --color-danger-hover: #84301f;
   --color-row-selected: #f6f9f5;
@@ -52,6 +55,14 @@
   --pin-active-bg: var(--color-forest);
   --pin-active-fg: var(--color-on-dark);
   --map-water: #bfd9cf;
+
+  /* Auth panel illustration (frame 01) */
+  --art-bg: var(--color-forest);
+  --art-block: #255541;
+  --art-road: #3a6a52;
+  --art-river: #2c5b46;
+  --art-pin-halo: rgba(20, 32, 26, 0.35);
+  --art-pin: var(--color-clay);
 
   /* Typography */
   --font-heading: "Fraunces Variable", "Fraunces", Georgia, serif;
