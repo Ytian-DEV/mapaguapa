@@ -861,7 +861,7 @@ export default function MapaguapaAdminPage({ onNavigateAbout, onSignOut, profile
 
       if (section === "add") {
         const { data, error: insertError } = await ((client.from("listings") as any)
-          .insert({ ...payload, status: "active" })
+          .insert({ ...payload, status: "published" })
           .select("id, name")
           .single());
 
@@ -883,7 +883,7 @@ export default function MapaguapaAdminPage({ onNavigateAbout, onSignOut, profile
         setPendingPhotos([]);
         setSection("edit");
       } else if (section === "edit" && selectedListing) {
-        if (selectedListing.status !== "active") {
+        if (selectedListing.status === "archived") {
           setError("Archived listings cannot be edited from this page. Restore it first from the archive section.");
           await loadDashboard();
           return;
@@ -891,7 +891,7 @@ export default function MapaguapaAdminPage({ onNavigateAbout, onSignOut, profile
 
         const { error: updateError } = await ((client.from("listings") as any)
           .update(payload)
-          .eq("status", "active")
+          .eq("status", "published")
           .eq("id", selectedListing.id));
 
         if (updateError) {
@@ -1150,7 +1150,7 @@ export default function MapaguapaAdminPage({ onNavigateAbout, onSignOut, profile
       return;
     }
 
-    const nextRole = user.role === "admin" ? "user" : "admin";
+    const nextRole = user.role === "admin" ? "student" : "admin";
     setUserActionId(user.id);
     setError(null);
     setFeedback(null);
@@ -1793,7 +1793,7 @@ export default function MapaguapaAdminPage({ onNavigateAbout, onSignOut, profile
                             onClick={() => void toggleUserRole(user)}
                             type="button"
                           >
-                            {user.role === "admin" ? "Make user" : "Make admin"}
+                            {user.role === "admin" ? "Make student" : "Make admin"}
                           </button>
                         </div>
                       </article>

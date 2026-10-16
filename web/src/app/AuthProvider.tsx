@@ -68,7 +68,7 @@ async function ensureProfile(client: SupabaseClient<Database>, session: Session)
       email: session.user.email ?? null,
       full_name: fullName,
       avatar_url: avatarUrl,
-      role: "user",
+      role: "student",
       is_active: true,
     })
     .select(profileSelect)

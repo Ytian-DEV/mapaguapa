@@ -405,7 +405,7 @@ export async function fetchActiveListings() {
   const { data, error } = await supabase
     .from("listings")
     .select(listingSelect)
-    .eq("status", "active")
+    .eq("status", "published")
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -416,7 +416,7 @@ export async function fetchActiveListings() {
 }
 
 function applyListingFilters(query: any, filters: ListingFilters) {
-  let nextQuery = query.eq("status", "active");
+  let nextQuery = query.eq("status", "published");
   const search = filters.search?.trim();
 
   if (search) {
@@ -490,7 +490,7 @@ export async function fetchListingFilterOptions(): Promise<ListingFilterOptions>
   const { data, error } = await supabase
     .from("listings")
     .select("address, accommodation_type, exclusivity")
-    .eq("status", "active");
+    .eq("status", "published");
 
   if (error) {
     throw error;
@@ -624,7 +624,7 @@ export async function fetchListingDetail(listingId: string) {
     .from("listings")
     .select(listingSelect)
     .eq("id", listingId)
-    .eq("status", "active")
+    .eq("status", "published")
     .maybeSingle();
 
   if (error) {
@@ -642,7 +642,7 @@ export async function fetchAdminListings() {
   const { data, error } = await supabase
     .from("listings")
     .select(listingSelect)
-    .eq("status", "active")
+    .eq("status", "published")
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -694,7 +694,7 @@ export async function fetchSavedListingCards(userId: string) {
   const { data, error } = await supabase
     .from("listings")
     .select(listingCardSelect)
-    .eq("status", "active")
+    .eq("status", "published")
     .in("id", savedIds);
 
   if (error) {
