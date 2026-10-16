@@ -1,6 +1,6 @@
 # MAPAGUAPA v2 — Progress
 
-**Current branch:** `develop`
+**Current branch:** `fix/auth-layout-balance`
 **Status:** Features 1–3 merged into develop. Migrations tested locally, NOT applied to Supabase (see docs/v2/DB.md).
 **Next step:** Start feature/student-browse from develop (frame 02: search, filters, chips, card grid, show more, saved).
 
@@ -44,6 +44,7 @@ Gates before the last commit of each feature (from `web/`): `npm run lint`, `npm
 - [x] feat(auth): sign-up with student/owner choice
 - [x] feat(auth): password reset flow on new design
 - [x] feat(auth): role-based home routing; remove v1 auth page; merge
+- [x] fix(auth): balance sign-in columns on wide screens (branch fix/auth-layout-balance)
 
 ## 4. `feature/student-browse`
 - [ ] feat(browse): browse service with server-side filters and price bands
