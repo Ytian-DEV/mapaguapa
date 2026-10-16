@@ -526,6 +526,17 @@
   background: var(--color-paper-2);
 }
 
+.side-panel__photo {
+  display: grid;
+  place-items: center;
+  color: var(--color-faint);
+}
+
+.side-panel__no-photo {
+  width: 24px;
+  height: 24px;
+}
+
 .side-panel__photo img {
   width: 100%;
   height: 100%;

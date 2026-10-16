@@ -5,6 +5,7 @@ import { FullPageLoader } from "./app/FullPageLoader";
 import { homeFor, PublicOnly, RequireRole } from "./app/guards";
 import { SavedProvider } from "./features/browse/SavedContext";
 import { StudentShell } from "./features/browse/StudentShell";
+import { InboxProvider } from "./features/messaging/InboxContext";
 import { ToastProvider } from "./ui";
 import "./app.css";
 
@@ -13,6 +14,7 @@ const AboutPage = lazy(() => import("./components/shared/AboutPage"));
 const BrowsePage = lazy(() => import("./features/browse/BrowsePage"));
 const SavedPage = lazy(() => import("./features/browse/SavedPage"));
 const MapPage = lazy(() => import("./features/map/MapPage"));
+const StudentMessagesPage = lazy(() => import("./features/messaging/StudentMessagesPage"));
 const ListingDetailPage = lazy(() => import("./features/listing/ListingDetailPage"));
 const SignInPage = lazy(() => import("./features/auth/SignInPage"));
 const SignUpPage = lazy(() => import("./features/auth/SignUpPage"));
@@ -43,11 +45,13 @@ function StudentLayout() {
   return (
     <RequireRole roles={["student"]}>
       <SavedProvider>
-        <StudentShell>
-          <Suspense fallback={null}>
-            <Outlet />
-          </Suspense>
-        </StudentShell>
+        <InboxProvider>
+          <StudentShell>
+            <Suspense fallback={null}>
+              <Outlet />
+            </Suspense>
+          </StudentShell>
+        </InboxProvider>
       </SavedProvider>
     </RequireRole>
   );
@@ -78,6 +82,8 @@ export default function App() {
                 <Route element={<BrowsePage />} path="/" />
                 <Route element={<SavedPage />} path="/saved" />
                 <Route element={<MapPage />} path="/map" />
+                <Route element={<StudentMessagesPage />} path="/messages" />
+                <Route element={<StudentMessagesPage />} path="/messages/:conversationId" />
                 <Route element={<ListingDetailPage />} path="/listing/:listingId" />
               </Route>
               <Route element={<Navigate replace to="/saved" />} path="/dashboard/saved" />

@@ -194,3 +194,10 @@ export function subscribeToInbox(onChange: () => void): () => void {
     void client().removeChannel(channel);
   };
 }
+
+/** Phone number for the Call button (listings are readable by participants while published). */
+export async function fetchListingContact(listingId: string) {
+  const { data, error } = await client().from("listings").select("contact_number").eq("id", listingId).maybeSingle();
+  if (error) throw error;
+  return data?.contact_number ?? null;
+}
