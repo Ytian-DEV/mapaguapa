@@ -1,8 +1,8 @@
 # MAPAGUAPA v2 — Progress
 
-**Current branch:** `develop`
+**Current branch:** `feature/messaging`
 **Status:** Features 1–6 merged into develop. Migrations tested locally, NOT applied to Supabase (see docs/v2/DB.md). Student pages verified with dev fixtures (/dev/browse, /dev/listing). Maps use OSM tiles until VITE_MAPTILER_KEY is set.
-**Next step:** Start feature/messaging from develop (frames 04 + O3).
+**Next step:** Build shared thread UI (bubbles, visit cards, composer, conversation list).
 
 Resume protocol: read this file → `git status` → check out the branch above → finish uncommitted work → continue from the first unchecked item.
 
@@ -69,9 +69,9 @@ Gates before the last commit of each feature (from `web/`): `npm run lint`, `npm
 - [x] feat(listing): report listing link; remove v1 user page; merge
 
 ## 7. `feature/messaging`
-- [ ] feat(messaging): conversation service and start-from-listing
+- [x] feat(messaging): conversation service and start-from-listing
 - [ ] feat(messaging): student inbox and thread (frame 04)
-- [ ] feat(messaging): realtime updates and unread counts
+- [x] feat(messaging): realtime updates and unread counts
 - [ ] feat(messaging): quick questions and saved replies
 - [ ] feat(messaging): visit requests propose/confirm/suggest
 - [ ] feat(messaging): owner inquiries view with statuses and notes (frame O3)
