@@ -21,17 +21,20 @@
   --color-clay-tint: #f6e6de;
   --color-on-dark: #f5f2ec;
   --color-ink-hover: #070d0a;
-  --color-danger-hover: #7f2516;
+  --color-danger-hover: #84301f;
+  --color-row-selected: #f6f9f5;
+  --color-ink-raised: #2a3630;
+  --color-check-border: #c9c3b8;
 
   /* Status tones: background / foreground / dot */
   --tone-green-bg: #e3ebe2;
   --tone-green-fg: #1f4a37;
   --tone-green-dot: #2f7a55;
-  --tone-amber-bg: #f8eccc;
-  --tone-amber-fg: #7a5200;
+  --tone-amber-bg: #fbefd9;
+  --tone-amber-fg: #8a5a12;
   --tone-amber-dot: #c98a12;
-  --tone-red-bg: #f7dfd9;
-  --tone-red-fg: #9b2f1e;
+  --tone-red-bg: #f7e1dc;
+  --tone-red-fg: #a63a26;
   --tone-red-dot: #c2412b;
   --tone-gray-bg: #efebe3;
   --tone-gray-fg: #3d4842;

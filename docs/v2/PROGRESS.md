@@ -2,7 +2,7 @@
 
 **Current branch:** `feature/design-system`
 **Status:** Plan approved. Feature 1 in progress.
-**Next step:** Build DataTable, Pagination, EmptyState, Skeleton in web/src/ui.
+**Next step:** Build Logo, Sidebar, TopNav, Dialog, Drawer, Toast in web/src/ui.
 
 Resume protocol: read this file → `git status` → check out the branch above → finish uncommitted work → continue from the first unchecked item.
 
@@ -19,7 +19,7 @@ Gates before the last commit of each feature (from `web/`): `npm run lint`, `npm
 - [x] feat(ui): add design tokens and base styles
 - [x] feat(ui): add Button, Badge, Chip, Input, Select
 - [x] feat(ui): add Card, Avatar, Tabs, Stepper
-- [ ] feat(ui): add DataTable, Pagination, EmptyState, Skeleton
+- [x] feat(ui): add DataTable, Pagination, EmptyState, Skeleton
 - [ ] feat(ui): add Sidebar, TopNav, Dialog, Drawer, Toast
 - [ ] feat(app): add router shell and role guards (v1 pages mounted unchanged)
 - [ ] feat(dev): add /dev/components preview page
