@@ -2,7 +2,7 @@
 
 **Current branch:** `develop`
 **Status:** Features 1–9 merged into develop. 6 migrations tested locally, NOT applied to Supabase (deploy day; no staging). UI verified with dev fixtures (/dev/browse, /dev/listing, /dev/messages, /dev/owner, /dev/wizard).
-**Next step:** x
+**Next step:** Merge feature/admin-shell-overview, then start feature/admin-listings.
 
 Resume protocol: read this file → `git status` → check out the branch above → finish uncommitted work → continue from the first unchecked item.
 
@@ -96,8 +96,8 @@ Gates before the last commit of each feature (from `web/`): `npm run lint`, `npm
 
 ## 10. `feature/admin-shell-overview`
 - [x] feat(admin): admin layout, sidebar with counts
-- [ ] feat(admin): overview stats and needs-attention list
-- [ ] feat(admin): recent activity and listings by price range; merge
+- [x] feat(admin): overview stats and needs-attention list
+- [x] feat(admin): recent activity and listings by price range; merge
 
 ## 11. `feature/admin-listings`
 - [ ] feat(admin): listings table with status tabs and server pagination
