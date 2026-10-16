@@ -1,8 +1,8 @@
 # MAPAGUAPA v2 — Progress
 
-**Current branch:** `feature/design-system`
-**Status:** Plan approved. Feature 1 in progress.
-**Next step:** Merge feature/design-system into develop, then start feature/db-v2-schema (waiting on schema dump at web/supabase/schema-dump.sql).
+**Current branch:** `develop`
+**Status:** Feature 1 (design-system) merged into develop. Feature 2 blocked on schema dump.
+**Next step:** Waiting for the schema dump at web/supabase/schema-dump.sql; then branch feature/db-v2-schema from develop.
 
 Resume protocol: read this file → `git status` → check out the branch above → finish uncommitted work → continue from the first unchecked item.
 
