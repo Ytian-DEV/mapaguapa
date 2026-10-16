@@ -1,8 +1,8 @@
 # MAPAGUAPA v2 — Progress
 
-**Current branch:** `feature/owner-portal`
-**Status:** Features 1–7 merged into develop. Migrations tested locally, NOT applied to Supabase (applied on deploy day; no staging). UI verified with dev fixtures (/dev/browse, /dev/listing, /dev/messages).
-**Next step:** Merge feature/owner-portal, then start feature/owner-listing-wizard.
+**Current branch:** `develop`
+**Status:** Features 1–8 merged into develop. 6 migrations tested locally, NOT applied to Supabase (deploy day; no staging). UI verified with dev fixtures (/dev/browse, /dev/listing, /dev/messages, /dev/owner).
+**Next step:** Start feature/owner-listing-wizard from develop (frame O2).
 
 Resume protocol: read this file → `git status` → check out the branch above → finish uncommitted work → continue from the first unchecked item.
 
