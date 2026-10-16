@@ -3,6 +3,8 @@ import { MapContainer, Marker, TileLayer, useMap, useMapEvents } from "react-lea
 import type { LatLngExpression, LeafletMouseEvent, Map as LeafletMap } from "leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { tileConfig } from "../../features/map/tiles";
+import { VSU_LOCATION } from "../../lib/geo";
 
 export type PropertyCoordinates = {
   lat: number;
@@ -15,9 +17,7 @@ type PropertyMapProps = {
   onChange?: (coordinates: PropertyCoordinates) => void;
 };
 
-const defaultCenter: PropertyCoordinates = { lat: 10.746, lng: 124.793 };
-const tileUrl = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
-const tileAttribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>';
+const defaultCenter: PropertyCoordinates = VSU_LOCATION;
 
 const markerIcon = L.divIcon({
   className: "mapa-property-map__marker",
@@ -61,7 +61,13 @@ export function PropertyMap({ coordinates, mode, onChange }: PropertyMapProps) {
 
   return (
     <MapContainer center={center} className="mapa-property-map" scrollWheelZoom={false} zoom={coordinates ? 16 : 13}>
-      <TileLayer attribution={tileAttribution} url={tileUrl} />
+      <TileLayer
+        attribution={tileConfig.attribution}
+        maxZoom={tileConfig.maxZoom}
+        tileSize={tileConfig.tileSize}
+        url={tileConfig.url}
+        zoomOffset={tileConfig.zoomOffset}
+      />
       <MapResizeWatcher coordinates={coordinates} />
       {mode === "picker" && <MapClickHandler onChange={onChange} />}
       {coordinates && (

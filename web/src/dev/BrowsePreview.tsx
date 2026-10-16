@@ -1,4 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
+import { ListingsMap } from "../features/map/ListingsMap";
+import { toMapPin } from "../features/browse/useMapPins";
 import { Heart, Home } from "lucide-react";
 import { TopNav } from "../ui";
 import { EMPTY_FILTERS, type BrowseFilters, type ListingCardRow } from "../features/browse/browseApi";
@@ -31,10 +33,10 @@ const base: Omit<ListingCardRow, "id" | "name"> = {
 };
 
 const fixtures: ListingCardRow[] = [
-  { ...base, id: "f1", name: "Fixture Mixed House" },
-  { ...base, id: "f2", name: "Fixture Study Lodge", area: "Marcos", rooms_available: null, has_study_area: true, has_parking_area: true, has_curfew: null, curfew: null },
-  { ...base, id: "f3", name: "Fixture Ladies Dorm with a Very Long Name That Truncates", area: "Pangasugan", exclusivity_group: "ladies", price_band: "1000_1999", has_laundry_area: true },
-  { ...base, id: "f4", name: "Fixture Men's Place", area: "Pangasugan", exclusivity_group: "men", has_common_kitchen: true, has_curfew: false, curfew: "None" },
+  { ...base, id: "f1", name: "Fixture Mixed House", location_lat: 10.7419, location_lng: 124.7951 },
+  { ...base, id: "f2", name: "Fixture Study Lodge", area: "Marcos", location_lat: 10.7492, location_lng: 124.7902, rooms_available: null, has_study_area: true, has_parking_area: true, has_curfew: null, curfew: null },
+  { ...base, id: "f3", name: "Fixture Ladies Dorm with a Very Long Name That Truncates", area: "Pangasugan", exclusivity_group: "ladies", price_band: "1000_1999", has_laundry_area: true, location_lat: 10.7385, location_lng: 124.7979 },
+  { ...base, id: "f4", name: "Fixture Men's Place", area: "Pangasugan", exclusivity_group: "men", has_common_kitchen: true, has_curfew: false, curfew: "None", location_lat: 10.7463, location_lng: 124.8012 },
   { ...base, id: "f5", name: "Fixture Budget Room", area: "Gabas", accommodation_type: "Apartment", price_band: "under_1000", exclusivity_group: null, rooms_available: 1 },
   { ...base, id: "f6", name: "Fixture Label Only", price_band: null, monthly_rental_label: "Ask owner", has_wifi: false },
 ];
@@ -45,6 +47,7 @@ export default function BrowsePreview() {
   const [filters, setFilters] = useState<BrowseFilters>(EMPTY_FILTERS);
   const [saved, setSaved] = useState<Set<string>>(new Set(["f1"]));
   const [status, setStatus] = useState<"loading" | "ready" | "error">("ready");
+  const [activeId, setActiveId] = useState<string | null>(null);
 
   const rows = useMemo(
     () =>
@@ -81,7 +84,18 @@ export default function BrowsePreview() {
         ))}
       </div>
       <BrowseView
+        activeId={activeId}
+        aside={
+          <ListingsMap
+            activeId={activeId}
+            bbox={filters.bbox}
+            onActiveChange={setActiveId}
+            onBBoxChange={(bbox) => onChange({ bbox })}
+            pins={rows.map((row) => toMapPin(row)).filter((pin): pin is NonNullable<typeof pin> => pin !== null)}
+          />
+        }
         filters={filters}
+        onActiveChange={setActiveId}
         isSaved={(id) => saved.has(id)}
         loadingMore={false}
         onChange={onChange}

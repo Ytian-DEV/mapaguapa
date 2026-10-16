@@ -1,8 +1,8 @@
 # MAPAGUAPA v2 — Progress
 
-**Current branch:** `develop`
+**Current branch:** `feature/map-v2`
 **Status:** Features 1–4 merged into develop. Migrations tested locally, NOT applied to Supabase (see docs/v2/DB.md). Student pages verified with dev fixtures at /dev/browse (no v2 database to test against yet).
-**Next step:** Start feature/map-v2 from develop (MapTiler tiles, price-band pins, VSU marker, search-as-I-move, browse split + /map).
+**Next step:** Merge feature/map-v2, then start feature/listing-detail-v2.
 
 Resume protocol: read this file → `git status` → check out the branch above → finish uncommitted work → continue from the first unchecked item.
 
@@ -56,10 +56,10 @@ Gates before the last commit of each feature (from `web/`): `npm run lint`, `npm
 - [x] feat(browse): mobile layout; merge
 
 ## 5. `feature/map-v2`
-- [ ] feat(map): switch tile provider with env key
-- [ ] feat(map): price-band pins and VSU landmark marker
-- [ ] feat(map): search as I move the map (bounds filter)
-- [ ] feat(map): map on browse (desktop split, mobile toggle) and /map; merge
+- [x] feat(map): switch tile provider with env key
+- [x] feat(map): price-band pins and VSU landmark marker
+- [x] feat(map): search as I move the map (bounds filter)
+- [x] feat(map): map on browse (desktop split, mobile toggle) and /map; merge
 
 ## 6. `feature/listing-detail-v2`
 - [ ] feat(listing): detail route, gallery and show-all-photos

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { ListingsMap } from "../map/ListingsMap";
 import { BrowseView } from "./BrowseView";
 import {
   EMPTY_FILTERS,
@@ -11,6 +12,7 @@ import {
   type FilterOptions,
   type ListingCardRow,
 } from "./browseApi";
+import { useMapPins } from "./useMapPins";
 import { useSaved } from "./SavedContext";
 
 const PAGE_SIZE = 12;
@@ -28,6 +30,8 @@ export default function BrowsePage() {
   const [options, setOptions] = useState<FilterOptions>({ areas: [], types: [] });
   const [reloadToken, setReloadToken] = useState(0);
   const requestId = useRef(0);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const pins = useMapPins(filterKey);
 
   useEffect(() => {
     document.title = "Places near campus · mapaguapa";
@@ -57,7 +61,8 @@ export default function BrowsePage() {
 
   const handleChange = useCallback(
     (patch: Partial<BrowseFilters>) => {
-      setParams((current) => filtersToParams({ ...filtersFromParams(current), ...patch }), { replace: "q" in patch });
+      // Typing and map panning shouldn't flood the back button.
+      setParams((current) => filtersToParams({ ...filtersFromParams(current), ...patch }), { replace: "q" in patch || "bbox" in patch });
     },
     [setParams]
   );
@@ -86,7 +91,18 @@ export default function BrowsePage() {
 
   return (
     <BrowseView
+      activeId={activeId}
+      aside={
+        <ListingsMap
+          activeId={activeId}
+          bbox={filters.bbox}
+          onActiveChange={setActiveId}
+          onBBoxChange={(bbox) => handleChange({ bbox })}
+          pins={pins}
+        />
+      }
       filters={filters}
+      onActiveChange={setActiveId}
       isSaved={isSaved}
       loadingMore={loadingMore}
       onChange={handleChange}

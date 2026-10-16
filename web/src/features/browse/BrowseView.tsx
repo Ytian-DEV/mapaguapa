@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { AlertTriangle, ArrowDownUp, SearchX, Search, SlidersHorizontal, X } from "lucide-react";
+import { AlertTriangle, ArrowDownUp, List, Map as MapIcon, SearchX, Search, SlidersHorizontal, X } from "lucide-react";
 import { PRICE_BAND_LABELS, PRICE_BANDS, type PriceBand } from "../../lib/domain";
 import {
   Button,
@@ -10,6 +10,7 @@ import {
   Input,
   ListingCardSkeleton,
   LoadingRegion,
+  Segmented,
   ShowMore,
   cx,
   type SelectOption,
@@ -42,8 +43,11 @@ export type BrowseViewProps = {
   onRetry: () => void;
   isSaved: (id: string) => boolean;
   onToggleSaved: (listing: ListingCardRow) => void;
-  /** Map panel (feature 5). When present the grid narrows to two columns. */
+  /** Map panel. Beside the grid from 1280px; behind a List / Map toggle below that. */
   aside?: ReactNode;
+  /** Card highlighted from the map, and the card the pointer is on. */
+  activeId?: string | null;
+  onActiveChange?: (id: string | null) => void;
 };
 
 const SEARCH_DEBOUNCE_MS = 300;
@@ -62,9 +66,12 @@ export function BrowseView({
   isSaved,
   onToggleSaved,
   aside,
+  activeId = null,
+  onActiveChange,
 }: BrowseViewProps) {
   const [search, setSearch] = useState(filters.q);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [smallView, setSmallView] = useState<"list" | "map">("list");
 
   // Keep the box in sync when the URL changes (back button, chip resets).
   useEffect(() => setSearch(filters.q), [filters.q]);
@@ -187,9 +194,22 @@ export function BrowseView({
             With Wi‑Fi
           </Chip>
         </ChipGroup>
+
+        {aside && (
+          <Segmented
+            className="browse__view-toggle"
+            items={[
+              { value: "list", label: <><List aria-hidden="true" /> List</> },
+              { value: "map", label: <><MapIcon aria-hidden="true" /> Map</> },
+            ]}
+            label="Show results as"
+            onChange={setSmallView}
+            value={smallView}
+          />
+        )}
       </header>
 
-      <div className={cx("browse__body", aside && "browse__body--with-aside")}>
+      <div className={cx("browse__body", aside && "browse__body--with-aside", aside && smallView === "map" && "browse__body--map-mode")}>
         <section aria-label="Results" className="browse__results">
           {status === "loading" && (
             <LoadingRegion label="Loading places">
@@ -235,8 +255,10 @@ export function BrowseView({
               <div className="browse__grid">
                 {rows.map((listing) => (
                   <ListingCard
+                    active={listing.id === activeId}
                     key={listing.id}
                     listing={listing}
+                    onHover={onActiveChange ? (hovering) => onActiveChange(hovering ? listing.id : null) : undefined}
                     onToggleSaved={() => onToggleSaved(listing)}
                     saved={isSaved(listing.id)}
                   />

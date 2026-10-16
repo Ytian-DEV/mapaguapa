@@ -49,7 +49,7 @@ The app has two main experiences:
 - Supabase-backed listings, profiles, deleted listing archives, and listing photos.
 - Supabase Storage support for listing images.
 - Client-side image optimization before upload.
-- Leaflet map integration with OpenStreetMap/CARTO tiles.
+- Leaflet maps with MapTiler tiles (OpenStreetMap fallback), price-band pins, a VSU landmark and "search as I move the map".
 - Full-view photo viewer with close button, backdrop close, Escape support, and thumbnail switching.
 - Responsive layouts for small phones, large phones, tablets, laptops, and desktops.
 - Vercel SPA rewrite configuration for direct route and OAuth redirect support.
@@ -157,6 +157,7 @@ VITE_APP_NAME=MAPAGUAPA
 VITE_SUPABASE_URL=https://your-project-id.supabase.co
 VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
 VITE_SUPABASE_LISTING_PHOTOS_BUCKET=listing-photos
+VITE_MAPTILER_KEY=your-maptiler-key
 ```
 
 ### Variable Reference
@@ -167,6 +168,8 @@ VITE_SUPABASE_LISTING_PHOTOS_BUCKET=listing-photos
 | `VITE_SUPABASE_URL` | Yes | Supabase project URL. |
 | `VITE_SUPABASE_ANON_KEY` | Yes | Supabase anon public key. |
 | `VITE_SUPABASE_LISTING_PHOTOS_BUCKET` | No | Storage bucket for listing photos. Defaults to `listing-photos`. |
+| `VITE_MAPTILER_KEY` | Recommended | MapTiler key for map tiles. Restrict it to your domains (localhost and the production URL) in the MapTiler dashboard. Without it the maps fall back to OpenStreetMap's public tiles, which are fine for development only. |
+| `VITE_MAPTILER_STYLE` | No | MapTiler map id. Defaults to `streets-v2-light`. |
 
 Auth redirects are built from the site's own origin (`/auth/callback` and `/reset-password`), so no redirect variables are needed.
 

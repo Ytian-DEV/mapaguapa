@@ -159,6 +159,16 @@
   min-height: 480px;
 }
 
+.browse__view-toggle {
+  display: none;
+  justify-self: start;
+}
+
+.browse__view-toggle svg {
+  width: 15px;
+  height: 15px;
+}
+
 /* Drawer */
 .browse-drawer {
   width: min(92vw, 400px);
@@ -227,8 +237,25 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
+  /* Below 1280px the map is a toggle instead of a side panel. */
+  .browse__view-toggle {
+    display: inline-flex;
+  }
+
   .browse__body--with-aside .browse__aside {
     display: none;
+  }
+
+  .browse__body--map-mode .browse__results {
+    display: none;
+  }
+
+  .browse__body--map-mode .browse__aside {
+    position: relative;
+    top: 0;
+    display: block;
+    height: min(72dvh, 640px);
+    min-height: 360px;
   }
 }
 
