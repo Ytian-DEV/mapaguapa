@@ -90,4 +90,5 @@ cd web && PSQL="C:/Program Files/PostgreSQL/18/bin/psql.exe" PGPORT=54329 node s
 - **Price fields:** `price_band`, `monthly_rent_min/max` and `monthly_rental_label` are derived values. Write `rent_exact` (and `room_types[].rent`).
 - **Messages:** send by inserting into `messages` (`kind` `text` or `image`). Everything else goes through the RPCs: `start_conversation`, `mark_conversation_read`, `set_inquiry_status`, `set_conversation_blocked`, `request_visit` and `respond_visit`.
 - **Attachments:** message files go in `message-attachments/<conversation_id>/…`. Verification documents go in `owner-verifications/<owner_id>/…`.
+- **Owner sign-up with Google:** OAuth can't carry the account type, so the app calls `become_owner()` after the first sign-in. It only works for student accounts less than 24 hours old.
 - **Profile names:** read other people's names and badges from `profile_cards`. `profiles` itself only returns your own row (or every row for admins).
