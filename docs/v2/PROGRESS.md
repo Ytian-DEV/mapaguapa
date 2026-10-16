@@ -1,8 +1,8 @@
 # MAPAGUAPA v2 — Progress
 
-**Current branch:** `feature/student-browse`
-**Status:** Features 1–3 merged into develop. Migrations tested locally, NOT applied to Supabase (see docs/v2/DB.md).
-**Next step:** Merge feature/student-browse, then start feature/map-v2.
+**Current branch:** `develop`
+**Status:** Features 1–4 merged into develop. Migrations tested locally, NOT applied to Supabase (see docs/v2/DB.md). Student pages verified with dev fixtures at /dev/browse (no v2 database to test against yet).
+**Next step:** Start feature/map-v2 from develop (MapTiler tiles, price-band pins, VSU marker, search-as-I-move, browse split + /map).
 
 Resume protocol: read this file → `git status` → check out the branch above → finish uncommitted work → continue from the first unchecked item.
 
