@@ -3,13 +3,14 @@ import { BadgeCheck, HelpCircle, Home, List, MessageSquare, Plus, User } from "l
 import { useAuth } from "../../app/AuthProvider";
 import { AppShell, Sidebar, type SidebarGroup } from "../../ui";
 import { useInbox } from "../messaging/InboxContext";
+import { useOwnerData } from "./OwnerDataContext";
 
-const ownerNav = (unread: number): SidebarGroup[] => [
+const ownerNav = (unread: number, listings: number): SidebarGroup[] => [
   {
     label: "Manage",
     items: [
       { to: "/owner", label: "Overview", icon: <Home />, end: true },
-      { to: "/owner/listings", label: "My listings", icon: <List /> },
+      { to: "/owner/listings", label: "My listings", icon: <List />, count: listings, end: true },
       { to: "/owner/inquiries", label: "Inquiries", icon: <MessageSquare />, count: unread, emphasis: true },
       { to: "/owner/listings/new", label: "Create listing", icon: <Plus /> },
     ],
@@ -24,17 +25,19 @@ const ownerNav = (unread: number): SidebarGroup[] => [
   },
 ];
 
-/** Owner portal frame (sidebar from Components 14-301). Listing counts are added in feature 8. */
+/** Owner portal frame (sidebar from Components 14-301). */
 export function OwnerShell({ children }: { children: ReactNode }) {
   const { profile, signOut } = useAuth();
   const verified = Boolean(profile?.verified_owner_at);
   const { unreadTotal } = useInbox();
+  const { listings } = useOwnerData();
+  const activeListings = listings.filter((listing) => listing.status !== "archived").length;
 
   return (
     <AppShell
       sidebar={
         <Sidebar
-          groups={ownerNav(unreadTotal)}
+          groups={ownerNav(unreadTotal, activeListings)}
           homeTo="/owner"
           onSignOut={() => void signOut()}
           user={{

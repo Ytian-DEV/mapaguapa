@@ -3,7 +3,7 @@ import { Construction } from "lucide-react";
 import { useAuth } from "../../app/AuthProvider";
 import { Card, EmptyState, PageHeader } from "../../ui";
 
-/** Placeholder for the owner area until the owner portal ships (feature 8). */
+/** Placeholder for owner pages that ship later (the listing wizard arrives in feature 9). */
 export default function OwnerComingSoon() {
   const { profile } = useAuth();
   const firstName = profile?.full_name?.trim().split(/\s+/)[0];
@@ -16,14 +16,14 @@ export default function OwnerComingSoon() {
     <>
       <PageHeader
         eyebrow="Owner portal"
-        subtitle="Your account is ready. Listing tools are on the way."
+        subtitle="This part of the owner portal is on its way."
         title={firstName ? `Welcome, ${firstName}` : "Welcome"}
       />
       <Card padding="none">
         <EmptyState
-          description="Soon you’ll create listings, answer inquiries and schedule visits here. We’ll let you know when it’s live."
+          description="The listing editor is being built. Your overview, inquiries and verification already work."
           icon={<Construction />}
-          title="The owner portal is being built"
+          title="Coming soon"
         />
       </Card>
     </>

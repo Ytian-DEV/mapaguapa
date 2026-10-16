@@ -24,8 +24,13 @@ import { PhotoGallery } from "./PhotoGallery";
 import "./listing-detail.css";
 
 type ListingDetailViewProps = ListingDetailBundle & {
-  saved: boolean;
-  onToggleSaved: () => void;
+  saved?: boolean;
+  /** Omit to hide Save (e.g. owner preview). */
+  onToggleSaved?: () => void;
+  /** Where "Back" goes; the student breadcrumb is shown only for the default. */
+  back?: { to: string; label: string };
+  /** Shown above the title, e.g. the owner-preview notice. */
+  notice?: ReactNode;
   /** null hides "Message owner" (admin-managed listings or non-students). */
   onMessage: (() => void) | null;
   messaging?: boolean;
@@ -55,7 +60,7 @@ function Rows({ rows }: { rows: Row[] }) {
   );
 }
 
-export function ListingDetailView({ listing, photos, owner, saved, onToggleSaved, onMessage, messaging, distanceKm }: ListingDetailViewProps) {
+export function ListingDetailView({ listing, photos, owner, saved = false, onToggleSaved, onMessage, messaging, distanceKm, back, notice }: ListingDetailViewProps) {
   const toast = useToast();
   const [reportOpen, setReportOpen] = useState(false);
   const exclusivity = exclusivityLabel(listing);
@@ -88,9 +93,10 @@ export function ListingDetailView({ listing, photos, owner, saved, onToggleSaved
   return (
     <article className="detail v2-container">
       <nav aria-label="Breadcrumb" className="detail__crumbs">
-        <Link className="detail__back" to="/">
-          <ArrowLeft aria-hidden="true" /> Back to results
+        <Link className="detail__back" to={back?.to ?? "/"}>
+          <ArrowLeft aria-hidden="true" /> {back?.label ?? "Back to results"}
         </Link>
+        {!back && (
         <ol>
           <li>
             <Link to="/">Browse</Link>
@@ -102,7 +108,9 @@ export function ListingDetailView({ listing, photos, owner, saved, onToggleSaved
           )}
           <li aria-current="page">{listing.name}</li>
         </ol>
+        )}
       </nav>
+      {notice}
 
       <header className="detail__header">
         <div className="detail__heading">
@@ -123,16 +131,18 @@ export function ListingDetailView({ listing, photos, owner, saved, onToggleSaved
           <Button leadingIcon={<Share2 />} onClick={() => void share()} size="sm" variant="secondary">
             Share
           </Button>
-          <Button
-            aria-pressed={saved}
-            className={cx(saved && "detail__saved")}
-            leadingIcon={<Heart />}
-            onClick={onToggleSaved}
-            size="sm"
-            variant="secondary"
-          >
-            {saved ? "Saved" : "Save"}
-          </Button>
+          {onToggleSaved && (
+            <Button
+              aria-pressed={saved}
+              className={cx(saved && "detail__saved")}
+              leadingIcon={<Heart />}
+              onClick={onToggleSaved}
+              size="sm"
+              variant="secondary"
+            >
+              {saved ? "Saved" : "Save"}
+            </Button>
+          )}
         </div>
       </header>
 
