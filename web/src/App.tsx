@@ -30,12 +30,14 @@ const OwnerListingsPage = lazy(() => import("./features/owner/OwnerListingsPage"
 const OwnerListingPreviewPage = lazy(() => import("./features/owner/OwnerListingPreviewPage"));
 const VerificationPage = lazy(() => import("./features/owner/VerificationPage"));
 const OwnerProfilePage = lazy(() => import("./features/owner/OwnerProfilePage"));
+const WizardPage = lazy(() => import("./features/wizard/WizardPage"));
 const NotFoundPage = lazy(() => import("./app/NotFoundPage"));
 const ComponentsPreview = import.meta.env.DEV ? lazy(() => import("./dev/ComponentsPreview")) : null;
 const BrowsePreview = import.meta.env.DEV ? lazy(() => import("./dev/BrowsePreview")) : null;
 const ListingPreview = import.meta.env.DEV ? lazy(() => import("./dev/ListingPreview")) : null;
 const MessagesPreview = import.meta.env.DEV ? lazy(() => import("./dev/MessagesPreview")) : null;
 const OwnerPreview = import.meta.env.DEV ? lazy(() => import("./dev/OwnerPreview")) : null;
+const WizardPreview = import.meta.env.DEV ? lazy(() => import("./dev/WizardPreview")) : null;
 
 function AboutRoute() {
   const { profile } = useAuth();
@@ -119,6 +121,8 @@ export default function App() {
                 <Route element={<OwnerOverviewPage />} index />
                 <Route element={<OwnerListingsPage />} path="listings" />
                 <Route element={<OwnerListingPreviewPage />} path="listings/:listingId/preview" />
+                <Route element={<Navigate replace to="/owner/listings/new/edit/basics" />} path="listings/new" />
+                <Route element={<WizardPage mode="owner" />} path="listings/:listingId/edit/:step?" />
                 <Route element={<VerificationPage />} path="verification" />
                 <Route element={<OwnerProfilePage />} path="profile" />
                 <Route element={<OwnerInquiriesPage />} path="inquiries" />
@@ -132,6 +136,7 @@ export default function App() {
               {ListingPreview && <Route element={<ListingPreview />} path="/dev/listing" />}
               {MessagesPreview && <Route element={<MessagesPreview />} path="/dev/messages/*" />}
               {OwnerPreview && <Route element={<OwnerPreview />} path="/dev/owner" />}
+              {WizardPreview && <Route element={<WizardPreview />} path="/dev/wizard/:step?" />}
               <Route element={<NotFoundPage />} path="*" />
             </Routes>
           </Suspense>

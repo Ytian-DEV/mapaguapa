@@ -2,7 +2,7 @@
 
 **Current branch:** `feature/owner-listing-wizard`
 **Status:** Features 1–8 merged into develop. 6 migrations tested locally, NOT applied to Supabase (deploy day; no staging). UI verified with dev fixtures (/dev/browse, /dev/listing, /dev/messages, /dev/owner).
-**Next step:** Build wizard shell + review step; wire routes (owner + admin mode).
+**Next step:** Merge feature/owner-listing-wizard, then start feature/admin-shell-overview.
 
 Resume protocol: read this file → `git status` → check out the branch above → finish uncommitted work → continue from the first unchecked item.
 
@@ -86,13 +86,13 @@ Gates before the last commit of each feature (from `web/`): `npm run lint`, `npm
 - [x] feat(owner): profile page; merge
 
 ## 9. `feature/owner-listing-wizard`
-- [ ] feat(wizard): wizard shell, stepper, autosave draft
+- [x] feat(wizard): wizard shell, stepper, autosave draft
 - [x] feat(wizard): steps 1–3 (basics, rooms & pricing, bills)
 - [x] feat(wizard): steps 4–5 (amenities, rules & safety)
 - [x] feat(wizard): step 6 location pin
 - [x] feat(wizard): step 7 photos upload, reorder, cover
-- [ ] feat(wizard): step 8 review & submit, preview card, completeness
-- [ ] feat(wizard): resubmit on edit; admin mode; merge
+- [x] feat(wizard): step 8 review & submit, preview card, completeness
+- [x] feat(wizard): resubmit on edit; admin mode; merge
 
 ## 10. `feature/admin-shell-overview`
 - [ ] feat(admin): admin layout, sidebar with counts
