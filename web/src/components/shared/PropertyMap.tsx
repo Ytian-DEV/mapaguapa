@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { MapContainer, Marker, TileLayer, useMap, useMapEvents } from "react-leaflet";
 import type { LatLngExpression, LeafletMouseEvent, Map as LeafletMap } from "leaflet";
 import L from "leaflet";

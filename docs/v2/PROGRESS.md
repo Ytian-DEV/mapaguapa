@@ -2,7 +2,7 @@
 
 **Current branch:** `feature/design-system`
 **Status:** Plan approved. Feature 1 in progress.
-**Next step:** Add ESLint config and fix lint errors.
+**Next step:** Add design tokens, fonts and base styles (web/src/styles).
 
 Resume protocol: read this file → `git status` → check out the branch above → finish uncommitted work → continue from the first unchecked item.
 
@@ -15,7 +15,7 @@ Gates before the last commit of each feature (from `web/`): `npm run lint`, `npm
 
 ## 1. `feature/design-system`
 - [x] chore(deps): add react-router-dom, fontsource fonts, eslint
-- [ ] chore(lint): add eslint config, lint and typecheck scripts
+- [x] chore(lint): add eslint config, lint and typecheck scripts
 - [ ] feat(ui): add design tokens and base styles
 - [ ] feat(ui): add Button, Badge, Chip, Input, Select
 - [ ] feat(ui): add Card, Avatar, Tabs, Stepper
