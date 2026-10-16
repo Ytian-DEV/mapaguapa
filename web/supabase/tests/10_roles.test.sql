@@ -23,6 +23,7 @@ select tests.expect_count($$select count(*) from public.profiles where full_name
 select tests.expect_error($$update public.profiles set role = 'admin' where id = '00000000-0000-0000-0000-0000000000b1'$$, '%Only an admin%');
 select tests.expect_error($$update public.profiles set is_active = false where id = '00000000-0000-0000-0000-0000000000b1'$$, '%Only an admin%');
 select tests.expect_count($$with u as (update public.profiles set full_name = 'x' where id = '00000000-0000-0000-0000-0000000000b2' returning 1) select count(*) from u$$, 0, 'student cannot edit others');
+select tests.expect_error($$update public.profiles set email = 'new@test.local' where id = '00000000-0000-0000-0000-0000000000b1'$$, '%changed through auth%');
 select tests.expect_count($$select count(*) from public.profile_cards$$, 6, 'profile cards are public');
 reset role;
 
@@ -34,6 +35,16 @@ insert into public.profiles (id, email, role, is_active) values ('00000000-0000-
 select tests.expect_error($$insert into public.profiles (id, email) values ('00000000-0000-0000-0000-0000000000b2', 'x')$$, '%own profile%');
 reset role;
 select tests.expect_count($$select count(*) from public.profiles where id = '00000000-0000-0000-0000-0000000000b3' and role = 'student'$$, 1, 'legacy insert normalised');
+
+-- v1 guard trigger is gone (replaced by app.profiles_guard)
+select tests.expect_count($$select count(*) from pg_trigger where tgname = 'protect_profile_system_fields'$$, 0, 'old guard dropped');
+
+-- Auth email change still syncs (runs without a user JWT)
+update auth.users set email = 'student1.new@test.local' where id = '00000000-0000-0000-0000-0000000000b1';
+select tests.expect_count($$select count(*) from public.profiles where id = '00000000-0000-0000-0000-0000000000b1' and email = 'student1.new@test.local'$$, 1, 'email sync from auth');
+
+-- Re-running the auth insert upsert keeps the role and fills missing names
+select tests.expect_count($$select count(*) from public.profiles where id = '00000000-0000-0000-0000-0000000000c1' and role = 'owner'$$, 1, 'owner role kept');
 
 -- Admin can change roles.
 select tests.login('00000000-0000-0000-0000-00000000000a');
