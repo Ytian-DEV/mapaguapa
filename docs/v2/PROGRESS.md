@@ -2,7 +2,7 @@
 
 **Current branch:** `feature/map-v2`
 **Status:** Features 1–4 merged into develop. Migrations tested locally, NOT applied to Supabase (see docs/v2/DB.md). Student pages verified with dev fixtures at /dev/browse (no v2 database to test against yet).
-**Next step:** Add bbox filter + map pins query to browseApi (search as I move).
+**Next step:** x
 
 Resume protocol: read this file → `git status` → check out the branch above → finish uncommitted work → continue from the first unchecked item.
 
@@ -58,7 +58,7 @@ Gates before the last commit of each feature (from `web/`): `npm run lint`, `npm
 ## 5. `feature/map-v2`
 - [x] feat(map): switch tile provider with env key
 - [x] feat(map): price-band pins and VSU landmark marker
-- [ ] feat(map): search as I move the map (bounds filter)
+- [x] feat(map): search as I move the map (bounds filter)
 - [ ] feat(map): map on browse (desktop split, mobile toggle) and /map; merge
 
 ## 6. `feature/listing-detail-v2`

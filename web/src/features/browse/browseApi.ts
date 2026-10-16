@@ -1,5 +1,6 @@
 import type { Views } from "../../lib/database";
 import { PRICE_BANDS, type PriceBand } from "../../lib/domain";
+import { formatBBox, parseBBox, type BBox } from "../../lib/geo";
 import { supabase } from "../../lib/supabase";
 
 // Views are typed as all-nullable; a listing row always has an id.
@@ -80,6 +81,8 @@ export type BrowseFilters = {
   noCurfew: boolean;
   amenities: Amenity[];
   sort: BrowseSort;
+  /** Visible map area when "Search as I move the map" is on. */
+  bbox: BBox | null;
 };
 
 export const EMPTY_FILTERS: BrowseFilters = {
@@ -91,6 +94,7 @@ export const EMPTY_FILTERS: BrowseFilters = {
   noCurfew: false,
   amenities: [],
   sort: "nearest",
+  bbox: null,
 };
 
 const oneOf = <T extends string>(values: readonly T[], value: string | null): T | "" =>
@@ -109,6 +113,7 @@ export function filtersFromParams(params: URLSearchParams): BrowseFilters {
       .split(",")
       .filter((value): value is Amenity => (AMENITIES as readonly string[]).includes(value)),
     sort: oneOf(SORTS, params.get("sort")) || "nearest",
+    bbox: parseBBox(params.get("bbox")),
   };
 }
 
@@ -122,6 +127,7 @@ export function filtersToParams(filters: BrowseFilters) {
   if (filters.noCurfew) params.set("curfew", "none");
   if (filters.amenities.length) params.set("amenities", filters.amenities.join(","));
   if (filters.sort !== "nearest") params.set("sort", filters.sort);
+  if (filters.bbox) params.set("bbox", formatBBox(filters.bbox));
   return params;
 }
 
@@ -148,9 +154,19 @@ function cleanSearch(value: string) {
 
 export type BrowsePage = { rows: ListingCardRow[]; total: number };
 
-export async function fetchBrowsePage(filters: BrowseFilters, offset: number, limit: number): Promise<BrowsePage> {
-  let query = client().from("listing_rows").select(CARD_COLUMNS, { count: "exact" }).eq("status", "published");
+/** The subset of the PostgREST builder the shared filters use. */
+type FilterableQuery<Q> = {
+  eq(column: string, value: unknown): Q;
+  neq(column: string, value: unknown): Q;
+  gte(column: string, value: unknown): Q;
+  lte(column: string, value: unknown): Q;
+  not(column: string, operator: string, value: unknown): Q;
+  or(filters: string): Q;
+};
 
+/** Filters shared by the result list and the map pins (everything except sort). */
+function applyFilters<Q extends FilterableQuery<Q>>(input: Q, filters: BrowseFilters): Q {
+  let query = input.eq("status", "published");
   const search = cleanSearch(filters.q);
   if (search) {
     const pattern = `%${search}%`;
@@ -165,6 +181,15 @@ export async function fetchBrowsePage(filters: BrowseFilters, offset: number, li
   filters.amenities.forEach((amenity) => {
     query = query.eq(AMENITY_COLUMNS[amenity], true);
   });
+  if (filters.bbox) {
+    const [south, west, north, east] = filters.bbox;
+    query = query.gte("location_lat", south).lte("location_lat", north).gte("location_lng", west).lte("location_lng", east);
+  }
+  return query;
+}
+
+export async function fetchBrowsePage(filters: BrowseFilters, offset: number, limit: number): Promise<BrowsePage> {
+  let query = applyFilters(client().from("listing_rows").select(CARD_COLUMNS, { count: "exact" }), filters);
 
   if (filters.sort === "nearest") {
     query = query.order("distance_km", { ascending: true, nullsFirst: false });
@@ -178,6 +203,29 @@ export async function fetchBrowsePage(filters: BrowseFilters, offset: number, li
   const { data, error, count } = await query;
   if (error) throw error;
   return { rows: (data ?? []) as ListingCardRow[], total: count ?? 0 };
+}
+
+export type MapPinRow = Pick<
+  ListingCardRow,
+  "id" | "name" | "price_band" | "monthly_rental_label" | "location_lat" | "location_lng" | "area" | "accommodation_type" | "cover_bucket" | "cover_path"
+>;
+
+const MAP_PIN_LIMIT = 500;
+
+/** Every matching listing with coordinates (not just the loaded page) for the map. */
+export async function fetchMapPins(filters: BrowseFilters): Promise<MapPinRow[]> {
+  const query = applyFilters(
+    client()
+      .from("listing_rows")
+      .select("id, name, price_band, monthly_rental_label, location_lat, location_lng, area, accommodation_type, cover_bucket, cover_path"),
+    filters
+  )
+    .not("location_lat", "is", null)
+    .not("location_lng", "is", null)
+    .limit(MAP_PIN_LIMIT);
+  const { data, error } = await query;
+  if (error) throw error;
+  return (data ?? []) as MapPinRow[];
 }
 
 export type FilterOptions = { areas: string[]; types: string[] };
