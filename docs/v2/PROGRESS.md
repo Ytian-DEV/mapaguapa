@@ -1,8 +1,8 @@
 # MAPAGUAPA v2 — Progress
 
-**Current branch:** `develop`
+**Current branch:** `feature/admin-users`
 **Status:** Features 1–12 merged into develop. 6 migrations tested locally, NOT applied to Supabase (deploy day; no staging). v1 admin console at /admin/legacy (users only) until feature 13. UI verified with dev fixtures under /dev/*.
-**Next step:** Start feature/admin-users from develop (frame A4)
+**Next step:** Users table view (frame A4) on top of usersApi
 
 Resume protocol: read this file → `git status` → check out the branch above → finish uncommitted work → continue from the first unchecked item.
 
