@@ -1,8 +1,8 @@
 # MAPAGUAPA v2 — Progress
 
-**Current branch:** `develop`
-**Status:** Feature 1 (design-system) merged into develop. Feature 2 blocked on schema dump.
-**Next step:** Waiting for the schema dump at web/supabase/schema-dump.sql; then branch feature/db-v2-schema from develop.
+**Current branch:** `feature/db-v2-schema`
+**Status:** Feature 2 in progress. No schema dump yet: v1 baseline reconstructed from types in web/supabase/tests/01_v1_baseline.sql.
+**Next step:** Write v2 roles migration. Test with: PSQL='/c/Program Files/PostgreSQL/18/bin/psql.exe' PGPORT=54329 bash web/supabase/tests/run.sh (scratch cluster in session scratchpad).
 
 Resume protocol: read this file → `git status` → check out the branch above → finish uncommitted work → continue from the first unchecked item.
 
@@ -26,7 +26,8 @@ Gates before the last commit of each feature (from `web/`): `npm run lint`, `npm
 - [x] chore: gates and merge to develop (pointer-glow hook is removed with the v1 pages in features 3, 6, 13)
 
 ## 2. `feature/db-v2-schema`
-- [ ] chore(db): baseline snapshot of existing schema (if dump provided)
+- [x] test(db): local migration harness with Supabase stub and reconstructed v1 baseline (no dump yet)
+- [ ] chore(db): baseline snapshot of existing schema (when dump provided)
 - [ ] chore(db): add v2 roles migration
 - [ ] chore(db): add v2 listings status, pricing and RLS migration
 - [ ] chore(db): add conversations, messages, visit requests migration
