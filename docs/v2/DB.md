@@ -1,6 +1,6 @@
 # MAPAGUAPA v2 — Database changes
 
-All v2 schema work is in `web/supabase/migrations/` (run in filename order). **Nothing here has been run against Supabase.** It was tested on a local PostgreSQL 18 database, using a stub of the Supabase pieces it depends on and a reconstructed v1 schema (see "How it was tested").
+All v2 schema work is in `web/supabase/migrations/` (run in filename order). **Nothing here has been run against Supabase.** It was tested on a local PostgreSQL 18 database, using a stub of the Supabase pieces it depends on and a copy of the v1 schema built from prod's real functions, triggers and policies (see "How it was tested").
 
 ## Apply order
 
@@ -25,24 +25,38 @@ You can also paste each file into the SQL editor, in order. Every file can be ru
 
 > **Deploy coupling:** after migration 2, v1 listings are stored as `published` / `archived`. The live v1 app filters on `status = 'active'`, so **apply the migrations and deploy v2 in the same window**. This was agreed on 2026-10-16. `develop` already reads `published`, so local dev against an unmigrated project will show no listings. Use a staging project that has the migrations.
 
-## Things to check on the real database first
+## Checked against production (2026-10-16)
 
-There is no schema dump yet. These points are based on `web/src/lib/database.ts` and the v1 code:
+You ran the read-only check queries on prod. The migrations and the test copy of v1 (`tests/01_v1_baseline.sql`) now match what they returned:
 
-1. **`profiles.role` / `listings.status`.** The migrations drop *every* check constraint whose definition mentions these columns, and convert an enum column to text if there is one.
-2. **Existing RLS policies on `profiles`, `listings`, `listing_photos`, `deleted_listings`.** These are **all dropped and replaced**, whatever they are called. Storage policies are **not** dropped; the v2 ones are added next to them.
-3. **`archive_listing` / `restore_listing`.** All existing overloads are dropped and recreated, with `archive_listing(uuid, text) returns uuid` and `restore_listing(uuid) returns void`. Restoring sets the listing to `published` and deletes its `deleted_listings` row, which matches how the v1 Archive page works.
-4. **`handle_new_user` / `on_auth_user_created`.** If prod already has these (the Supabase default names), they are replaced, not duplicated.
-5. **Photo paths.** v1 admin uploads go to `admin/<listing_id>/…`. v2 owners upload to `owner/<listing_id>/…`.
-6. **Public helpers.** Helpers live in the private `app` schema, so nothing in `public` (such as an existing `public.is_admin()`) is changed.
+| Prod has | How v2 handles it |
+|---|---|
+| `listings.status` is the enum `listing_status` (`active`, `deleted`), and the policies `listings_select_active_or_admin` and `listing_photos_select_active_listing_or_admin` reference it | Migration 2 drops the v1 policies on `listings`, `listing_photos` and `deleted_listings` **before** converting the column to text. Without that order, Postgres refuses the type change. The old `listing_status` type is left in place unused. |
+| No check constraints on `profiles` or `listings` | Nothing to drop. If `profiles.role` is an enum, migration 1 converts it to text the same way, after dropping the profiles policies. |
+| `protect_profile_system_fields` trigger (blocks non-admin role / active / email changes) | Dropped in migration 1. `app.profiles_guard` now does the same job, including the email rule, but still accepts emails synced from `auth.users`. |
+| `handle_new_user` upserts email, name and avatar | Kept as an upsert. v2 also sets `role` from the sign-up `account_type`, but only on the first insert. |
+| `sync_profile_email_from_auth`, `set_updated_at` triggers, `set_listing_audit_fields` | Left as they are. They run after the v2 triggers and don't conflict. |
+| `archive_listing` snapshot is `{listing, photos}`; `restore_listing` keeps the `deleted_listings` row | Kept as in v1, using the v2 status values. |
+| `public.is_admin()`, used by the 4 storage policies on `listing-photos` | Not touched. Those storage policies stay, and the v2 storage policies are added next to them. |
+| Every policy is `to authenticated` (no signed-out access) | v2 keeps this: listings, photos, `profile_cards` and `listing_rows` all need sign-in. |
 
-To check before applying, run this in the SQL editor and send me the output:
+To check prod again, run each query **on its own** (the SQL editor only shows the last result):
 
 ```sql
-select tablename, policyname, cmd, qual from pg_policies where schemaname in ('public', 'storage') order by 1, 2;
-select conrelid::regclass, conname, pg_get_constraintdef(oid) from pg_constraint where conrelid in ('public.profiles'::regclass, 'public.listings'::regclass) and contype = 'c';
-select oid::regprocedure, pg_get_functiondef(oid) from pg_proc where proname in ('archive_listing', 'restore_listing', 'handle_new_user', 'is_admin');
-select tgname, tgrelid::regclass from pg_trigger where not tgisinternal and tgrelid in ('auth.users'::regclass, 'public.listings'::regclass, 'public.profiles'::regclass);
+select t.tgname, p.proname, pg_get_functiondef(p.oid) as definition
+from pg_trigger t join pg_proc p on p.oid = t.tgfoid
+where not t.tgisinternal and t.tgrelid in ('auth.users'::regclass, 'public.profiles'::regclass, 'public.listings'::regclass);
+```
+```sql
+select tablename, policyname, cmd, roles, qual, with_check from pg_policies where schemaname in ('public', 'storage') order by 1, 2;
+```
+```sql
+select conrelid::regclass as table_name, conname, pg_get_constraintdef(oid) as definition
+from pg_constraint where conrelid in ('public.profiles'::regclass, 'public.listings'::regclass) and contype = 'c';
+```
+```sql
+select oid::regprocedure as signature, pg_get_functiondef(oid) as definition
+from pg_proc where proname in ('archive_listing', 'restore_listing', 'handle_new_user', 'is_admin') and pronamespace = 'public'::regnamespace;
 ```
 
 ## Dashboard settings (not SQL)
@@ -60,9 +74,9 @@ PSQL="C:/Program Files/PostgreSQL/18/bin/psql.exe" PGPORT=54329 bash web/supabas
 `run.sh` runs these steps in order:
 
 1. Builds `mapaguapa_test` from `tests/00_supabase_stub.sql`, which provides `auth.uid()`, `storage.objects`, roles and the realtime publication.
-2. Loads `01_v1_baseline.sql` (reconstructed v1 schema, policies and functions) and `02_v1_seed.sql`.
+2. Loads `01_v1_baseline.sql` (v1 schema with prod's enum, functions, triggers and policies) and `02_v1_seed.sql`.
 3. Applies every migration **twice** to prove they can be re-run.
-4. Runs `*.test.sql`. These tests sign in as different users through the JWT claim settings and check every RLS rule, guard, trigger and RPC above. That is 100+ assertions, including that students only see `published` listings, owners can't self-publish, only participants read conversations, and admins-only RPCs refuse other users.
+4. Runs `*.test.sql`. These tests sign in as different users through the JWT claim settings and check every RLS rule, guard, trigger and RPC above. That is 136 assertions, including that students only see `published` listings, owners can't self-publish, only participants read conversations, and admins-only RPCs refuse other users.
 
 After changing a migration, regenerate the TypeScript types:
 

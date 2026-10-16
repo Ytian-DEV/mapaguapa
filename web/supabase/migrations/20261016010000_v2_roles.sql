@@ -3,12 +3,30 @@
 --   a trigger keeps accepting 'user' from the v1 client and stores 'student').
 -- * Profiles are created server-side from auth.users, taking the account type
 --   chosen at sign-up (raw_user_meta_data.account_type = 'owner' | 'student').
--- * Users can no longer change their own role / active / verification fields.
+-- * Users can no longer change their own role / active / verification / email.
+--   This replaces the v1 trigger protect_profile_system_fields.
 -- * Role helpers live in a private `app` schema (not exposed through the API).
--- Safe to re-run.
+-- Matches prod as of 2026-10-16 (see docs/v2/DB.md). Safe to re-run.
 
 create schema if not exists app;
 grant usage on schema app to anon, authenticated, service_role;
+
+-- ---------------------------------------------------------------------------
+-- Drop the v1 profiles policies and guard first: a policy that references
+-- `role` would block the type change below. v2 versions are created further down.
+-- ---------------------------------------------------------------------------
+do $$
+declare
+  v_policy record;
+begin
+  for v_policy in select policyname from pg_policies where schemaname = 'public' and tablename = 'profiles' loop
+    execute format('drop policy %I on public.profiles', v_policy.policyname);
+  end loop;
+end
+$$;
+
+drop trigger if exists protect_profile_system_fields on public.profiles;
+drop function if exists public.protect_profile_system_fields();
 
 -- ---------------------------------------------------------------------------
 -- profiles.role: normalise type and values
@@ -143,6 +161,11 @@ begin
       or new.id is distinct from old.id then
       raise exception 'Only an admin can change role, status or verification.' using errcode = '42501';
     end if;
+    -- Email follows auth.users (synced by on_auth_user_updated); never set by hand.
+    if new.email is distinct from old.email
+      and new.email is distinct from (select u.email from auth.users u where u.id = new.id) then
+      raise exception 'Email must be changed through auth.' using errcode = '42501';
+    end if;
   end if;
 
   new.updated_at := now();
@@ -173,7 +196,12 @@ begin
     case when v_meta ->> 'account_type' = 'owner' then 'owner' else 'student' end,
     true
   )
-  on conflict (id) do nothing;
+  -- Same upsert as v1; role is only set on first insert.
+  on conflict (id) do update
+  set email = excluded.email,
+      full_name = coalesce(excluded.full_name, public.profiles.full_name),
+      avatar_url = coalesce(excluded.avatar_url, public.profiles.avatar_url),
+      updated_at = now();
   return new;
 end;
 $$;
@@ -186,7 +214,7 @@ after insert on auth.users
 for each row execute function public.handle_new_user();
 
 -- ---------------------------------------------------------------------------
--- RLS: replace every existing profiles policy (names in prod are unknown)
+-- RLS (v1 policies were dropped at the top; this loop only matters on re-run)
 -- ---------------------------------------------------------------------------
 alter table public.profiles enable row level security;
 
@@ -225,4 +253,5 @@ select
 from public.profiles p
 where p.is_active;
 
-grant select on public.profile_cards to anon, authenticated;
+revoke all on public.profile_cards from anon;
+grant select on public.profile_cards to authenticated;
