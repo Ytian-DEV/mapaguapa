@@ -49,3 +49,12 @@ export async function startConversation(listingId: string) {
   if (error) throw error;
   return data as string;
 }
+
+/** Counts toward the owner's "listing views" (one per viewer per day; owners' own views are ignored). */
+export function recordListingView(listingId: string) {
+  if (!supabase) return;
+  void supabase.rpc("record_listing_view", { p_listing_id: listingId }).then(
+    () => undefined,
+    () => undefined
+  );
+}

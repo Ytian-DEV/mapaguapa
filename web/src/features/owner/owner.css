@@ -1,0 +1,479 @@
+.owner-overview {
+  display: grid;
+  gap: 24px;
+}
+
+.owner-overview .ui-page-header {
+  margin-bottom: 0;
+}
+
+/* Availability reminder */
+.owner-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px 14px 20px;
+  border-radius: var(--radius-card);
+  background: var(--tone-amber-bg);
+  color: var(--color-ink-2);
+  font-size: var(--text-sm);
+}
+
+.owner-banner > svg {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  color: var(--tone-amber-fg);
+}
+
+.owner-banner p {
+  flex: 1;
+}
+
+/* Stats */
+.owner-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.owner-stats__label {
+  color: var(--color-muted);
+}
+
+.owner-stats__value {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.owner-stats__value .ui-badge {
+  font-family: var(--font-ui);
+  letter-spacing: 0;
+}
+
+/* Two columns */
+.owner-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 16px;
+}
+
+.owner-side {
+  display: grid;
+  gap: 16px;
+}
+
+.owner-card {
+  overflow: hidden;
+}
+
+.owner-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.owner-card__head h2 {
+  font-size: var(--text-base);
+  font-weight: 600;
+}
+
+.owner-card__head a {
+  color: var(--color-forest);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.owner-card__head a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Listing rows */
+.owner-list {
+  display: grid;
+}
+
+.owner-listing {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.owner-listing:last-child {
+  border-bottom: 0;
+}
+
+.owner-listing__thumb {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 76px;
+  height: 56px;
+  overflow: hidden;
+  border-radius: var(--radius-control);
+  background: var(--color-paper-2);
+  color: var(--color-faint);
+}
+
+.owner-listing__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.owner-listing__thumb svg {
+  width: 18px;
+  height: 18px;
+}
+
+.owner-listing__body {
+  display: grid;
+  flex: 1;
+  gap: 4px;
+  min-width: 0;
+}
+
+.owner-listing__title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.owner-listing__name {
+  font-size: var(--text-base);
+  font-weight: 600;
+}
+
+.owner-listing__meta,
+.owner-listing__info {
+  color: var(--color-muted);
+  font-size: var(--text-xs);
+}
+
+.owner-listing__info {
+  color: var(--color-ink-2);
+}
+
+.owner-listing__info--note {
+  color: var(--tone-red-fg);
+}
+
+.owner-listing__action {
+  flex-shrink: 0;
+}
+
+/* Recent inquiries */
+.owner-inquiries li + li,
+.owner-visits li + li {
+  border-top: 1px solid var(--color-line);
+}
+
+.owner-inquiry,
+.owner-visit {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 20px;
+  color: inherit;
+}
+
+.owner-inquiry:hover,
+.owner-visit:hover {
+  background: var(--color-app-bg);
+}
+
+.owner-inquiry:focus-visible,
+.owner-visit:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: -3px;
+}
+
+.owner-inquiry__body,
+.owner-visit__body {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+  min-width: 0;
+}
+
+.owner-inquiry__top {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: var(--text-sm);
+}
+
+.owner-inquiry__top > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-muted);
+  font-size: var(--text-2xs);
+}
+
+.owner-inquiry__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-clay);
+}
+
+.owner-inquiry__listing {
+  color: var(--color-muted);
+  font-size: var(--text-2xs);
+}
+
+.owner-inquiry__preview {
+  overflow: hidden;
+  font-size: var(--text-xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Upcoming visits */
+.owner-visit {
+  align-items: center;
+}
+
+.owner-visit__date {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 48px;
+  height: 52px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-control);
+  background: var(--color-app-bg);
+  line-height: 1;
+}
+
+.owner-visit__date span {
+  color: var(--color-clay);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.owner-visit__date strong {
+  font-family: var(--font-heading);
+  font-size: 1.375rem;
+  font-weight: 400;
+}
+
+.owner-visit__body strong {
+  font-size: var(--text-sm);
+}
+
+.owner-visit__body span {
+  color: var(--color-muted);
+  font-size: var(--text-xs);
+}
+
+/* My listings page */
+.owner-tabs {
+  margin-bottom: 16px;
+}
+
+/* Verification and profile */
+.owner-form-page {
+  display: grid;
+  gap: 20px;
+  max-width: 760px;
+}
+
+.owner-form {
+  display: grid;
+  gap: 18px;
+}
+
+.owner-form__row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.owner-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.verify-status {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.verify-status__icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+}
+
+.verify-status__icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.verify-status__icon--approved {
+  background: var(--tone-green-bg);
+  color: var(--tone-green-fg);
+}
+
+.verify-status__icon--pending {
+  background: var(--tone-amber-bg);
+  color: var(--tone-amber-fg);
+}
+
+.verify-status__icon--rejected {
+  background: var(--tone-red-bg);
+  color: var(--tone-red-fg);
+}
+
+.verify-status h2 {
+  font-family: var(--font-heading);
+  font-size: 1.375rem;
+  font-weight: 400;
+}
+
+.verify-status p {
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+}
+
+.file-drop {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 24px;
+  border: 1.5px dashed var(--color-line-strong);
+  border-radius: var(--radius-panel);
+  background: var(--color-app-bg);
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+  text-align: center;
+  cursor: pointer;
+}
+
+.file-drop:hover,
+.file-drop:focus-within {
+  border-color: var(--color-forest);
+}
+
+.file-drop svg {
+  width: 22px;
+  height: 22px;
+  color: var(--color-forest);
+}
+
+.file-drop strong {
+  color: var(--color-ink);
+}
+
+.file-list {
+  display: grid;
+  gap: 6px;
+}
+
+.file-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-control);
+  font-size: var(--text-xs);
+}
+
+.profile-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.profile-head p {
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+}
+
+@media (max-width: 1199px) {
+  .owner-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .owner-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 767px) {
+  .owner-banner {
+    flex-wrap: wrap;
+  }
+
+  .owner-banner .ui-btn {
+    margin-left: 32px;
+  }
+
+  .owner-stats {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .owner-listing {
+    flex-wrap: wrap;
+  }
+
+  .owner-listing__action {
+    width: 100%;
+  }
+
+  .owner-listing__action .ui-btn {
+    width: 100%;
+  }
+
+  .owner-form__row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Owner preview of the public listing page */
+.owner-preview .detail {
+  padding-block: 0;
+  padding-inline: 0;
+}
+
+.owner-preview__notice {
+  margin-bottom: 20px;
+  background: var(--color-sage);
+}
+
+.owner-preview__notice > svg {
+  color: var(--color-forest);
+}
+
+.owner-preview__notice p {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+/* No phone bottom bar inside the owner portal */
+.owner-preview .detail-bar {
+  display: none;
+}

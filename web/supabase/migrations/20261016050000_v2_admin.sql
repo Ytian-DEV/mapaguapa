@@ -47,7 +47,9 @@ $$;
 -- listing_rows: one row per visible listing for tables and cards.
 -- security_invoker so listings/photos RLS still decides what the caller sees.
 -- ---------------------------------------------------------------------------
-create or replace view public.listing_rows
+-- Dropped first so re-running older files never conflicts with newer columns.
+drop view if exists public.listing_rows;
+create view public.listing_rows
 with (security_invoker = true)
 as
 select

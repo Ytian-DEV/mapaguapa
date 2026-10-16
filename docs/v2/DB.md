@@ -4,7 +4,7 @@ All v2 schema work is in `web/supabase/migrations/` (run in filename order). **N
 
 ## Apply order
 
-Run these after the four existing v1 migrations (`20260526…` to `20260610…`), which are already live:
+Run these 6 files after the four existing v1 migrations (`20260526…` to `20260610…`), which are already live:
 
 | # | File | What it does |
 |---|---|---|
@@ -13,6 +13,7 @@ Run these after the four existing v1 migrations (`20260526…` to `20260610…`)
 | 3 | `20261016030000_v2_messaging.sql` | Adds conversations, messages, visit requests, owner notes, saved replies, the `inbox` view, the messaging RPCs, a private `message-attachments` bucket, and Realtime publication. |
 | 4 | `20261016040000_v2_moderation.sql` | Adds reports, owner verifications (with a private `owner-verifications` bucket), and `activity_log` with the triggers that fill it. |
 | 5 | `20261016050000_v2_admin.sql` | Adds `pg_trgm`, the `listing_rows` view, and the RPCs `admin_overview()`, `admin_users()`, `admin_set_role/active()`, `admin_merge_users()`, `similar_listings()` and `touch_last_active()`. |
+| 6 | `20261016060000_v2_owner_stats.sql` | Adds `listing_views` (one per viewer per listing per day) with `record_listing_view()`, the `owner_overview()` stats RPC (frame O1) and `listings.draft_step`. |
 
 How to apply (staging first):
 

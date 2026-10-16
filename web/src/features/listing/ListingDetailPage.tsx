@@ -5,7 +5,7 @@ import { useAuth } from "../../app/AuthProvider";
 import { vsuDistanceKm } from "../../lib/geo";
 import { Button, ButtonLink, EmptyState, LoadingRegion, Skeleton, useToast } from "../../ui";
 import { useSaved } from "../browse/SavedContext";
-import { fetchListingDetail, startConversation, type ListingDetailBundle } from "./detailApi";
+import { fetchListingDetail, recordListingView, startConversation, type ListingDetailBundle } from "./detailApi";
 import { ListingDetailView } from "./ListingDetailView";
 
 function DetailSkeleton() {
@@ -43,6 +43,7 @@ export default function ListingDetailPage() {
         if (cancelled) return;
         setBundle(result);
         setStatus(result ? "ready" : "missing");
+        if (result?.listing.status === "published") recordListingView(result.listing.id);
       })
       .catch(() => {
         if (!cancelled) setStatus("error");

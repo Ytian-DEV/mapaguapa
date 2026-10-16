@@ -6,6 +6,7 @@ import { homeFor, PublicOnly, RequireRole } from "./app/guards";
 import { SavedProvider } from "./features/browse/SavedContext";
 import { StudentShell } from "./features/browse/StudentShell";
 import { InboxProvider } from "./features/messaging/InboxContext";
+import { OwnerDataProvider } from "./features/owner/OwnerDataContext";
 import { OwnerShell } from "./features/owner/OwnerShell";
 import { ToastProvider } from "./ui";
 import "./app.css";
@@ -24,11 +25,17 @@ const ResetPasswordPage = lazy(() => import("./features/auth/ResetPasswordPage")
 const AuthCallbackPage = lazy(() => import("./features/auth/AuthCallbackPage"));
 const OwnerComingSoon = lazy(() => import("./features/owner/OwnerComingSoon"));
 const OwnerInquiriesPage = lazy(() => import("./features/messaging/OwnerInquiriesPage"));
+const OwnerOverviewPage = lazy(() => import("./features/owner/OwnerOverviewPage"));
+const OwnerListingsPage = lazy(() => import("./features/owner/OwnerListingsPage"));
+const OwnerListingPreviewPage = lazy(() => import("./features/owner/OwnerListingPreviewPage"));
+const VerificationPage = lazy(() => import("./features/owner/VerificationPage"));
+const OwnerProfilePage = lazy(() => import("./features/owner/OwnerProfilePage"));
 const NotFoundPage = lazy(() => import("./app/NotFoundPage"));
 const ComponentsPreview = import.meta.env.DEV ? lazy(() => import("./dev/ComponentsPreview")) : null;
 const BrowsePreview = import.meta.env.DEV ? lazy(() => import("./dev/BrowsePreview")) : null;
 const ListingPreview = import.meta.env.DEV ? lazy(() => import("./dev/ListingPreview")) : null;
 const MessagesPreview = import.meta.env.DEV ? lazy(() => import("./dev/MessagesPreview")) : null;
+const OwnerPreview = import.meta.env.DEV ? lazy(() => import("./dev/OwnerPreview")) : null;
 
 function AboutRoute() {
   const { profile } = useAuth();
@@ -65,11 +72,13 @@ function OwnerLayout() {
   return (
     <RequireRole roles={["owner"]}>
       <InboxProvider>
-        <OwnerShell>
-          <Suspense fallback={null}>
-            <Outlet />
-          </Suspense>
-        </OwnerShell>
+        <OwnerDataProvider>
+          <OwnerShell>
+            <Suspense fallback={null}>
+              <Outlet />
+            </Suspense>
+          </OwnerShell>
+        </OwnerDataProvider>
       </InboxProvider>
     </RequireRole>
   );
@@ -107,7 +116,11 @@ export default function App() {
               <Route element={<Navigate replace to="/saved" />} path="/dashboard/saved" />
               <Route element={<LegacyDashboardRedirect />} path="/dashboard" />
               <Route element={<OwnerLayout />} path="/owner">
-                <Route element={<OwnerComingSoon />} index />
+                <Route element={<OwnerOverviewPage />} index />
+                <Route element={<OwnerListingsPage />} path="listings" />
+                <Route element={<OwnerListingPreviewPage />} path="listings/:listingId/preview" />
+                <Route element={<VerificationPage />} path="verification" />
+                <Route element={<OwnerProfilePage />} path="profile" />
                 <Route element={<OwnerInquiriesPage />} path="inquiries" />
                 <Route element={<OwnerInquiriesPage />} path="inquiries/:conversationId" />
                 <Route element={<OwnerComingSoon />} path="*" />
@@ -118,6 +131,7 @@ export default function App() {
               {BrowsePreview && <Route element={<BrowsePreview />} path="/dev/browse" />}
               {ListingPreview && <Route element={<ListingPreview />} path="/dev/listing" />}
               {MessagesPreview && <Route element={<MessagesPreview />} path="/dev/messages/*" />}
+              {OwnerPreview && <Route element={<OwnerPreview />} path="/dev/owner" />}
               <Route element={<NotFoundPage />} path="*" />
             </Routes>
           </Suspense>

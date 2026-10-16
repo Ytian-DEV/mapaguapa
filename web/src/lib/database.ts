@@ -257,6 +257,39 @@ export type Database = {
           }
         ];
       };
+      listing_views: {
+        Row: {
+          listing_id: string;
+          viewer_id: string;
+          viewed_on: string;
+        };
+        Insert: {
+          listing_id: string;
+          viewer_id: string;
+          viewed_on?: string;
+        };
+        Update: {
+          listing_id?: string;
+          viewer_id?: string;
+          viewed_on?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "listing_views_listing_id_fkey";
+            columns: ["listing_id"];
+            isOneToOne: false;
+            referencedRelation: "listings";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "listing_views_viewer_id_fkey";
+            columns: ["viewer_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
       listings: {
         Row: {
           id: string;
@@ -342,6 +375,7 @@ export type Database = {
           room_types: Json;
           price_band: string | null;
           exclusivity_group: string | null;
+          draft_step: number | null;
         };
         Insert: {
           id?: string;
@@ -427,6 +461,7 @@ export type Database = {
           room_types?: Json;
           price_band?: string | null;
           exclusivity_group?: string | null;
+          draft_step?: number | null;
         };
         Update: {
           id?: string;
@@ -512,6 +547,7 @@ export type Database = {
           room_types?: Json;
           price_band?: string | null;
           exclusivity_group?: string | null;
+          draft_step?: number | null;
         };
         Relationships: [
           {
@@ -990,6 +1026,7 @@ export type Database = {
           photo_count: number | null;
           cover_bucket: string | null;
           cover_path: string | null;
+          draft_step: number | null;
         };
         Relationships: [];
       };
@@ -1071,6 +1108,16 @@ export type Database = {
       mark_conversation_read: {
         Args: {
           p_conversation_id: string;
+        };
+        Returns: undefined;
+      };
+      owner_overview: {
+        Args: Record<PropertyKey, never>;
+        Returns: Json;
+      };
+      record_listing_view: {
+        Args: {
+          p_listing_id: string;
         };
         Returns: undefined;
       };
