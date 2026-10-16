@@ -2,7 +2,7 @@
 
 **Current branch:** `feature/owner-portal`
 **Status:** Features 1–7 merged into develop. Migrations tested locally, NOT applied to Supabase (applied on deploy day; no staging). UI verified with dev fixtures (/dev/browse, /dev/listing, /dev/messages).
-**Next step:** Build owner data context + Overview page (frame O1).
+**Next step:** x
 
 Resume protocol: read this file → `git status` → check out the branch above → finish uncommitted work → continue from the first unchecked item.
 
@@ -80,7 +80,7 @@ Gates before the last commit of each feature (from `web/`): `npm run lint`, `npm
 ## 8. `feature/owner-portal`
 - [x] chore(db): listing views, owner_overview() and draft_step (migration 6)
 - [x] feat(owner): owner layout and sidebar
-- [ ] feat(owner): overview stats, listings, inquiries, visits, reminder
+- [x] feat(owner): overview stats, listings, inquiries, visits, reminder
 - [ ] feat(owner): my listings page
 - [ ] feat(owner): verification upload
 - [ ] feat(owner): profile page; merge
