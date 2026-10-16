@@ -2,7 +2,7 @@
 
 **Current branch:** `feature/design-system`
 **Status:** Plan approved. Feature 1 in progress.
-**Next step:** Build Logo, Sidebar, TopNav, Dialog, Drawer, Toast in web/src/ui.
+**Next step:** Add router shell (react-router) with role guards; mount v1 pages unchanged.
 
 Resume protocol: read this file → `git status` → check out the branch above → finish uncommitted work → continue from the first unchecked item.
 
@@ -20,7 +20,7 @@ Gates before the last commit of each feature (from `web/`): `npm run lint`, `npm
 - [x] feat(ui): add Button, Badge, Chip, Input, Select
 - [x] feat(ui): add Card, Avatar, Tabs, Stepper
 - [x] feat(ui): add DataTable, Pagination, EmptyState, Skeleton
-- [ ] feat(ui): add Sidebar, TopNav, Dialog, Drawer, Toast
+- [x] feat(ui): add Sidebar, TopNav, Dialog, Drawer, Toast
 - [ ] feat(app): add router shell and role guards (v1 pages mounted unchanged)
 - [ ] feat(dev): add /dev/components preview page
 - [ ] chore: gates and merge to develop (pointer-glow hook is removed with the v1 pages in features 3, 6, 13)

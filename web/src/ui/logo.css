@@ -1,0 +1,49 @@
+.ui-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+.ui-logo:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: 4px;
+  border-radius: var(--radius-xs);
+}
+
+.ui-logo__mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--color-forest);
+  color: var(--color-on-dark);
+}
+
+.ui-logo__mark svg {
+  width: 18px;
+  height: 18px;
+}
+
+.ui-logo__word {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  font-variation-settings:
+    "SOFT" 0,
+    "WONK" 1;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.ui-logo--on-dark {
+  color: var(--color-on-dark);
+}
+
+.ui-logo--on-dark .ui-logo__mark {
+  background: var(--color-on-dark);
+  color: var(--color-forest);
+}
