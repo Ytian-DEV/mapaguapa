@@ -9,7 +9,7 @@ here="$(cd "$(dirname "$0")" && pwd)"
 migrations="$here/../migrations"
 psql_bin="${PSQL:-psql}"
 db="${TEST_DB:-mapaguapa_test}"
-export PGOPTIONS="${PGOPTIONS:---client-min-messages=warning}"
+export PGOPTIONS="${PGOPTIONS:---client-min-messages=error}"
 conn=(-h "${PGHOST:-127.0.0.1}" -p "${PGPORT:-5432}" -U "${PGUSER:-postgres}")
 
 case "${PGHOST:-127.0.0.1}" in

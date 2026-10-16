@@ -96,6 +96,13 @@ as $$
   select set_config('request.jwt.claims', json_build_object('sub', p_user, 'role', 'authenticated')::text, true);
 $$;
 
+-- Back to a trusted (service / SQL editor) context.
+create or replace function tests.logout() returns void
+language sql
+as $$
+  select set_config('request.jwt.claims', '', true);
+$$;
+
 -- Asserts that running `p_sql` raises an error (optionally matching `p_like`).
 create or replace function tests.expect_error(p_sql text, p_like text default '%') returns void
 language plpgsql

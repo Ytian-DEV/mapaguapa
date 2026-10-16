@@ -2,7 +2,7 @@
 
 **Current branch:** `feature/db-v2-schema`
 **Status:** Feature 2 in progress. No schema dump yet: v1 baseline reconstructed from types in web/supabase/tests/01_v1_baseline.sql.
-**Next step:** Write v2 listings status, pricing and RLS migration + tests.
+**Next step:** Write conversations/messages/visit requests migration + tests.
 
 Resume protocol: read this file → `git status` → check out the branch above → finish uncommitted work → continue from the first unchecked item.
 
@@ -29,7 +29,7 @@ Gates before the last commit of each feature (from `web/`): `npm run lint`, `npm
 - [x] test(db): local migration harness with Supabase stub and reconstructed v1 baseline (no dump yet)
 - [ ] chore(db): baseline snapshot of existing schema (when dump provided)
 - [x] chore(db): add v2 roles migration
-- [ ] chore(db): add v2 listings status, pricing and RLS migration
+- [x] chore(db): add v2 listings status, pricing and RLS migration
 - [ ] chore(db): add conversations, messages, visit requests migration
 - [ ] chore(db): add reports, owner verifications, activity log migration
 - [ ] chore(db): add admin RPCs migration
