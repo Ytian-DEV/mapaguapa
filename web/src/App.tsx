@@ -36,6 +36,7 @@ const WizardPage = lazy(() => import("./features/wizard/WizardPage"));
 const AdminOverviewPage = lazy(() => import("./features/admin/AdminOverviewPage"));
 const AdminSettingsPage = lazy(() => import("./features/admin/AdminSettingsPage"));
 const AdminComingSoon = lazy(() => import("./features/admin/AdminComingSoon"));
+const AdminReviewPage = lazy(() => import("./features/admin/AdminReviewPage"));
 const AdminListingsPage = lazy(() => import("./features/admin/AdminListingsPage"));
 const NotFoundPage = lazy(() => import("./app/NotFoundPage"));
 const ComponentsPreview = import.meta.env.DEV ? lazy(() => import("./dev/ComponentsPreview")) : null;
@@ -46,6 +47,7 @@ const OwnerPreview = import.meta.env.DEV ? lazy(() => import("./dev/OwnerPreview
 const WizardPreview = import.meta.env.DEV ? lazy(() => import("./dev/WizardPreview")) : null;
 const AdminPreview = import.meta.env.DEV ? lazy(() => import("./dev/AdminPreview")) : null;
 const AdminListingsPreview = import.meta.env.DEV ? lazy(() => import("./dev/AdminListingsPreview")) : null;
+const AdminReviewPreview = import.meta.env.DEV ? lazy(() => import("./dev/AdminReviewPreview")) : null;
 
 function AboutRoute() {
   const { profile } = useAuth();
@@ -165,7 +167,8 @@ export default function App() {
                 <Route element={<AdminOverviewPage />} index />
                 <Route element={<Navigate replace to="/admin/listings/new/edit/basics" />} path="listings/new" />
                 <Route element={<WizardPage mode="admin" />} path="listings/:listingId/edit/:step?" />
-                <Route element={<AdminComingSoon title="Review queue" />} path="review" />
+                <Route element={<AdminReviewPage />} path="review" />
+                <Route element={<AdminReviewPage />} path="review/:listingId" />
                 <Route element={<AdminListingsPage />} path="listings" />
                 <Route element={<OwnerListingPreviewPage base="/admin" />} path="listings/:listingId/preview" />
                 <Route element={<AdminListingsPage initialTab="archived" />} path="archive" />
@@ -183,6 +186,7 @@ export default function App() {
               {WizardPreview && <Route element={<WizardPreview />} path="/dev/wizard/:step?" />}
               {AdminPreview && <Route element={<AdminPreview />} path="/dev/admin" />}
               {AdminListingsPreview && <Route element={<AdminListingsPreview />} path="/dev/admin-listings" />}
+              {AdminReviewPreview && <Route element={<AdminReviewPreview />} path="/dev/admin-review" />}
               <Route element={<NotFoundPage />} path="*" />
             </Routes>
           </Suspense>

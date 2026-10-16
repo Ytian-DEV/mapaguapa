@@ -12,7 +12,7 @@ import { listTime } from "../messaging/time";
 import type { SimilarListing } from "./reviewApi";
 import "./review.css";
 
-export const CHECKLIST = [
+const CHECKLIST = [
   "Photos are clear and show the actual place",
   "Price range matches the rent",
   "Map pin is on the right building",
@@ -20,7 +20,7 @@ export const CHECKLIST = [
   "Not a duplicate of an existing listing",
 ];
 
-export const NOTE_TEMPLATES: Array<{ label: string; text: string }> = [
+const NOTE_TEMPLATES: Array<{ label: string; text: string }> = [
   { label: "Blurry photos", text: "Some photos are blurry or dark. Please upload clear photos of a room, the comfort room and the outside." },
   { label: "Wrong pin", text: "The map pin doesn’t match the address. Please move it onto the building’s entrance." },
   { label: "Missing contact", text: "Please add a mobile number students can call or text." },
