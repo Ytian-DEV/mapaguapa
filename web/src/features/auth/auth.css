@@ -100,7 +100,7 @@
   height: 46px;
   border-radius: 8px;
   background: var(--color-clay-tint);
-  color: var(--color-clay);
+  color: var(--color-clay-text);
 }
 
 .auth__float-icon svg {

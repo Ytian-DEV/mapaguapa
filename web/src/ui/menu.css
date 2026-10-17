@@ -84,6 +84,10 @@
   outline: none;
 }
 
+.ui-menu__item:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--color-forest);
+}
+
 .ui-menu__item:disabled {
   color: var(--color-faint);
   cursor: not-allowed;

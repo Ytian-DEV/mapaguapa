@@ -67,6 +67,23 @@ body {
   outline-offset: 2px;
 }
 
+/* Skip link: first focusable element on every shell */
+.v2-skip {
+  position: absolute;
+  top: -48px;
+  left: 16px;
+  z-index: var(--z-toast);
+  padding: 10px 14px;
+  border-radius: var(--radius-control);
+  background: var(--color-ink);
+  color: var(--color-on-dark);
+  font-size: var(--text-sm);
+}
+
+.v2-skip:focus {
+  top: 12px;
+}
+
 /* Type helpers */
 .v2-display {
   font-family: var(--font-heading);
@@ -109,7 +126,7 @@ body {
   font-weight: 500;
   letter-spacing: var(--tracking-eyebrow);
   text-transform: uppercase;
-  color: var(--color-clay);
+  color: var(--color-clay-text);
 }
 
 .v2-muted {

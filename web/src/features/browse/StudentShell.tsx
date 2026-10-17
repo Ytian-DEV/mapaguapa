@@ -21,7 +21,7 @@ export function StudentShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="v2 student-shell">
-      <a className="student-shell__skip" href="#main">
+      <a className="v2-skip" href="#main">
         Skip to content
       </a>
       <TopNav

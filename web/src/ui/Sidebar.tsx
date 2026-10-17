@@ -121,6 +121,9 @@ export function Sidebar(props: SidebarProps) {
 export function AppShell({ sidebar, children }: { sidebar: ReactNode; children: ReactNode }) {
   return (
     <div className="v2 v2--app ui-app-shell">
+      <a className="v2-skip" href="#main">
+        Skip to content
+      </a>
       {sidebar}
       <main className="ui-app-shell__main" id="main">
         {children}
