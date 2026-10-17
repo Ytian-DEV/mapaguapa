@@ -1,0 +1,45 @@
+.about {
+  min-height: 100vh;
+  background: var(--color-paper);
+}
+
+.about__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-block: 24px;
+}
+
+.about__main {
+  display: grid;
+  gap: 18px;
+  max-width: 820px;
+  padding-block: 32px 48px;
+}
+
+.about__photo {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-panel);
+  object-fit: cover;
+  background: var(--color-sage);
+}
+
+.about__copy {
+  color: var(--color-ink-2);
+  font-size: var(--text-lg);
+  line-height: 1.65;
+}
+
+.about__footer {
+  padding-block: 24px 40px;
+  border-top: 1px solid var(--color-line);
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+}
+
+.about__footer a {
+  color: var(--color-forest);
+  font-weight: 500;
+}

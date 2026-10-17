@@ -284,6 +284,7 @@ export function ThreadView({
             >
               <input
                 accept="image/*"
+                aria-hidden="true"
                 className="v2-sr-only"
                 onChange={(event) => {
                   const file = event.target.files?.[0];

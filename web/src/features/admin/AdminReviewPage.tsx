@@ -18,6 +18,7 @@ import {
 } from "./reviewApi";
 import { ReviewView } from "./ReviewView";
 import { VerificationsView } from "./VerificationsView";
+import { reportError } from "../../lib/errors";
 
 type Tab = "listings" | "verifications";
 type Load = "loading" | "ready" | "error";
@@ -52,7 +53,8 @@ export default function AdminReviewPage() {
     try {
       setQueue(await fetchQueue());
       setQueueStatus("ready");
-    } catch {
+    } catch (error) {
+      reportError(error);
       setQueueStatus("error");
     }
   }, []);
@@ -63,7 +65,8 @@ export default function AdminReviewPage() {
       setVerifications(items);
       setLinks(await signDocuments(items.flatMap((item) => item.document_paths)).catch(() => new Map<string, string>()));
       setVerifyStatus("ready");
-    } catch {
+    } catch (error) {
+      reportError(error);
       setVerifyStatus("error");
     }
   }, []);
@@ -84,7 +87,10 @@ export default function AdminReviewPage() {
         setSimilar(matches);
         setDetailStatus("ready");
       },
-      () => !stale && setDetailStatus("error")
+      (error) => {
+        reportError(error);
+        if (!stale) setDetailStatus("error");
+      }
     );
     return () => {
       stale = true;

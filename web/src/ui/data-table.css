@@ -1,5 +1,6 @@
 .ui-table-wrap {
-  overflow: hidden;
+  position: relative; /* keeps absolutely positioned sr-only labels inside the scroll area */
+  overflow-x: auto;
   border: 1px solid var(--color-line);
   border-radius: var(--radius-card-lg);
   background: var(--color-surface);

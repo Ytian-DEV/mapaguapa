@@ -18,6 +18,7 @@ import {
   type AdminUser,
   type UserFilters,
 } from "./usersApi";
+import { reportError } from "../../lib/errors";
 
 function errorText(error: unknown) {
   return error instanceof Error ? error.message : "Something went wrong.";
@@ -58,7 +59,8 @@ export default function AdminUsersPage() {
         setTotal(page.total);
         setStatus("ready");
       })
-      .catch(() => {
+      .catch((error) => {
+        reportError(error);
         if (id === request.current) setStatus("error");
       });
   }, [key, reload]);

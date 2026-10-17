@@ -603,7 +603,7 @@
 .detail__report button {
   border: 0;
   background: none;
-  color: var(--color-clay);
+  color: var(--color-clay-text);
   font-weight: 600;
   cursor: pointer;
 }

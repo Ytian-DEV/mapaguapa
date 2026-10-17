@@ -7,6 +7,7 @@ import { Button, ButtonLink, EmptyState, LoadingRegion, Skeleton, useToast } fro
 import { useSaved } from "../browse/SavedContext";
 import { fetchListingDetail, recordListingView, startConversation, type ListingDetailBundle } from "./detailApi";
 import { ListingDetailView } from "./ListingDetailView";
+import { reportError } from "../../lib/errors";
 
 function DetailSkeleton() {
   return (
@@ -45,7 +46,8 @@ export default function ListingDetailPage() {
         setStatus(result ? "ready" : "missing");
         if (result?.listing.status === "published") recordListingView(result.listing.id);
       })
-      .catch(() => {
+      .catch((error) => {
+        reportError(error);
         if (!cancelled) setStatus("error");
       });
     return () => {

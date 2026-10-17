@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { fetchAdminOverview, type AdminOverview } from "./adminApi";
+import { reportError } from "../../lib/errors";
 
 type AdminDataValue = {
   overview: AdminOverview | null;
@@ -18,7 +19,8 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
     try {
       setOverview(await fetchAdminOverview());
       setStatus("ready");
-    } catch {
+    } catch (error) {
+      reportError(error);
       setStatus((current) => (current === "ready" ? current : "error"));
     }
   }, []);

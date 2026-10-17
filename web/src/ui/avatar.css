@@ -40,7 +40,7 @@
 
 .ui-avatar--clay {
   background: var(--color-clay-tint);
-  color: var(--color-clay);
+  color: var(--color-clay-text);
 }
 
 .ui-avatar--paper {

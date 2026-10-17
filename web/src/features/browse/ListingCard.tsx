@@ -71,11 +71,11 @@ export function ListingCard({ listing, saved, onToggleSaved, active = false, onH
       </div>
       <div className="listing-card__info">
         <div className="listing-card__title-row">
-          <h3 className="listing-card__name">
+          <h2 className="listing-card__name">
             <Link className="listing-card__link" to={`/listing/${listing.id}`}>
               {name}
             </Link>
-          </h3>
+          </h2>
           <p className="listing-card__price">
             {price}
             {listing.price_band && <span> /mo</span>}

@@ -1,8 +1,8 @@
 # MAPAGUAPA v2 — Progress
 
 **Current branch:** `develop`
-**Status:** Features 1–14 merged into develop. 6 migrations tested locally, NOT applied to Supabase (deploy day; no staging). UI verified with dev fixtures under /dev/*.
-**Next step:** Start feature/v2-polish from develop
+**Status:** Features 1–15 merged into develop. 7 migrations tested locally, NOT applied to Supabase (deploy day; no staging). UI verified with dev fixtures under /dev/*.
+**Next step:** Final: full build on develop and PR text for develop → main
 
 Resume protocol: read this file → `git status` → check out the branch above → finish uncommitted work → continue from the first unchecked item.
 
@@ -124,11 +124,11 @@ Gates before the last commit of each feature (from `web/`): `npm run lint`, `npm
 - [x] feat(reports): admin reports list, detail and resolve; merge
 
 ## 15. `feature/v2-polish`
-- [ ] feat(ui): skeletons, empty/error states, 404
-- [ ] fix(a11y): contrast, focus rings, labels, keyboard nav
-- [ ] fix(ui): responsive pass
-- [ ] feat(seo): page titles and meta
-- [ ] chore: remove dead v1 code and drop legacy role value migration; merge
+- [x] feat(ui): skeletons, empty/error states, 404
+- [x] fix(a11y): contrast, focus rings, labels, keyboard nav
+- [x] fix(ui): responsive pass
+- [x] feat(seo): page titles and meta
+- [x] chore: remove dead v1 code and drop legacy role value migration; merge
 
 ## Final
 - [ ] Full build on develop; PR text for develop → main

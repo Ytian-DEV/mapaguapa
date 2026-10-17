@@ -1,7 +1,29 @@
 /*
- * v2 base layer. Scoped to `.v2` so the remaining v1 pages keep their own look
- * until each one is replaced; `.v2` is set on every v2 route root.
+ * Base layer. Element defaults stay scoped to `.v2` (set on every route root)
+ * so third-party widgets such as Leaflet keep their own styles.
  */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-ui);
+}
+
+body {
+  min-height: 100dvh;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 .v2 {
   min-height: 100dvh;
   background: var(--color-paper);
@@ -43,6 +65,23 @@
 :where(.v2) :where(:focus-visible) {
   outline: var(--focus-outline);
   outline-offset: 2px;
+}
+
+/* Skip link: first focusable element on every shell */
+.v2-skip {
+  position: absolute;
+  top: -48px;
+  left: 16px;
+  z-index: var(--z-toast);
+  padding: 10px 14px;
+  border-radius: var(--radius-control);
+  background: var(--color-ink);
+  color: var(--color-on-dark);
+  font-size: var(--text-sm);
+}
+
+.v2-skip:focus {
+  top: 12px;
 }
 
 /* Type helpers */
@@ -87,7 +126,7 @@
   font-weight: 500;
   letter-spacing: var(--tracking-eyebrow);
   text-transform: uppercase;
-  color: var(--color-clay);
+  color: var(--color-clay-text);
 }
 
 .v2-muted {

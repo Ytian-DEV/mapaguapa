@@ -15,6 +15,7 @@ import {
   type VisitAction,
   type VisitRequest,
 } from "./messagingApi";
+import { reportError } from "../../lib/errors";
 
 export type ThreadState = {
   status: "loading" | "ready" | "error";
@@ -70,7 +71,8 @@ export function useThread(conversationId: string | null): ThreadState {
         setStatus("ready");
         read(conversationId);
       })
-      .catch(() => {
+      .catch((error) => {
+        reportError(error);
         if (!cancelled) setStatus("error");
       });
 

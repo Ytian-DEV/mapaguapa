@@ -258,7 +258,7 @@
 }
 
 .owner-visit__date span {
-  color: var(--color-clay);
+  color: var(--color-clay-text);
   font-family: var(--font-mono);
   font-size: 10px;
   text-transform: uppercase;

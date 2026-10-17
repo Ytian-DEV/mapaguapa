@@ -1,8 +1,8 @@
 import { lazy, Suspense } from "react";
-import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation, useNavigate } from "react-router-dom";
-import { AuthProvider, useAuth } from "./app/AuthProvider";
+import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
+import { AuthProvider } from "./app/AuthProvider";
 import { FullPageLoader } from "./app/FullPageLoader";
-import { homeFor, PublicOnly, RequireRole } from "./app/guards";
+import { PublicOnly, RequireRole } from "./app/guards";
 import { SavedProvider } from "./features/browse/SavedContext";
 import { StudentShell } from "./features/browse/StudentShell";
 import { InboxProvider } from "./features/messaging/InboxContext";
@@ -11,9 +11,8 @@ import { AdminShell } from "./features/admin/AdminShell";
 import { OwnerDataProvider } from "./features/owner/OwnerDataContext";
 import { OwnerShell } from "./features/owner/OwnerShell";
 import { ToastProvider } from "./ui";
-import "./app.css";
 
-const AboutPage = lazy(() => import("./components/shared/AboutPage"));
+const AboutPage = lazy(() => import("./features/about/AboutPage"));
 const BrowsePage = lazy(() => import("./features/browse/BrowsePage"));
 const SavedPage = lazy(() => import("./features/browse/SavedPage"));
 const MapPage = lazy(() => import("./features/map/MapPage"));
@@ -24,7 +23,6 @@ const SignUpPage = lazy(() => import("./features/auth/SignUpPage"));
 const ForgotPasswordPage = lazy(() => import("./features/auth/ForgotPasswordPage"));
 const ResetPasswordPage = lazy(() => import("./features/auth/ResetPasswordPage"));
 const AuthCallbackPage = lazy(() => import("./features/auth/AuthCallbackPage"));
-const OwnerComingSoon = lazy(() => import("./features/owner/OwnerComingSoon"));
 const OwnerInquiriesPage = lazy(() => import("./features/messaging/OwnerInquiriesPage"));
 const OwnerOverviewPage = lazy(() => import("./features/owner/OwnerOverviewPage"));
 const OwnerListingsPage = lazy(() => import("./features/owner/OwnerListingsPage"));
@@ -34,7 +32,7 @@ const OwnerProfilePage = lazy(() => import("./features/owner/OwnerProfilePage"))
 const WizardPage = lazy(() => import("./features/wizard/WizardPage"));
 const AdminOverviewPage = lazy(() => import("./features/admin/AdminOverviewPage"));
 const AdminSettingsPage = lazy(() => import("./features/admin/AdminSettingsPage"));
-const AdminComingSoon = lazy(() => import("./features/admin/AdminComingSoon"));
+const NotFoundPanel = lazy(() => import("./app/NotFoundPanel"));
 const AdminReviewPage = lazy(() => import("./features/admin/AdminReviewPage"));
 const AdminUsersPage = lazy(() => import("./features/admin/AdminUsersPage"));
 const AdminReportsPage = lazy(() => import("./features/admin/AdminReportsPage"));
@@ -51,12 +49,6 @@ const AdminListingsPreview = import.meta.env.DEV ? lazy(() => import("./dev/Admi
 const AdminReviewPreview = import.meta.env.DEV ? lazy(() => import("./dev/AdminReviewPreview")) : null;
 const AdminUsersPreview = import.meta.env.DEV ? lazy(() => import("./dev/AdminUsersPreview")) : null;
 const AdminReportsPreview = import.meta.env.DEV ? lazy(() => import("./dev/AdminReportsPreview")) : null;
-
-function AboutRoute() {
-  const { profile } = useAuth();
-  const navigate = useNavigate();
-  return <AboutPage onLogoClick={() => navigate(profile ? homeFor(profile.role) : "/sign-in")} />;
-}
 
 /** Student area: shared nav, footer and saved state. */
 function StudentLayout() {
@@ -133,7 +125,7 @@ export default function App() {
               <Route element={<PublicOnly><ForgotPasswordPage /></PublicOnly>} path="/forgot-password" />
               <Route element={<ResetPasswordPage />} path="/reset-password" />
               <Route element={<AuthCallbackPage />} path="/auth/callback" />
-              <Route element={<AboutRoute />} path="/about" />
+              <Route element={<AboutPage />} path="/about" />
 
               <Route element={<StudentLayout />}>
                 <Route element={<BrowsePage />} path="/" />
@@ -155,7 +147,7 @@ export default function App() {
                 <Route element={<OwnerProfilePage />} path="profile" />
                 <Route element={<OwnerInquiriesPage />} path="inquiries" />
                 <Route element={<OwnerInquiriesPage />} path="inquiries/:conversationId" />
-                <Route element={<OwnerComingSoon />} path="*" />
+                <Route element={<NotFoundPanel home="/owner" />} path="*" />
               </Route>
               {/* The v1 console stays reachable until features 11–13 replace it. */}
               <Route element={<AdminLayout />} path="/admin">
@@ -171,7 +163,7 @@ export default function App() {
                 <Route element={<AdminReportsPage />} path="reports" />
                 <Route element={<AdminReportsPage />} path="reports/:reportId" />
                 <Route element={<AdminSettingsPage />} path="settings" />
-                <Route element={<AdminComingSoon title="Page" />} path="*" />
+                <Route element={<NotFoundPanel home="/admin" />} path="*" />
               </Route>
 
               {ComponentsPreview && <Route element={<ComponentsPreview />} path="/dev/components" />}

@@ -7,22 +7,6 @@
   flex: 1;
 }
 
-.student-shell__skip {
-  position: absolute;
-  top: -48px;
-  left: 16px;
-  z-index: var(--z-toast);
-  padding: 10px 14px;
-  border-radius: var(--radius-control);
-  background: var(--color-ink);
-  color: var(--color-on-dark);
-  font-size: var(--text-sm);
-}
-
-.student-shell__skip:focus {
-  top: 12px;
-}
-
 .student-shell__footer {
   border-top: 1px solid var(--color-line);
 }

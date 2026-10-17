@@ -1,8 +1,10 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
-import type { Profile } from "../lib/models";
+import type { Tables } from "../lib/database";
 import { supabase } from "../lib/supabase";
 import { takePendingAccountType } from "../features/auth/authApi";
+
+type Profile = Tables<"profiles">;
 
 type AuthContextValue = {
   session: Session | null;

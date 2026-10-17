@@ -20,6 +20,7 @@ import {
 } from "./adminListingsApi";
 import { AdminListingsView } from "./AdminListingsView";
 import { ArchiveDialog } from "./ArchiveDialog";
+import { reportError } from "../../lib/errors";
 
 /** /admin/listings (and /admin/archive → Archived tab). Replaces the v1 listing and archive pages. */
 export default function AdminListingsPage({ initialTab }: { initialTab?: ListingStatus }) {
@@ -69,7 +70,8 @@ export default function AdminListingsPage({ initialTab }: { initialTab?: Listing
         setCounts(tabCounts);
         setStatus("ready");
       })
-      .catch(() => {
+      .catch((error) => {
+        reportError(error);
         if (id === request.current) setStatus("error");
       });
   }, [key, initialTab, reload]);

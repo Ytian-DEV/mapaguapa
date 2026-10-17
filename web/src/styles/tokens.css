@@ -10,7 +10,7 @@
   --color-app-bg: #faf8f4;
   --color-ink: #14201a;
   --color-ink-2: #3d4842;
-  --color-muted: #6b746e;
+  --color-muted: #616a64; /* #6B746E in the brief, darkened to pass WCAG AA on paper/sage */
   --color-faint: #a1a8a3;
   --color-line: #e4dfd5;
   --color-line-strong: #d3ccbf;
@@ -19,6 +19,7 @@
   --color-sage: #e3ebe2;
   --color-clay: #b85433;
   --color-clay-tint: #f6e6de;
+  --color-clay-text: #a84b2d; /* clay for small text: AA on paper and clay-tint */
   --color-on-dark: #f5f2ec;
   --color-on-dark-muted: rgba(245, 242, 236, 0.82);
   --color-on-dark-faint: rgba(245, 242, 236, 0.66);

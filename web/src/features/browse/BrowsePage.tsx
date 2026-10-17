@@ -14,6 +14,7 @@ import {
 } from "./browseApi";
 import { useMapPins } from "./useMapPins";
 import { useSaved } from "./SavedContext";
+import { reportError } from "../../lib/errors";
 
 const PAGE_SIZE = 12;
 
@@ -54,7 +55,8 @@ export default function BrowsePage() {
         setTotal(page.total);
         setStatus("ready");
       })
-      .catch(() => {
+      .catch((error) => {
+        reportError(error);
         if (id === requestId.current) setStatus("error");
       });
   }, [filterKey, reloadToken]);

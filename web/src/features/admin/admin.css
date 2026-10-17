@@ -85,7 +85,7 @@
 
 .admin-attention__icon--clay {
   background: var(--color-clay-tint);
-  color: var(--color-clay);
+  color: var(--color-clay-text);
 }
 
 .admin-attention__icon--red {
@@ -297,6 +297,7 @@
 /* Listings table (A2) */
 .admin-listings {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
 }
 
