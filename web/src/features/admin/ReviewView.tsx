@@ -10,6 +10,7 @@ import type { ListingDetailBundle } from "../listing/detailApi";
 import { exclusivityLabel, hasCurfew, occupancyLabel } from "../listing/listingFacts";
 import { listTime } from "../messaging/time";
 import type { SimilarListing } from "./reviewApi";
+import "./admin.css";
 import "./review.css";
 
 const CHECKLIST = [
