@@ -1,6 +1,6 @@
 # MAPAGUAPA v2 — Progress
 
-**Current branch:** `feature/perf-pass`
+**Current branch:** `develop`
 **Status:** COMPLETE. All 15 features merged into develop (lint 0 errors, typecheck clean, build passes). 8 migrations tested locally, NOT applied to Supabase (deploy day; no staging). PR develop → main not opened (by design).
 **Next step:** Done. Open the develop → main PR with the text from the final message; follow the deploy-day steps in docs/v2/DB.md
 
@@ -132,3 +132,10 @@ Gates before the last commit of each feature (from `web/`): `npm run lint`, `npm
 
 ## Final
 - [x] Full build on develop; PR text for develop → main
+
+## Performance pass (`feature/perf-pass`)
+- [x] perf(db): index reports lookups (migration 8)
+- [x] perf(uploads): compress chat/verification photos; one-year cache on uploads
+- [x] perf(build): vendor chunks; immutable caching for /assets
+- [x] perf(ui): memoised cards/pins; 1-minute client cache for student reads
+- [x] perf: render-blocking CSS 85 -> 49 KB, font preloads, responsive About photo; Lighthouse run; merge
