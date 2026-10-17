@@ -1,8 +1,8 @@
 # MAPAGUAPA v2 — Progress
 
-**Current branch:** `feature/reports`
-**Status:** Features 1–13 merged into develop. 6 migrations tested locally, NOT applied to Supabase (deploy day; no staging). UI verified with dev fixtures under /dev/*.
-**Next step:** Admin reports list and detail views on top of reportsApi
+**Current branch:** `develop`
+**Status:** Features 1–14 merged into develop. 6 migrations tested locally, NOT applied to Supabase (deploy day; no staging). UI verified with dev fixtures under /dev/*.
+**Next step:** Start feature/v2-polish from develop
 
 Resume protocol: read this file → `git status` → check out the branch above → finish uncommitted work → continue from the first unchecked item.
 
@@ -121,7 +121,7 @@ Gates before the last commit of each feature (from `web/`): `npm run lint`, `npm
 
 ## 14. `feature/reports`
 - [x] feat(reports): student report dialog for listings and messages
-- [ ] feat(reports): admin reports list, detail and resolve; merge
+- [x] feat(reports): admin reports list, detail and resolve; merge
 
 ## 15. `feature/v2-polish`
 - [ ] feat(ui): skeletons, empty/error states, 404

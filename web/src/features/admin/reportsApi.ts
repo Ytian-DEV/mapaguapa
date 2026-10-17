@@ -1,5 +1,5 @@
 import type { Tables } from "../../lib/database";
-import { REPORT_STATUSES, type ReportStatus } from "../../lib/domain";
+import { REPORT_REASON_LABELS, REPORT_STATUSES, type ReportReason, type ReportStatus } from "../../lib/domain";
 import { supabase } from "../../lib/supabase";
 
 export type Report = Tables<"reports">;
@@ -27,6 +27,16 @@ export function reportFiltersToParams(filters: ReportFilters) {
   if (filters.status !== "open") params.set("status", filters.status);
   if (filters.page > 0) params.set("page", String(filters.page + 1));
   return params;
+}
+
+export function reasonLabel(reason: string) {
+  return REPORT_REASON_LABELS[reason as ReportReason]?.label ?? reason;
+}
+
+export function targetLabel(report: ReportRow) {
+  if (report.target_type === "listing") return report.listing?.name ?? "Deleted listing";
+  if (report.target_type === "message") return `Message from ${report.reported?.full_name ?? "a user"}`;
+  return report.reported?.full_name ?? "A user";
 }
 
 function client() {
