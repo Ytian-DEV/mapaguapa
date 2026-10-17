@@ -1,7 +1,7 @@
 # MAPAGUAPA v2 — Progress
 
 **Current branch:** `feature/v2-polish`
-**Status:** Features 1–14 merged into develop. 6 migrations tested locally, NOT applied to Supabase (deploy day; no staging). UI verified with dev fixtures under /dev/*.
+**Status:** Features 1–14 merged into develop. 7 migrations tested locally, NOT applied to Supabase (deploy day; no staging). UI verified with dev fixtures under /dev/*.
 **Next step:** Responsive pass across dev previews
 
 Resume protocol: read this file → `git status` → check out the branch above → finish uncommitted work → continue from the first unchecked item.

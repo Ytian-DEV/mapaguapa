@@ -14,17 +14,17 @@ Run these 6 files after the four existing v1 migrations (`20260526…` to `20260
 | 4 | `20261016040000_v2_moderation.sql` | Adds reports, owner verifications (with a private `owner-verifications` bucket), and `activity_log` with the triggers that fill it. |
 | 5 | `20261016050000_v2_admin.sql` | Adds `pg_trgm`, the `listing_rows` view, and the RPCs `admin_overview()`, `admin_users()`, `admin_set_role/active()`, `admin_merge_users()`, `similar_listings()` and `touch_last_active()`. |
 | 6 | `20261016060000_v2_owner_stats.sql` | Adds `listing_views` (one per viewer per listing per day) with `record_listing_view()`, the `owner_overview()` stats RPC (frame O1) and `listings.draft_step`. |
+| 7 | `20261016070000_v2_cleanup.sql` | Drops the unused v1 enum types `user_role` and `listing_status` (only if nothing depends on them; never CASCADE). The legacy `user` → `student` role rewrite stays, so browsers still on the cached v1 bundle can sign up on deploy day. |
 
-How to apply (staging first):
+How to apply (deploy day, production only; there is no staging project):
 
-```bash
-# from the repo root, with the Supabase CLI linked to the target project
-npx supabase db push --workdir web
-```
+1. Back up the database (Database → Backups, or `pg_dump`).
+2. Open the SQL editor and paste each `20261016…` file **in the order above**, running one at a time. Every file can be run again safely.
+3. Check that each run finishes with "Success" before pasting the next one.
 
-You can also paste each file into the SQL editor, in order. Every file can be run again safely.
+The four `202605…`/`202606…` migrations are already in production (the 2026-10-16 check showed their columns and tables), so skip them.
 
-> **Deploy coupling:** after migration 2, v1 listings are stored as `published` / `archived`. The live v1 app filters on `status = 'active'`, so **apply the migrations and deploy v2 in the same window**. This was agreed on 2026-10-16. `develop` already reads `published`, so local dev against an unmigrated project will show no listings. Use a staging project that has the migrations.
+> **Deploy coupling:** after migration 2, v1 listings are stored as `published` / `archived`. The live v1 app filters on `status = 'active'`, so **apply the migrations and deploy v2 in the same window**. This was agreed on 2026-10-16. `develop` already reads `published`, so local dev against an unmigrated project will show no listings. That is expected until deploy day.
 
 ## Checked against production (2026-10-16)
 
@@ -77,7 +77,7 @@ PSQL="C:/Program Files/PostgreSQL/18/bin/psql.exe" PGPORT=54329 bash web/supabas
 1. Builds `mapaguapa_test` from `tests/00_supabase_stub.sql`, which provides `auth.uid()`, `storage.objects`, roles and the realtime publication.
 2. Loads `01_v1_baseline.sql` (v1 schema with prod's enum, functions, triggers and policies) and `02_v1_seed.sql`.
 3. Applies every migration **twice** to prove they can be re-run.
-4. Runs `*.test.sql`. These tests sign in as different users through the JWT claim settings and check every RLS rule, guard, trigger and RPC above. That is 136 assertions, including that students only see `published` listings, owners can't self-publish, only participants read conversations, and admins-only RPCs refuse other users.
+4. Runs `*.test.sql`. These tests sign in as different users through the JWT claim settings and check every RLS rule, guard, trigger and RPC above. That is 139 assertions, including that students only see `published` listings, owners can't self-publish, only participants read conversations, and admins-only RPCs refuse other users.
 
 After changing a migration, regenerate the TypeScript types:
 
