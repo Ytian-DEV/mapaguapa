@@ -1,8 +1,8 @@
 # MAPAGUAPA v2 — Progress
 
 **Current branch:** `develop`
-**Status:** Features 1–15 merged into develop. 7 migrations tested locally, NOT applied to Supabase (deploy day; no staging). UI verified with dev fixtures under /dev/*.
-**Next step:** Final: full build on develop and PR text for develop → main
+**Status:** COMPLETE. All 15 features merged into develop (lint 0 errors, typecheck clean, build passes). 7 migrations tested locally, NOT applied to Supabase (deploy day; no staging). PR develop → main not opened (by design).
+**Next step:** Done. Open the develop → main PR with the text from the final message; follow the deploy-day steps in docs/v2/DB.md
 
 Resume protocol: read this file → `git status` → check out the branch above → finish uncommitted work → continue from the first unchecked item.
 
@@ -131,4 +131,4 @@ Gates before the last commit of each feature (from `web/`): `npm run lint`, `npm
 - [x] chore: remove dead v1 code and drop legacy role value migration; merge
 
 ## Final
-- [ ] Full build on develop; PR text for develop → main
+- [x] Full build on develop; PR text for develop → main
