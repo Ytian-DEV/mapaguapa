@@ -1,17 +1,7 @@
 import { useEffect, useState } from "react";
-import type { ReportReason } from "../../lib/domain";
+import { REPORT_REASON_LABELS, type ReportReason } from "../../lib/domain";
 import { supabase } from "../../lib/supabase";
 import { Button, Dialog, Field, RadioCards, Textarea, useToast } from "../../ui";
-
-export const REPORT_REASON_LABELS: Record<ReportReason, { label: string; description: string }> = {
-  scam: { label: "Scam or fake", description: "Asks for money upfront, or the place doesn’t exist" },
-  wrong_info: { label: "Wrong details", description: "Price, phone number or rules are wrong" },
-  unavailable: { label: "No longer available", description: "Full, closed, or not renting anymore" },
-  inappropriate: { label: "Inappropriate content", description: "Offensive photos or text" },
-  harassment: { label: "Harassment", description: "Rude, threatening or unwanted messages" },
-  safety: { label: "Safety concern", description: "Unsafe building or conditions" },
-  other: { label: "Something else", description: "Tell us below" },
-};
 
 const LISTING_REASONS: ReportReason[] = ["scam", "wrong_info", "unavailable", "safety", "inappropriate", "other"];
 const MESSAGE_REASONS: ReportReason[] = ["scam", "harassment", "inappropriate", "other"];

@@ -36,6 +36,16 @@ export type VisitStatus = (typeof VISIT_STATUSES)[number];
 export const REPORT_REASONS = ["scam", "wrong_info", "unavailable", "inappropriate", "harassment", "safety", "other"] as const;
 export type ReportReason = (typeof REPORT_REASONS)[number];
 
+export const REPORT_REASON_LABELS: Record<ReportReason, { label: string; description: string }> = {
+  scam: { label: "Scam or fake", description: "Asks for money upfront, or the place doesn’t exist" },
+  wrong_info: { label: "Wrong details", description: "Price, phone number or rules are wrong" },
+  unavailable: { label: "No longer available", description: "Full, closed, or not renting anymore" },
+  inappropriate: { label: "Inappropriate content", description: "Offensive photos or text" },
+  harassment: { label: "Harassment", description: "Rude, threatening or unwanted messages" },
+  safety: { label: "Safety concern", description: "Unsafe building or conditions" },
+  other: { label: "Something else", description: "Tell us below" },
+};
+
 export const REPORT_STATUSES = ["open", "resolved", "dismissed"] as const;
 export type ReportStatus = (typeof REPORT_STATUSES)[number];
 
