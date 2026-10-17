@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { createDraft, fetchForEdit, saveListing, submitListing, type WizardMode, type WizardPhoto } from "./wizardApi";
 import { WIZARD_STEPS, editPath, type WizardStepKey } from "./steps";
 import { EMPTY_FORM, completeness, diffForm, formFromListing, type WizardForm, type WizardListing } from "./wizardModel";
+import { reportError } from "../../lib/errors";
 
 const AUTOSAVE_DELAY_MS = 1500;
 
@@ -66,7 +67,8 @@ export function useWizard({ listingId, step, mode }: UseWizardArgs) {
         setLastSavedAt(new Date(result.listing.updated_at));
         setLoadState("ready");
       })
-      .catch(() => {
+      .catch((error) => {
+        reportError(error);
         if (!cancelled) setLoadState("error");
       });
     return () => {
@@ -102,6 +104,7 @@ export function useWizard({ listingId, step, mode }: UseWizardArgs) {
         if (!existing) navigate(editPath(base, result.id, step), { replace: true });
         return result;
       } catch (error) {
+        reportError(error);
         setSaveState("error");
         setSaveError(error instanceof Error ? error.message : "Couldn’t save. Check your connection.");
         return false;

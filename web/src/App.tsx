@@ -1,8 +1,8 @@
 import { lazy, Suspense } from "react";
-import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation, useNavigate } from "react-router-dom";
-import { AuthProvider, useAuth } from "./app/AuthProvider";
+import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
+import { AuthProvider } from "./app/AuthProvider";
 import { FullPageLoader } from "./app/FullPageLoader";
-import { homeFor, PublicOnly, RequireRole } from "./app/guards";
+import { PublicOnly, RequireRole } from "./app/guards";
 import { SavedProvider } from "./features/browse/SavedContext";
 import { StudentShell } from "./features/browse/StudentShell";
 import { InboxProvider } from "./features/messaging/InboxContext";

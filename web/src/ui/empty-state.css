@@ -47,3 +47,14 @@
 .ui-empty__action {
   margin-top: var(--space-3);
 }
+
+.ui-empty__detail {
+  max-width: 560px;
+  padding: 6px 10px;
+  border-radius: var(--radius-control);
+  background: var(--tone-red-bg);
+  color: var(--tone-red-fg);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  overflow-wrap: anywhere;
+}

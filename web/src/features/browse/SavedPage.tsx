@@ -6,6 +6,7 @@ import { fetchSavedListings, type ListingCardRow } from "./browseApi";
 import { ListingCard } from "./ListingCard";
 import { useSaved } from "./SavedContext";
 import "./browse.css";
+import { reportError } from "../../lib/errors";
 
 export default function SavedPage() {
   const { profile } = useAuth();
@@ -28,7 +29,8 @@ export default function SavedPage() {
         setRows(saved);
         setStatus("ready");
       })
-      .catch(() => {
+      .catch((error) => {
+        reportError(error);
         if (!cancelled) setStatus("error");
       });
     return () => {

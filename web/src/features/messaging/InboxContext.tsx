@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useAuth } from "../../app/AuthProvider";
 import { fetchInbox, fetchListingSummaries, subscribeToInbox, type InboxRow, type ListingSummary } from "./messagingApi";
+import { reportError } from "../../lib/errors";
 
 type InboxContextValue = {
   conversations: InboxRow[];
@@ -29,7 +30,8 @@ export function InboxProvider({ children }: { children: ReactNode }) {
       setStatus("ready");
       const ids = rows.map((row) => row.listing_id).filter((id): id is string => Boolean(id));
       setListings(await fetchListingSummaries(ids));
-    } catch {
+    } catch (error) {
+      reportError(error);
       setStatus((current) => (current === "ready" ? current : "error"));
     }
   }, []);

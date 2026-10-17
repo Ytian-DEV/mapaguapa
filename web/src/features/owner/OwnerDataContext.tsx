@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useAuth } from "../../app/AuthProvider";
 import { fetchOwnerListings, fetchOwnerOverview, type OwnerListing, type OwnerOverview } from "./ownerApi";
+import { reportError } from "../../lib/errors";
 
 type OwnerDataValue = {
   listings: OwnerListing[];
@@ -25,7 +26,8 @@ export function OwnerDataProvider({ children }: { children: ReactNode }) {
       setListings(rows);
       setOverview(stats);
       setStatus("ready");
-    } catch {
+    } catch (error) {
+      reportError(error);
       setStatus((current) => (current === "ready" ? current : "error"));
     }
   }, [profile]);

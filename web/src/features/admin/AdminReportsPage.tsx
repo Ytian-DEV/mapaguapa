@@ -20,6 +20,7 @@ import {
   type ReportRow,
 } from "./reportsApi";
 import { setUserActive } from "./usersApi";
+import { reportError } from "../../lib/errors";
 
 function errorText(error: unknown) {
   return error instanceof Error ? error.message : "Something went wrong.";
@@ -57,7 +58,8 @@ function ReportListPage() {
         setCounts(tabCounts);
         setStatus("ready");
       })
-      .catch(() => {
+      .catch((error) => {
+        reportError(error);
         if (id === request.current) setStatus("error");
       });
   }, [key, reload]);
@@ -103,7 +105,8 @@ function ReportDetailPage({ reportId }: { reportId: string }) {
       setContext(messages);
       setRelated(others);
       setStatus("ready");
-    } catch {
+    } catch (error) {
+      reportError(error);
       setStatus("error");
     }
   }, [reportId]);
