@@ -1,7 +1,7 @@
 # MAPAGUAPA v2 — Progress
 
-**Current branch:** `develop`
-**Status:** COMPLETE. All 15 features merged into develop (lint 0 errors, typecheck clean, build passes). 7 migrations tested locally, NOT applied to Supabase (deploy day; no staging). PR develop → main not opened (by design).
+**Current branch:** `feature/perf-pass`
+**Status:** COMPLETE. All 15 features merged into develop (lint 0 errors, typecheck clean, build passes). 8 migrations tested locally, NOT applied to Supabase (deploy day; no staging). PR develop → main not opened (by design).
 **Next step:** Done. Open the develop → main PR with the text from the final message; follow the deploy-day steps in docs/v2/DB.md
 
 Resume protocol: read this file → `git status` → check out the branch above → finish uncommitted work → continue from the first unchecked item.
