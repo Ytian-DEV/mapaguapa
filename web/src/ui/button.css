@@ -1,0 +1,126 @@
+.ui-btn {
+  --btn-bg: var(--color-forest);
+  --btn-fg: var(--color-on-dark);
+  --btn-border: transparent;
+  --btn-bg-hover: var(--color-forest-deep);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  height: var(--control-h);
+  padding-inline: var(--space-5);
+  border: 1px solid var(--btn-border);
+  border-radius: var(--radius-control);
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    background-color var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease),
+    color var(--dur-fast) var(--ease);
+}
+
+.ui-btn:hover:not(:disabled) {
+  background: var(--btn-bg-hover);
+}
+
+.ui-btn:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: 2px;
+}
+
+.ui-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.ui-btn svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.ui-btn--dark {
+  --btn-bg: var(--color-ink);
+  --btn-bg-hover: var(--color-ink-hover);
+}
+
+.ui-btn--secondary {
+  --btn-bg: var(--color-surface);
+  --btn-fg: var(--color-ink);
+  --btn-border: var(--color-line);
+  --btn-bg-hover: var(--color-paper);
+}
+
+.ui-btn--ghost {
+  --btn-bg: transparent;
+  --btn-fg: var(--color-ink-2);
+  --btn-bg-hover: var(--color-paper-2);
+}
+
+.ui-btn--danger {
+  --btn-bg: var(--tone-red-fg);
+  --btn-bg-hover: var(--color-danger-hover);
+}
+
+.ui-btn--link {
+  --btn-bg: transparent;
+  --btn-fg: var(--color-forest);
+  --btn-bg-hover: transparent;
+  height: auto;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.ui-btn--sm {
+  height: var(--control-h-sm);
+  padding-inline: var(--space-3);
+  font-size: var(--text-xs);
+}
+
+.ui-btn--sm svg {
+  width: 16px;
+  height: 16px;
+}
+
+.ui-btn--lg {
+  height: 52px;
+  padding-inline: var(--space-6);
+  font-size: var(--text-base);
+}
+
+.ui-btn--block {
+  width: 100%;
+}
+
+.ui-btn--icon {
+  width: var(--control-h);
+  padding: 0;
+}
+
+.ui-btn--icon.ui-btn--sm {
+  width: var(--control-h-sm);
+}
+
+.ui-btn__spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: ui-spin 700ms linear infinite;
+}
+
+@keyframes ui-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

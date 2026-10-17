@@ -1,0 +1,231 @@
+.ui-table-wrap {
+  position: relative; /* keeps absolutely positioned sr-only labels inside the scroll area */
+  overflow-x: auto;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card-lg);
+  background: var(--color-surface);
+}
+
+.ui-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.ui-table th {
+  height: 44px;
+  padding: 0 var(--space-4);
+  border-bottom: 1px solid var(--color-line);
+  background: var(--color-app-bg);
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-eyebrow);
+  font-weight: 500;
+  letter-spacing: var(--tracking-eyebrow);
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.ui-table td {
+  height: 64px;
+  padding: var(--space-2) var(--space-4);
+  border-bottom: 1px solid var(--color-line);
+  color: var(--color-ink-2);
+  vertical-align: middle;
+}
+
+.ui-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.ui-table--right {
+  text-align: right !important;
+}
+
+.ui-table--center {
+  text-align: center !important;
+}
+
+.ui-table__check {
+  width: 48px;
+  padding-right: 0 !important;
+}
+
+.ui-table__actions {
+  width: 56px;
+  text-align: right;
+}
+
+.ui-table__checkbox {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--color-forest);
+  cursor: pointer;
+}
+
+.ui-table__row--selected td {
+  background: var(--color-row-selected);
+}
+
+.ui-table__row--clickable {
+  cursor: pointer;
+}
+
+.ui-table__row--clickable:hover td {
+  background: var(--color-app-bg);
+}
+
+.ui-table__empty-row td {
+  height: auto;
+  padding: 0;
+}
+
+.ui-table__skeleton td {
+  height: 64px;
+}
+
+@media (max-width: 767px) {
+  .ui-table-wrap {
+    border: 0;
+    background: transparent;
+  }
+
+  .ui-table thead {
+    display: none;
+  }
+
+  .ui-table,
+  .ui-table tbody {
+    display: block;
+  }
+
+  .ui-table tbody {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .ui-table tbody tr {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: var(--space-2) var(--space-3);
+    padding: var(--space-4);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+  }
+
+  .ui-table__row--selected {
+    border-color: var(--color-forest) !important;
+  }
+
+  .ui-table td {
+    display: flex;
+    grid-column: 1 / -1;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    height: auto;
+    padding: 0;
+    border: 0;
+    background: transparent !important;
+    text-align: right;
+  }
+
+  .ui-table td[data-label]::before {
+    content: attr(data-label);
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-eyebrow);
+    letter-spacing: var(--tracking-eyebrow);
+    text-align: left;
+    text-transform: uppercase;
+  }
+
+  .ui-table td.ui-table__check {
+    grid-column: 1;
+    grid-row: 1;
+    width: auto;
+  }
+
+  .ui-table td.ui-table__primary {
+    grid-column: 2;
+    grid-row: 1;
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .ui-table td.ui-table__primary::before {
+    display: none;
+  }
+
+  .ui-table td.ui-table__actions {
+    grid-column: 3;
+    grid-row: 1;
+    width: auto;
+  }
+
+  .ui-table td.ui-table__hide-mobile {
+    display: none;
+  }
+
+  .ui-table__empty-row,
+  .ui-table__skeleton {
+    display: block !important;
+  }
+}
+
+/* Bulk bar */
+.ui-bulk {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+  border-radius: var(--radius-control);
+  background: var(--color-ink);
+  color: var(--color-on-dark);
+}
+
+.ui-bulk__count {
+  flex: 1;
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.ui-bulk__actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.ui-bulk__actions .ui-btn {
+  --btn-bg: var(--color-ink-raised);
+  --btn-fg: var(--color-on-dark);
+  --btn-bg-hover: var(--color-ink-2);
+  height: var(--control-h-sm);
+  padding-inline: var(--space-3);
+  font-size: var(--text-xs);
+}
+
+.ui-bulk__clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: var(--radius-nav);
+  background: none;
+  color: var(--color-on-dark);
+  cursor: pointer;
+}
+
+.ui-bulk__clear svg {
+  width: 16px;
+  height: 16px;
+}
+
+.ui-bulk__clear:focus-visible {
+  outline: 2px solid var(--color-on-dark);
+}

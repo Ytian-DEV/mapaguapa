@@ -1,378 +1,187 @@
-import { lazy, Suspense, useEffect, useState } from "react";
-import type { Session, SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "./lib/database";
-import type { Profile } from "./lib/models";
-import { hasSupabaseEnv, supabase } from "./lib/supabase";
-import "./app.css";
+import { lazy, Suspense } from "react";
+import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
+import { AuthProvider } from "./app/AuthProvider";
+import { FullPageLoader } from "./app/FullPageLoader";
+import { PublicOnly, RequireRole } from "./app/guards";
+import { SavedProvider } from "./features/browse/SavedContext";
+import { StudentShell } from "./features/browse/StudentShell";
+import { InboxProvider } from "./features/messaging/InboxContext";
+import { AdminDataProvider, useAdminData } from "./features/admin/AdminDataContext";
+import { AdminShell } from "./features/admin/AdminShell";
+import { OwnerDataProvider } from "./features/owner/OwnerDataContext";
+import { OwnerShell } from "./features/owner/OwnerShell";
+import { ToastProvider } from "./ui";
 
-const MapaguapaAdminPage = lazy(() => import("./components/admin/MapaguapaAdminPage"));
-const MapaguapaAuthPage = lazy(() => import("./components/auth/MapaguapaAuthPage"));
-const MapaguapaUserPage = lazy(() => import("./components/user/MapaguapaUserPage"));
-const AboutPage = lazy(() => import("./components/shared/AboutPage"));
+const AboutPage = lazy(() => import("./features/about/AboutPage"));
+const BrowsePage = lazy(() => import("./features/browse/BrowsePage"));
+const SavedPage = lazy(() => import("./features/browse/SavedPage"));
+const MapPage = lazy(() => import("./features/map/MapPage"));
+const StudentMessagesPage = lazy(() => import("./features/messaging/StudentMessagesPage"));
+const ListingDetailPage = lazy(() => import("./features/listing/ListingDetailPage"));
+const SignInPage = lazy(() => import("./features/auth/SignInPage"));
+const SignUpPage = lazy(() => import("./features/auth/SignUpPage"));
+const ForgotPasswordPage = lazy(() => import("./features/auth/ForgotPasswordPage"));
+const ResetPasswordPage = lazy(() => import("./features/auth/ResetPasswordPage"));
+const AuthCallbackPage = lazy(() => import("./features/auth/AuthCallbackPage"));
+const OwnerInquiriesPage = lazy(() => import("./features/messaging/OwnerInquiriesPage"));
+const OwnerOverviewPage = lazy(() => import("./features/owner/OwnerOverviewPage"));
+const OwnerListingsPage = lazy(() => import("./features/owner/OwnerListingsPage"));
+const OwnerListingPreviewPage = lazy(() => import("./features/owner/OwnerListingPreviewPage"));
+const VerificationPage = lazy(() => import("./features/owner/VerificationPage"));
+const OwnerProfilePage = lazy(() => import("./features/owner/OwnerProfilePage"));
+const WizardPage = lazy(() => import("./features/wizard/WizardPage"));
+const AdminOverviewPage = lazy(() => import("./features/admin/AdminOverviewPage"));
+const AdminSettingsPage = lazy(() => import("./features/admin/AdminSettingsPage"));
+const NotFoundPanel = lazy(() => import("./app/NotFoundPanel"));
+const AdminReviewPage = lazy(() => import("./features/admin/AdminReviewPage"));
+const AdminUsersPage = lazy(() => import("./features/admin/AdminUsersPage"));
+const AdminReportsPage = lazy(() => import("./features/admin/AdminReportsPage"));
+const AdminListingsPage = lazy(() => import("./features/admin/AdminListingsPage"));
+const NotFoundPage = lazy(() => import("./app/NotFoundPage"));
+const ComponentsPreview = import.meta.env.DEV ? lazy(() => import("./dev/ComponentsPreview")) : null;
+const BrowsePreview = import.meta.env.DEV ? lazy(() => import("./dev/BrowsePreview")) : null;
+const ListingPreview = import.meta.env.DEV ? lazy(() => import("./dev/ListingPreview")) : null;
+const MessagesPreview = import.meta.env.DEV ? lazy(() => import("./dev/MessagesPreview")) : null;
+const OwnerPreview = import.meta.env.DEV ? lazy(() => import("./dev/OwnerPreview")) : null;
+const WizardPreview = import.meta.env.DEV ? lazy(() => import("./dev/WizardPreview")) : null;
+const AdminPreview = import.meta.env.DEV ? lazy(() => import("./dev/AdminPreview")) : null;
+const AdminListingsPreview = import.meta.env.DEV ? lazy(() => import("./dev/AdminListingsPreview")) : null;
+const AdminReviewPreview = import.meta.env.DEV ? lazy(() => import("./dev/AdminReviewPreview")) : null;
+const AdminUsersPreview = import.meta.env.DEV ? lazy(() => import("./dev/AdminUsersPreview")) : null;
+const AdminReportsPreview = import.meta.env.DEV ? lazy(() => import("./dev/AdminReportsPreview")) : null;
 
-type Credentials = {
-  email: string;
-  password: string;
-  fullName?: string;
-};
-
-type OAuthProvider = "google";
-
-const profileSelect = "id, email, full_name, phone, avatar_url, role, is_active, created_at, updated_at";
-const authRedirectTo = import.meta.env.VITE_AUTH_REDIRECT_URL?.trim();
-const passwordResetRedirectTo = import.meta.env.VITE_PASSWORD_RESET_REDIRECT_URL?.trim();
-
-async function fetchProfileWithRetry(client: SupabaseClient<Database>, userId: string) {
-  for (let attempt = 0; attempt < 5; attempt += 1) {
-    const { data, error } = await client
-      .from("profiles")
-      .select(profileSelect)
-      .eq("id", userId)
-      .maybeSingle();
-
-    if (error) {
-      throw error;
-    }
-
-    if (data) {
-      return data as Profile;
-    }
-
-    await new Promise((resolve) => window.setTimeout(resolve, 300));
-  }
-
-  return null;
+/** Student area: shared nav, footer and saved state. */
+function StudentLayout() {
+  return (
+    <RequireRole roles={["student"]}>
+      <SavedProvider>
+        <InboxProvider>
+          <StudentShell>
+            <Suspense fallback={null}>
+              <Outlet />
+            </Suspense>
+          </StudentShell>
+        </InboxProvider>
+      </SavedProvider>
+    </RequireRole>
+  );
 }
 
-async function ensureProfile(client: SupabaseClient<Database>, session: Session) {
-  const existingProfile = await fetchProfileWithRetry(client, session.user.id);
-  if (existingProfile) {
-    return existingProfile;
-  }
+/** Owner area: sidebar with unread inquiries. */
+function OwnerLayout() {
+  return (
+    <RequireRole roles={["owner"]}>
+      <InboxProvider>
+        <OwnerDataProvider>
+          <OwnerShell>
+            <Suspense fallback={null}>
+              <Outlet />
+            </Suspense>
+          </OwnerShell>
+        </OwnerDataProvider>
+      </InboxProvider>
+    </RequireRole>
+  );
+}
 
-  const metadata = session.user.user_metadata;
-  const fullName =
-    typeof metadata.full_name === "string"
-      ? metadata.full_name
-      : typeof metadata.name === "string"
-        ? metadata.name
-        : null;
-  const avatarUrl = typeof metadata.avatar_url === "string" ? metadata.avatar_url : null;
+function AdminFrame() {
+  const { overview } = useAdminData();
+  return (
+    <AdminShell overview={overview}>
+      <Suspense fallback={null}>
+        <Outlet />
+      </Suspense>
+    </AdminShell>
+  );
+}
 
-  const { data, error } = await ((client.from("profiles") as any)
-    .insert({
-      id: session.user.id,
-      email: session.user.email ?? null,
-      full_name: fullName,
-      avatar_url: avatarUrl,
-      role: "user",
-      is_active: true,
-    })
-    .select(profileSelect)
-    .single());
+/** Admin console: sidebar with live counts. */
+function AdminLayout() {
+  return (
+    <RequireRole roles={["admin"]}>
+      <AdminDataProvider>
+        <AdminFrame />
+      </AdminDataProvider>
+    </RequireRole>
+  );
+}
 
-  if (error) {
-    throw error;
-  }
-
-  return data as Profile;
+/** v1 sent OAuth and reset links to /dashboard; send any that still arrive with a code to the callback. */
+function LegacyDashboardRedirect() {
+  const location = useLocation();
+  const target = new URLSearchParams(location.search).has("code") ? `/auth/callback${location.search}` : "/";
+  return <Navigate replace to={target} />;
 }
 
 export default function App() {
-  const [session, setSession] = useState<Session | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [booting, setBooting] = useState(true);
-  const [loadingProfile, setLoadingProfile] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [authError, setAuthError] = useState<string | null>(null);
-  const [authInfo, setAuthInfo] = useState<string | null>(null);
-  const [pathname, setPathname] = useState(window.location.pathname);
-
-  useEffect(() => {
-    const handlePopState = () => setPathname(window.location.pathname);
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, []);
-
-  const navigate = (path: string) => {
-    if (window.location.pathname !== path) {
-      window.history.pushState(null, "", path);
-    }
-    setPathname(path);
-  };
-
-  useEffect(() => {
-    const client = supabase;
-    if (!client) {
-      setBooting(false);
-      return;
-    }
-
-    let mounted = true;
-
-    const bootstrap = async () => {
-      const { data, error } = await client.auth.getSession();
-      if (!mounted) {
-        return;
-      }
-
-      if (error) {
-        setAuthError(error.message);
-        setBooting(false);
-        return;
-      }
-
-      setSession(data.session);
-      setBooting(false);
-    };
-
-    void bootstrap();
-
-    const {
-      data: { subscription },
-    } = client.auth.onAuthStateChange((_event, nextSession) => {
-      if (!mounted) {
-        return;
-      }
-
-      setSession(nextSession);
-      setAuthError(null);
-
-      if (!nextSession) {
-        setProfile(null);
-        setLoadingProfile(false);
-      }
-    });
-
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  useEffect(() => {
-    const client = supabase;
-    if (!client) {
-      return;
-    }
-
-    if (!session?.user?.id) {
-      setProfile(null);
-      setLoadingProfile(false);
-      return;
-    }
-
-    let cancelled = false;
-    setLoadingProfile(true);
-
-    void ensureProfile(client, session)
-      .then((nextProfile) => {
-        if (cancelled) {
-          return;
-        }
-
-        if (!nextProfile.is_active) {
-          void client.auth.signOut();
-          setSession(null);
-          setProfile(null);
-          setAuthError("Your account is inactive. Please contact the MAPAGUAPA admin.");
-          return;
-        }
-
-        setProfile(nextProfile);
-      })
-      .catch((profileError) => {
-        if (!cancelled) {
-          setAuthError(profileError instanceof Error ? profileError.message : "Failed to load profile.");
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setLoadingProfile(false);
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [session?.user?.id]);
-
-  const getFriendlyAuthError = (message: string) => {
-    const normalizedMessage = message.toLowerCase();
-
-    if (normalizedMessage.includes("email not confirmed")) {
-      return "Please confirm your email using the link we sent before logging in.";
-    }
-
-    return message;
-  };
-
-  const handleLogin = async ({ email, password }: Credentials) => {
-    const client = supabase;
-    if (!client) {
-      return;
-    }
-
-    setSubmitting(true);
-    setAuthError(null);
-    setAuthInfo(null);
-
-    const { error } = await client.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      setAuthError(getFriendlyAuthError(error.message));
-    }
-
-    setSubmitting(false);
-  };
-
-  const handleSignup = async ({ email, password, fullName }: Credentials) => {
-    const client = supabase;
-    if (!client) {
-      return false;
-    }
-
-    setSubmitting(true);
-    setAuthError(null);
-    setAuthInfo(null);
-
-    const { data, error } = await client.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName,
-        },
-      },
-    });
-
-    if (error) {
-      setAuthError(getFriendlyAuthError(error.message));
-      setSubmitting(false);
-      return false;
-    } else if (!data.session) {
-      setAuthInfo("Account created. Check your email to confirm before signing in.");
-    } else {
-      setAuthInfo("Account created successfully.");
-    }
-
-    setSubmitting(false);
-    return true;
-  };
-
-  const handleOAuthLogin = async (provider: OAuthProvider) => {
-    const client = supabase;
-    if (!client) {
-      return;
-    }
-
-    setSubmitting(true);
-    setAuthError(null);
-    setAuthInfo(null);
-
-    const { error } = await client.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: authRedirectTo || `${window.location.origin}/dashboard`,
-      },
-    });
-
-    if (error) {
-      setAuthError(getFriendlyAuthError(error.message));
-      setSubmitting(false);
-    }
-  };
-
-  const handlePasswordReset = async (email: string) => {
-    const client = supabase;
-    if (!client) {
-      return;
-    }
-
-    setSubmitting(true);
-    setAuthError(null);
-    setAuthInfo(null);
-
-    const { error } = await client.auth.resetPasswordForEmail(email, {
-      redirectTo: passwordResetRedirectTo || `${window.location.origin}/dashboard`,
-    });
-
-    if (error) {
-      setAuthError(getFriendlyAuthError(error.message));
-    } else {
-      setAuthInfo("Password reset email sent. Check your inbox for the reset link.");
-    }
-
-    setSubmitting(false);
-  };
-
-  const handleSignOut = async () => {
-    const client = supabase;
-    if (!client) {
-      return;
-    }
-
-    const { error } = await client.auth.signOut();
-    if (error) {
-      setAuthError(error.message);
-      return;
-    }
-
-    setSession(null);
-    setProfile(null);
-    setAuthInfo(null);
-  };
-
-  if (booting || (session && loadingProfile && !profile)) {
-    return <div className="app-shell app-shell--loading">Loading MAPAGUAPA...</div>;
-  }
-
-  if (pathname === "/about") {
-    return (
-      <Suspense fallback={<div className="app-shell app-shell--loading">Loading MAPAGUAPA...</div>}>
-        <AboutPage
-          onLogoClick={() => {
-            if (profile?.role === "admin") {
-              navigate("/admin");
-            } else if (profile) {
-              navigate("/dashboard");
-            } else {
-              navigate("/");
-            }
-          }}
-        />
-      </Suspense>
-    );
-  }
-
-  if (!session || !profile) {
-    return (
-      <Suspense fallback={<div className="app-shell app-shell--loading">Loading MAPAGUAPA...</div>}>
-        <MapaguapaAuthPage
-          authConfigured={hasSupabaseEnv}
-          authError={authError}
-          authInfo={authInfo}
-          isSubmitting={submitting}
-          onLogin={handleLogin}
-          onOAuthLogin={handleOAuthLogin}
-          onNavigateAbout={() => navigate("/about")}
-          onPasswordReset={handlePasswordReset}
-          onSignup={handleSignup}
-        />
-      </Suspense>
-    );
-  }
-
   return (
-    <Suspense fallback={<div className="app-shell app-shell--loading">Loading MAPAGUAPA...</div>}>
-      {profile.role === "admin" ? (
-        <MapaguapaAdminPage onNavigateAbout={() => navigate("/about")} onSignOut={handleSignOut} profile={profile} />
-      ) : (
-        <MapaguapaUserPage onNavigateAbout={() => navigate("/about")} onSignOut={handleSignOut} profile={profile} />
-      )}
-    </Suspense>
+    <BrowserRouter>
+      <AuthProvider>
+        <ToastProvider>
+          <Suspense fallback={<FullPageLoader />}>
+            <Routes>
+              <Route element={<PublicOnly><SignInPage /></PublicOnly>} path="/sign-in" />
+              <Route element={<PublicOnly><SignUpPage /></PublicOnly>} path="/sign-up" />
+              <Route element={<PublicOnly><ForgotPasswordPage /></PublicOnly>} path="/forgot-password" />
+              <Route element={<ResetPasswordPage />} path="/reset-password" />
+              <Route element={<AuthCallbackPage />} path="/auth/callback" />
+              <Route element={<AboutPage />} path="/about" />
+
+              <Route element={<StudentLayout />}>
+                <Route element={<BrowsePage />} path="/" />
+                <Route element={<SavedPage />} path="/saved" />
+                <Route element={<MapPage />} path="/map" />
+                <Route element={<StudentMessagesPage />} path="/messages" />
+                <Route element={<StudentMessagesPage />} path="/messages/:conversationId" />
+                <Route element={<ListingDetailPage />} path="/listing/:listingId" />
+              </Route>
+              <Route element={<Navigate replace to="/saved" />} path="/dashboard/saved" />
+              <Route element={<LegacyDashboardRedirect />} path="/dashboard" />
+              <Route element={<OwnerLayout />} path="/owner">
+                <Route element={<OwnerOverviewPage />} index />
+                <Route element={<OwnerListingsPage />} path="listings" />
+                <Route element={<OwnerListingPreviewPage />} path="listings/:listingId/preview" />
+                <Route element={<Navigate replace to="/owner/listings/new/edit/basics" />} path="listings/new" />
+                <Route element={<WizardPage mode="owner" />} path="listings/:listingId/edit/:step?" />
+                <Route element={<VerificationPage />} path="verification" />
+                <Route element={<OwnerProfilePage />} path="profile" />
+                <Route element={<OwnerInquiriesPage />} path="inquiries" />
+                <Route element={<OwnerInquiriesPage />} path="inquiries/:conversationId" />
+                <Route element={<NotFoundPanel home="/owner" />} path="*" />
+              </Route>
+              {/* The v1 console stays reachable until features 11–13 replace it. */}
+              <Route element={<AdminLayout />} path="/admin">
+                <Route element={<AdminOverviewPage />} index />
+                <Route element={<Navigate replace to="/admin/listings/new/edit/basics" />} path="listings/new" />
+                <Route element={<WizardPage mode="admin" />} path="listings/:listingId/edit/:step?" />
+                <Route element={<AdminReviewPage />} path="review" />
+                <Route element={<AdminReviewPage />} path="review/:listingId" />
+                <Route element={<AdminListingsPage />} path="listings" />
+                <Route element={<OwnerListingPreviewPage base="/admin" />} path="listings/:listingId/preview" />
+                <Route element={<AdminListingsPage initialTab="archived" />} path="archive" />
+                <Route element={<AdminUsersPage />} path="users" />
+                <Route element={<AdminReportsPage />} path="reports" />
+                <Route element={<AdminReportsPage />} path="reports/:reportId" />
+                <Route element={<AdminSettingsPage />} path="settings" />
+                <Route element={<NotFoundPanel home="/admin" />} path="*" />
+              </Route>
+
+              {ComponentsPreview && <Route element={<ComponentsPreview />} path="/dev/components" />}
+              {BrowsePreview && <Route element={<BrowsePreview />} path="/dev/browse" />}
+              {ListingPreview && <Route element={<ListingPreview />} path="/dev/listing" />}
+              {MessagesPreview && <Route element={<MessagesPreview />} path="/dev/messages/*" />}
+              {OwnerPreview && <Route element={<OwnerPreview />} path="/dev/owner" />}
+              {WizardPreview && <Route element={<WizardPreview />} path="/dev/wizard/:step?" />}
+              {AdminPreview && <Route element={<AdminPreview />} path="/dev/admin" />}
+              {AdminListingsPreview && <Route element={<AdminListingsPreview />} path="/dev/admin-listings" />}
+              {AdminReviewPreview && <Route element={<AdminReviewPreview />} path="/dev/admin-review" />}
+              {AdminUsersPreview && <Route element={<AdminUsersPreview />} path="/dev/admin-users" />}
+              {AdminReportsPreview && <Route element={<AdminReportsPreview />} path="/dev/admin-reports/*" />}
+              <Route element={<NotFoundPage />} path="*" />
+            </Routes>
+          </Suspense>
+        </ToastProvider>
+      </AuthProvider>
+    </BrowserRouter>
   );
 }

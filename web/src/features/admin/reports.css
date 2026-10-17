@@ -1,0 +1,148 @@
+.report-detail {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+}
+
+.report-detail__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+}
+
+.report-detail__back svg {
+  width: 16px;
+  height: 16px;
+}
+
+.report-detail__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.report-detail__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 20px;
+}
+
+.report-detail__main,
+.report-detail__side {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+.report-detail__quote {
+  padding: 16px 20px 20px;
+  font-size: var(--text-sm);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.report-detail__muted {
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+}
+
+.report-detail__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.report-thread {
+  display: grid;
+  gap: 6px;
+  max-height: 420px;
+  margin: 0;
+  padding: 12px 16px 16px;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.report-thread__msg {
+  padding: 10px 12px;
+  border-radius: var(--radius-control);
+}
+
+.report-thread__msg--flagged {
+  background: var(--tone-red-bg);
+}
+
+.report-thread__who {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 2px;
+  font-size: var(--text-2xs);
+  font-weight: 600;
+}
+
+.report-thread__who time {
+  color: var(--color-muted);
+  font-weight: 400;
+}
+
+.report-thread__msg p {
+  font-size: var(--text-sm);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.report-people {
+  display: grid;
+  gap: 18px;
+}
+
+.report-person {
+  display: grid;
+  gap: 8px;
+}
+
+.report-person__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.report-person__text {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+
+.report-person__text a {
+  overflow: hidden;
+  color: var(--color-ink);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.report-person__text span {
+  overflow: hidden;
+  color: var(--color-muted);
+  font-size: var(--text-2xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.report-person__none {
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+}
+
+@media (max-width: 1199px) {
+  .report-detail__layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

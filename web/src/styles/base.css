@@ -1,0 +1,153 @@
+/*
+ * Base layer. Element defaults stay scoped to `.v2` (set on every route root)
+ * so third-party widgets such as Leaflet keep their own styles.
+ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-ui);
+}
+
+body {
+  min-height: 100dvh;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.v2 {
+  min-height: 100dvh;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-ui);
+  font-size: var(--text-md);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.v2--app {
+  background: var(--color-app-bg);
+}
+
+:where(.v2) :where(h1, h2, h3, h4, p, figure, blockquote, dl, dd, ul, ol) {
+  margin: 0;
+}
+
+:where(.v2) :where(ul, ol) {
+  padding: 0;
+  list-style: none;
+}
+
+:where(.v2) :where(button, input, select, textarea) {
+  font: inherit;
+  color: inherit;
+}
+
+:where(.v2) :where(a) {
+  color: inherit;
+  text-decoration: none;
+}
+
+:where(.v2) :where(img) {
+  display: block;
+  max-width: 100%;
+}
+
+:where(.v2) :where(:focus-visible) {
+  outline: var(--focus-outline);
+  outline-offset: 2px;
+}
+
+/* Skip link: first focusable element on every shell */
+.v2-skip {
+  position: absolute;
+  top: -48px;
+  left: 16px;
+  z-index: var(--z-toast);
+  padding: 10px 14px;
+  border-radius: var(--radius-control);
+  background: var(--color-ink);
+  color: var(--color-on-dark);
+  font-size: var(--text-sm);
+}
+
+.v2-skip:focus {
+  top: 12px;
+}
+
+/* Type helpers */
+.v2-display {
+  font-family: var(--font-heading);
+  font-size: var(--text-display);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: var(--tracking-display);
+}
+
+.v2-h1 {
+  font-family: var(--font-heading);
+  font-size: var(--text-h1);
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: var(--tracking-heading);
+}
+
+.v2-h2 {
+  font-family: var(--font-heading);
+  font-size: var(--text-h2);
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: var(--tracking-heading);
+}
+
+.v2-h3 {
+  font-family: var(--font-heading);
+  font-size: var(--text-h3);
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.v2-accent {
+  font-style: italic;
+}
+
+.v2-eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--text-eyebrow);
+  font-weight: 500;
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--color-clay-text);
+}
+
+.v2-muted {
+  color: var(--color-muted);
+}
+
+.v2-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.v2-container {
+  width: 100%;
+  max-width: calc(var(--content-max) + 2 * var(--gutter));
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}

@@ -1,0 +1,79 @@
+.ui-badge {
+  --badge-bg: var(--tone-gray-bg);
+  --badge-fg: var(--tone-gray-fg);
+  --badge-dot: var(--tone-gray-dot);
+
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding-inline: 10px;
+  border-radius: var(--radius-pill);
+  background: var(--badge-bg);
+  color: var(--badge-fg);
+  font-size: var(--text-2xs);
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.ui-badge svg {
+  width: 13px;
+  height: 13px;
+}
+
+.ui-badge__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--badge-dot);
+}
+
+.ui-badge--green {
+  --badge-bg: var(--tone-green-bg);
+  --badge-fg: var(--tone-green-fg);
+  --badge-dot: var(--tone-green-dot);
+}
+
+.ui-badge--amber {
+  --badge-bg: var(--tone-amber-bg);
+  --badge-fg: var(--tone-amber-fg);
+  --badge-dot: var(--tone-amber-dot);
+}
+
+.ui-badge--red {
+  --badge-bg: var(--tone-red-bg);
+  --badge-fg: var(--tone-red-fg);
+  --badge-dot: var(--tone-red-dot);
+}
+
+.ui-badge--clay {
+  --badge-bg: var(--tone-clay-bg);
+  --badge-fg: var(--tone-clay-fg);
+  --badge-dot: var(--tone-clay-dot);
+}
+
+.ui-badge--blue {
+  --badge-bg: var(--tone-blue-bg);
+  --badge-fg: var(--tone-blue-fg);
+  --badge-dot: var(--tone-blue-dot);
+}
+
+.ui-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--color-paper-2);
+  color: var(--color-ink-2);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.ui-count--emphasis {
+  background: var(--color-clay);
+  color: var(--color-surface);
+}
