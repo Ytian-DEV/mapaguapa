@@ -1,6 +1,13 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
+// Third-party code changes far less often than the app, so it gets its own
+// long-cached chunks; a deploy then only re-downloads the app chunk.
+const VENDOR_CHUNKS: Array<[string, RegExp]> = [
+  ["react", /[\\/]node_modules[\\/](react|react-dom|react-router|react-router-dom|scheduler|@remix-run)[\\/]/],
+  ["supabase", /[\\/]node_modules[\\/]@supabase[\\/]/],
+];
+
 export default defineConfig({
   plugins: [react()],
   server: {
@@ -10,5 +17,14 @@ export default defineConfig({
   preview: {
     host: "0.0.0.0",
     port: 4173,
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          return VENDOR_CHUNKS.find(([, pattern]) => pattern.test(id))?.[0];
+        },
+      },
+    },
   },
 });
