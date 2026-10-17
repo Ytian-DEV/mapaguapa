@@ -3,6 +3,7 @@ import type { Tables, Views } from "../../lib/database";
 import type { InquiryStatus } from "../../lib/domain";
 import { STORAGE } from "../../lib/domain";
 import { supabase } from "../../lib/supabase";
+import { compressImageForUpload, IMMUTABLE_CACHE } from "../../lib/imageCompression";
 
 export type InboxRow = Views<"inbox"> & { id: string };
 export type Message = Tables<"messages">;
@@ -77,10 +78,14 @@ const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 
 export async function sendImage(conversationId: string, file: File) {
   if (!file.type.startsWith("image/")) throw new Error("Only photos can be attached.");
-  if (file.size > MAX_IMAGE_BYTES) throw new Error("Photos must be 8 MB or smaller.");
-  const extension = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+  // Phone photos are often 3-8 MB; resize to 1800px before upload (same as listing photos).
+  const optimized = await compressImageForUpload(file);
+  if (optimized.size > MAX_IMAGE_BYTES) throw new Error("Photos must be 8 MB or smaller.");
+  const extension = (optimized.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
   const path = STORAGE.messageAttachmentPath(conversationId, `${crypto.randomUUID()}.${extension}`);
-  const upload = await client().storage.from(STORAGE.messageAttachments).upload(path, file, { contentType: file.type, upsert: false });
+  const upload = await client()
+    .storage.from(STORAGE.messageAttachments)
+    .upload(path, optimized, { cacheControl: IMMUTABLE_CACHE, contentType: optimized.type, upsert: false });
   if (upload.error) throw upload.error;
   const { data, error } = await client()
     .from("messages")

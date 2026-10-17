@@ -1,6 +1,7 @@
 import type { Tables, Views } from "../../lib/database";
 import { STORAGE, type VerificationDocumentType } from "../../lib/domain";
 import { supabase } from "../../lib/supabase";
+import { compressImageForUpload } from "../../lib/imageCompression";
 
 export type OwnerListing = { id: string } & Pick<
   Views<"listing_rows">,
@@ -90,7 +91,9 @@ export async function submitVerification(ownerId: string, input: { documentType:
   }
 
   const paths: string[] = [];
-  for (const file of input.files) {
+  for (const original of input.files) {
+    // Photos of documents are resized like listing photos; PDFs (and HEIC, which browsers can't decode) upload as-is.
+    const file = await compressImageForUpload(original);
     const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(-80);
     const path = STORAGE.verificationPath(ownerId, `${crypto.randomUUID()}-${safeName}`);
     const { error } = await client().storage.from(STORAGE.ownerVerifications).upload(path, file, { contentType: file.type || undefined });

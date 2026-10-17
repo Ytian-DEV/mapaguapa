@@ -1,3 +1,9 @@
+/**
+ * Uploaded files get a unique path and are never overwritten, so browsers and
+ * the Supabase CDN may keep them for a year (supabase-js defaults to 1 hour).
+ */
+export const IMMUTABLE_CACHE = "31536000";
+
 const DEFAULT_MAX_DIMENSION = 1800;
 const DEFAULT_QUALITY = 0.82;
 const MIN_FILE_SIZE_TO_COMPRESS = 450 * 1024;
