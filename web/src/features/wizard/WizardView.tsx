@@ -166,7 +166,7 @@ export function WizardView(props: WizardViewProps) {
           <Stepper label="Listing steps" onSelect={(key) => props.onGoTo(key as WizardStepKey)} steps={steps} />
           <Card className="wizard-preview" padding="sm">
             <p className="v2-eyebrow wizard-preview__label">Live preview</p>
-            <div className="wizard-preview__photo">{cover ? <img alt="" src={cover} /> : <ImageOff aria-hidden="true" />}</div>
+            <div className="wizard-preview__photo">{cover ? <img alt="" decoding="async" src={cover} /> : <ImageOff aria-hidden="true" />}</div>
             <p className="wizard-preview__name">{form.name?.trim() || "Untitled listing"}</p>
             <p className="wizard-preview__meta">{[area, form.exclusivity === "Female" ? "Ladies only" : form.exclusivity === "Male" ? "Men only" : form.exclusivity].filter(Boolean).join(" · ") || "Add an address"}</p>
             <p className="wizard-preview__price">{band ? `${PRICE_BAND_LABELS[band]} / mo` : "Set the rent"}</p>

@@ -258,8 +258,8 @@ export function BrowseView({
                     active={listing.id === activeId}
                     key={listing.id}
                     listing={listing}
-                    onHover={onActiveChange ? (hovering) => onActiveChange(hovering ? listing.id : null) : undefined}
-                    onToggleSaved={() => onToggleSaved(listing)}
+                    onHover={onActiveChange}
+                    onToggleSaved={onToggleSaved}
                     saved={isSaved(listing.id)}
                   />
                 ))}

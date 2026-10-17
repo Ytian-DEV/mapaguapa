@@ -1,6 +1,6 @@
 import type { Tables, TablesUpdate } from "../../lib/database";
 import { STORAGE } from "../../lib/domain";
-import { compressImageForUpload } from "../../lib/imageCompression";
+import { compressImageForUpload, IMMUTABLE_CACHE } from "../../lib/imageCompression";
 import { supabase } from "../../lib/supabase";
 import type { WizardForm, WizardListing } from "./wizardModel";
 
@@ -59,7 +59,7 @@ export async function uploadPhoto(listingId: string, mode: WizardMode, file: Fil
   const fileName = `${Date.now()}-${crypto.randomUUID()}.${extension}`;
   const path = mode === "admin" ? STORAGE.adminListingPhotoPath(listingId, fileName) : STORAGE.ownerListingPhotoPath(listingId, fileName);
 
-  const upload = await client().storage.from(STORAGE.listingPhotos).upload(path, optimized, { contentType: optimized.type, upsert: false });
+  const upload = await client().storage.from(STORAGE.listingPhotos).upload(path, optimized, { cacheControl: IMMUTABLE_CACHE, contentType: optimized.type, upsert: false });
   if (upload.error) throw upload.error;
 
   const { data, error } = await client()

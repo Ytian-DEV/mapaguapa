@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
 import type { Tables } from "../lib/database";
+import { invalidate } from "../lib/queryCache";
 import { supabase } from "../lib/supabase";
 import { takePendingAccountType } from "../features/auth/authApi";
 
@@ -170,6 +171,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setNotice(error.message);
       return;
     }
+    invalidate();
     setSession(null);
     setProfile(null);
   }, []);

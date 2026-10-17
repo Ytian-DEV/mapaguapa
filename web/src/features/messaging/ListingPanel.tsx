@@ -33,7 +33,7 @@ export function ListingPanel({ listing, listingId }: { listing: ListingSummary |
     <div className="side-panel">
       <p className="v2-eyebrow">About this place</p>
       <div className="side-panel__photo">
-        {photo ? <img alt="" src={photo} /> : <ImageOff aria-hidden="true" className="side-panel__no-photo" />}
+        {photo ? <img alt="" decoding="async" loading="lazy" src={photo} /> : <ImageOff aria-hidden="true" className="side-panel__no-photo" />}
       </div>
       <div>
         <h2 className="side-panel__title">{listing.name}</h2>

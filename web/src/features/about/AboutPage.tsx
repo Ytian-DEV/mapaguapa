@@ -25,7 +25,14 @@ export default function AboutPage() {
       <main className="v2-container about__main" id="main">
         <p className="v2-eyebrow">Student mapping initiative</p>
         <h1 className="v2-display">About Project MaPaGuaPa</h1>
-        <img alt="Members of the Viscan YouthMappers" className="about__photo" src="/vym-photo.jpg" />
+        <picture>
+          <source
+            sizes="(max-width: 860px) calc(100vw - 32px), 820px"
+            srcSet="/vym-photo-640.webp 640w, /vym-photo-960.webp 960w, /vym-photo-1280.webp 1280w"
+            type="image/webp"
+          />
+          <img alt="Members of the Viscan YouthMappers" className="about__photo" height={720} src="/vym-photo.jpg" width={1280} />
+        </picture>
         <p className="about__copy">
           Project MaPaGuaPa is a student-led initiative by the Viscan YouthMappers, created to help students easily find accessible and suitable
           housing options based on their budget, location preferences, and accommodation needs. Originally developed as an academic study and

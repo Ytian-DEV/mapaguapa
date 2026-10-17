@@ -8,6 +8,7 @@ import { useSaved } from "../browse/SavedContext";
 import { fetchListingDetail, recordListingView, startConversation, type ListingDetailBundle } from "./detailApi";
 import { ListingDetailView } from "./ListingDetailView";
 import { reportError } from "../../lib/errors";
+import { cached, MINUTE } from "../../lib/queryCache";
 
 function DetailSkeleton() {
   return (
@@ -39,7 +40,7 @@ export default function ListingDetailPage() {
   useEffect(() => {
     let cancelled = false;
     setStatus("loading");
-    fetchListingDetail(listingId)
+    cached(`listing:${listingId}`, MINUTE, () => fetchListingDetail(listingId))
       .then((result) => {
         if (cancelled) return;
         setBundle(result);

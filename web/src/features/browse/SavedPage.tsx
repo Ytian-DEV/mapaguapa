@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AlertTriangle, Heart } from "lucide-react";
 import { useAuth } from "../../app/AuthProvider";
 import { Button, ButtonLink, EmptyState, ListingCardSkeleton, LoadingRegion } from "../../ui";
@@ -11,6 +11,10 @@ import { reportError } from "../../lib/errors";
 export default function SavedPage() {
   const { profile } = useAuth();
   const { isSaved, toggleSaved, savedIds } = useSaved();
+  const handleToggleSaved = useCallback(
+    (listing: ListingCardRow) => void toggleSaved(listing.id, listing.name ?? undefined),
+    [toggleSaved]
+  );
   const [rows, setRows] = useState<ListingCardRow[]>([]);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [reloadToken, setReloadToken] = useState(0);
@@ -96,7 +100,7 @@ export default function SavedPage() {
             <ListingCard
               key={listing.id}
               listing={listing}
-              onToggleSaved={() => void toggleSaved(listing.id, listing.name ?? undefined)}
+              onToggleSaved={handleToggleSaved}
               saved={isSaved(listing.id)}
             />
           ))}

@@ -15,6 +15,7 @@ Run these 6 files after the four existing v1 migrations (`20260526…` to `20260
 | 5 | `20261016050000_v2_admin.sql` | Adds `pg_trgm`, the `listing_rows` view, and the RPCs `admin_overview()`, `admin_users()`, `admin_set_role/active()`, `admin_merge_users()`, `similar_listings()` and `touch_last_active()`. |
 | 6 | `20261016060000_v2_owner_stats.sql` | Adds `listing_views` (one per viewer per listing per day) with `record_listing_view()`, the `owner_overview()` stats RPC (frame O1) and `listings.draft_step`. |
 | 7 | `20261016070000_v2_cleanup.sql` | Drops the unused v1 enum types `user_role` and `listing_status` (only if nothing depends on them; never CASCADE). The legacy `user` → `student` role rewrite stays, so browsers still on the cached v1 bundle can sign up on deploy day. |
+| 8 | `20261016080000_v2_indexes.sql` | Indexes `reports` by conversation (used by the admin read policies on messages), reporter and reported user. |
 
 How to apply (deploy day, production only; there is no staging project):
 
@@ -77,7 +78,7 @@ PSQL="C:/Program Files/PostgreSQL/18/bin/psql.exe" PGPORT=54329 bash web/supabas
 1. Builds `mapaguapa_test` from `tests/00_supabase_stub.sql`, which provides `auth.uid()`, `storage.objects`, roles and the realtime publication.
 2. Loads `01_v1_baseline.sql` (v1 schema with prod's enum, functions, triggers and policies) and `02_v1_seed.sql`.
 3. Applies every migration **twice** to prove they can be re-run.
-4. Runs `*.test.sql`. These tests sign in as different users through the JWT claim settings and check every RLS rule, guard, trigger and RPC above. That is 139 assertions, including that students only see `published` listings, owners can't self-publish, only participants read conversations, and admins-only RPCs refuse other users.
+4. Runs `*.test.sql`. These tests sign in as different users through the JWT claim settings and check every RLS rule, guard, trigger and RPC above. That is 140 assertions, including that students only see `published` listings, owners can't self-publish, only participants read conversations, and admins-only RPCs refuse other users.
 
 After changing a migration, regenerate the TypeScript types:
 

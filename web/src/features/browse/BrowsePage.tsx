@@ -15,6 +15,7 @@ import {
 import { useMapPins } from "./useMapPins";
 import { useSaved } from "./SavedContext";
 import { reportError } from "../../lib/errors";
+import { cached, MINUTE } from "../../lib/queryCache";
 
 const PAGE_SIZE = 12;
 
@@ -32,6 +33,10 @@ export default function BrowsePage() {
   const [reloadToken, setReloadToken] = useState(0);
   const requestId = useRef(0);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const handleToggleSaved = useCallback(
+    (listing: ListingCardRow) => void toggleSaved(listing.id, listing.name ?? undefined),
+    [toggleSaved]
+  );
   const pins = useMapPins(filterKey);
 
   useEffect(() => {
@@ -39,7 +44,7 @@ export default function BrowsePage() {
   }, []);
 
   useEffect(() => {
-    fetchFilterOptions()
+    cached("browse:options", 10 * MINUTE, fetchFilterOptions)
       .then(setOptions)
       .catch(() => setOptions({ areas: [], types: [] }));
   }, []);
@@ -48,7 +53,7 @@ export default function BrowsePage() {
   useEffect(() => {
     const id = ++requestId.current;
     setStatus("loading");
-    fetchBrowsePage(filtersFromParams(new URLSearchParams(filterKey)), 0, PAGE_SIZE)
+    cached(`browse:page:${filterKey}`, MINUTE, () => fetchBrowsePage(filtersFromParams(new URLSearchParams(filterKey)), 0, PAGE_SIZE))
       .then((page) => {
         if (id !== requestId.current) return;
         setRows(page.rows);
@@ -111,7 +116,7 @@ export default function BrowsePage() {
       onMore={() => void handleMore()}
       onReset={handleReset}
       onRetry={() => setReloadToken((value) => value + 1)}
-      onToggleSaved={(listing) => void toggleSaved(listing.id, listing.name ?? undefined)}
+      onToggleSaved={handleToggleSaved}
       options={options}
       rows={rows}
       status={status}
