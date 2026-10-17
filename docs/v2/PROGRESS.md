@@ -2,7 +2,7 @@
 
 **Current branch:** `feature/v2-polish`
 **Status:** Features 1–14 merged into develop. 7 migrations tested locally, NOT applied to Supabase (deploy day; no staging). UI verified with dev fixtures under /dev/*.
-**Next step:** Responsive pass across dev previews
+**Next step:** Merge v2-polish, full build on develop, PR text
 
 Resume protocol: read this file → `git status` → check out the branch above → finish uncommitted work → continue from the first unchecked item.
 
@@ -126,7 +126,7 @@ Gates before the last commit of each feature (from `web/`): `npm run lint`, `npm
 ## 15. `feature/v2-polish`
 - [x] feat(ui): skeletons, empty/error states, 404
 - [x] fix(a11y): contrast, focus rings, labels, keyboard nav
-- [ ] fix(ui): responsive pass
+- [x] fix(ui): responsive pass
 - [x] feat(seo): page titles and meta
 - [ ] chore: remove dead v1 code and drop legacy role value migration; merge
 
