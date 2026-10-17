@@ -5,7 +5,7 @@
       "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
     },
     {
-      "source": "/(mapaguapa-mark.svg|vym-photo.jpg)",
+      "source": "/(mapaguapa-mark.svg|vym-photo.jpg|vym-photo-640.webp|vym-photo-960.webp|vym-photo-1280.webp)",
       "headers": [{ "key": "Cache-Control", "value": "public, max-age=86400" }]
     }
   ],
