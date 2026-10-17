@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { MapPin } from "../map/ListingsMap";
 import { fetchMapPins, filtersFromParams, type MapPinRow } from "./browseApi";
 import { priceLabel } from "./ListingCard";
+import { cached, MINUTE } from "../../lib/queryCache";
 
 export function toMapPin(row: MapPinRow): MapPin | null {
   if (row.location_lat === null || row.location_lng === null) return null;
@@ -24,7 +25,7 @@ export function useMapPins(filterKey: string, enabled = true) {
   useEffect(() => {
     if (!enabled) return undefined;
     let cancelled = false;
-    fetchMapPins(filtersFromParams(new URLSearchParams(filterKey)))
+    cached(`browse:pins:${filterKey}`, MINUTE, () => fetchMapPins(filtersFromParams(new URLSearchParams(filterKey))))
       .then((rows) => {
         if (!cancelled) setPins(rows.map(toMapPin).filter((pin): pin is MapPin => pin !== null));
       })

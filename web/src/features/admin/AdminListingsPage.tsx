@@ -21,6 +21,7 @@ import {
 import { AdminListingsView } from "./AdminListingsView";
 import { ArchiveDialog } from "./ArchiveDialog";
 import { reportError } from "../../lib/errors";
+import { cached, MINUTE } from "../../lib/queryCache";
 
 /** /admin/listings (and /admin/archive → Archived tab). Replaces the v1 listing and archive pages. */
 export default function AdminListingsPage({ initialTab }: { initialTab?: ListingStatus }) {
@@ -53,7 +54,7 @@ export default function AdminListingsPage({ initialTab }: { initialTab?: Listing
   }, [filters.tab]);
 
   useEffect(() => {
-    fetchListingFacets().then(setFacets, () => undefined);
+    cached("admin:facets", 10 * MINUTE, fetchListingFacets).then(setFacets, () => undefined);
   }, []);
 
   useEffect(() => {

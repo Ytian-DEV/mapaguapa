@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useAuth } from "../../app/AuthProvider";
 import { useToast } from "../../ui";
 import { fetchSavedIds, saveListing, unsaveListing } from "./browseApi";
@@ -16,6 +16,9 @@ export function SavedProvider({ children }: { children: ReactNode }) {
   const { profile } = useAuth();
   const toast = useToast();
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+  // Read through a ref so toggleSaved keeps one identity and memoised cards don't all re-render.
+  const savedRef = useRef(savedIds);
+  savedRef.current = savedIds;
 
   useEffect(() => {
     if (!profile) {
@@ -38,7 +41,7 @@ export function SavedProvider({ children }: { children: ReactNode }) {
   const toggleSaved = useCallback(
     async (listingId: string, listingName?: string) => {
       if (!profile) return;
-      const wasSaved = savedIds.has(listingId);
+      const wasSaved = savedRef.current.has(listingId);
       // Optimistic update; roll back on failure.
       setSavedIds((current) => {
         const next = new Set(current);
@@ -60,7 +63,7 @@ export function SavedProvider({ children }: { children: ReactNode }) {
         toast.error("Couldn’t update your saved places. Try again.");
       }
     },
-    [profile, savedIds, toast]
+    [profile, toast]
   );
 
   const value = useMemo<SavedContextValue>(

@@ -1,5 +1,5 @@
 import { Heart, ImageOff } from "lucide-react";
-import { useState } from "react";
+import { memo, useState } from "react";
 import { Link } from "react-router-dom";
 import { PRICE_BAND_LABELS, type PriceBand } from "../../lib/domain";
 import { publicPhotoUrl } from "../../lib/photos";
@@ -30,13 +30,15 @@ export function priceLabel(listing: Pick<ListingCardRow, "price_band" | "monthly
 type ListingCardProps = {
   listing: ListingCardRow;
   saved: boolean;
-  onToggleSaved: () => void;
+  /** Stable callbacks (they receive the listing) so memo() can skip unchanged cards. */
+  onToggleSaved: (listing: ListingCardRow) => void;
   /** Highlight from the map (feature 5). */
   active?: boolean;
-  onHover?: (hovering: boolean) => void;
+  onHover?: (listingId: string | null) => void;
 };
 
-export function ListingCard({ listing, saved, onToggleSaved, active = false, onHover }: ListingCardProps) {
+/** Memoised: hovering one card or pin re-renders only the two cards whose `active` changed. */
+export const ListingCard = memo(function ListingCard({ listing, saved, onToggleSaved, active = false, onHover }: ListingCardProps) {
   const [imageFailed, setImageFailed] = useState(false);
   const photo = publicPhotoUrl(listing.cover_bucket, listing.cover_path);
   const badge = listing.exclusivity_group ? EXCLUSIVITY_LABELS[listing.exclusivity_group as ExclusivityGroup] : null;
@@ -47,8 +49,8 @@ export function ListingCard({ listing, saved, onToggleSaved, active = false, onH
   return (
     <article
       className={cx("listing-card", active && "listing-card--active")}
-      onMouseEnter={onHover ? () => onHover(true) : undefined}
-      onMouseLeave={onHover ? () => onHover(false) : undefined}
+      onMouseEnter={onHover ? () => onHover(listing.id) : undefined}
+      onMouseLeave={onHover ? () => onHover(null) : undefined}
     >
       <div className="listing-card__photo">
         {photo && !imageFailed ? (
@@ -63,7 +65,7 @@ export function ListingCard({ listing, saved, onToggleSaved, active = false, onH
           aria-label={saved ? `Remove ${name} from saved` : `Save ${name}`}
           aria-pressed={saved}
           className={cx("listing-card__save", saved && "listing-card__save--on")}
-          onClick={onToggleSaved}
+          onClick={() => onToggleSaved(listing)}
           type="button"
         >
           <Heart aria-hidden="true" />
@@ -92,4 +94,4 @@ export function ListingCard({ listing, saved, onToggleSaved, active = false, onH
       </div>
     </article>
   );
-}
+});

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Marker, Popup, useMap, useMapEvents } from "react-leaflet";
 import L, { type Map as LeafletMap } from "leaflet";
 import { Link } from "react-router-dom";
@@ -88,8 +88,23 @@ function MoveWatcher({ active, isProgrammatic, onMoved }: { active: boolean; isP
   return null;
 }
 
-function PinMarker({ pin, active, onActiveChange }: { pin: MapPin; active: boolean; onActiveChange: (id: string | null) => void }) {
+/**
+ * Memoised with a stable handler object: hovering a card used to re-render every
+ * pin and make react-leaflet unbind/rebind each marker's listeners.
+ */
+const PinMarker = memo(function PinMarker({ pin, active, onActiveChange }: { pin: MapPin; active: boolean; onActiveChange: (id: string | null) => void }) {
   const markerRef = useRef<L.Marker | null>(null);
+  const eventHandlers = useMemo(
+    () => ({
+      click: () => onActiveChange(pin.id),
+      mouseover: () => onActiveChange(pin.id),
+      mouseout: () => {
+        if (!markerRef.current?.isPopupOpen()) onActiveChange(null);
+      },
+      popupclose: () => onActiveChange(null),
+    }),
+    [onActiveChange, pin.id]
+  );
   const photo = publicPhotoUrl(pin.coverBucket, pin.coverPath);
 
   useEffect(() => {
@@ -100,14 +115,7 @@ function PinMarker({ pin, active, onActiveChange }: { pin: MapPin; active: boole
   return (
     <Marker
       alt={`${pin.name}, ${pin.priceLabel}`}
-      eventHandlers={{
-        click: () => onActiveChange(pin.id),
-        mouseover: () => onActiveChange(pin.id),
-        mouseout: () => {
-          if (!markerRef.current?.isPopupOpen()) onActiveChange(null);
-        },
-        popupclose: () => onActiveChange(null),
-      }}
+      eventHandlers={eventHandlers}
       icon={priceIcon(pin.priceLabel, active)}
       keyboard
       position={[pin.lat, pin.lng]}
@@ -127,7 +135,7 @@ function PinMarker({ pin, active, onActiveChange }: { pin: MapPin; active: boole
       </Popup>
     </Marker>
   );
-}
+});
 
 export function ListingsMap({ pins, activeId, onActiveChange, bbox, onBBoxChange, className, label = "Map of places near VSU" }: ListingsMapProps) {
   const [map, setMap] = useState<LeafletMap | null>(null);
